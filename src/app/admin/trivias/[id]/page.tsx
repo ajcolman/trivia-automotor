@@ -19,6 +19,7 @@ export default async function EditTriviaPage({ params }: PageProps) {
       formFields: { orderBy: { orderIndex: 'asc' } },
       prizes: { orderBy: { position: 'asc' } },
       flyers: true,
+      brands: { select: { id: true, name: true } },
     },
   })
 

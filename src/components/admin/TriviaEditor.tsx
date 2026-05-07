@@ -100,6 +100,13 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       setQuestions(trivia.questions ?? [])
       setPrizes(trivia.prizes ?? [])
       setFormFields(trivia.formFields ?? [])
+      setColors({
+        primaryColor: trivia.primaryColor ?? '#003087',
+        secondaryColor: trivia.secondaryColor ?? '#002060',
+        accentColor: trivia.accentColor ?? '#FFD700',
+        backgroundColor: trivia.backgroundColor ?? '#F8FAFC',
+        textColor: trivia.textColor ?? '#1A1A2E',
+      })
     }
   }, [trivia, reset])
 
