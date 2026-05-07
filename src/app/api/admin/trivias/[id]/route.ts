@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
-import { triviaSchema } from '@/lib/validations/trivia'
+import { triviaBaseSchema } from '@/lib/validations/trivia'
 
 async function checkOwnership(id: string, userId: string, role: string) {
   const trivia = await prisma.trivia.findUnique({ where: { id } })
@@ -46,7 +46,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (ownership === false) return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
 
   const body = await req.json().catch(() => null)
-  const parsed = triviaSchema.partial().safeParse(body)
+  const parsed = triviaBaseSchema.partial().safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: 'Datos inválidos', details: parsed.error.flatten() }, { status: 422 })
   }

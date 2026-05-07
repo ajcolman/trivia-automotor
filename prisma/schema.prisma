@@ -19,6 +19,7 @@ enum FieldType {
   phone
   select
   number
+  brand_models
 }
 
 model Company {

@@ -9,66 +9,71 @@ export const hexColor = z
 
 // ─── Trivia ───────────────────────────────────────────────────────────────────
 
-export const triviaSchema = z
-  .object({
-    title: z
-      .string()
-      .min(3, 'Title must be at least 3 characters')
-      .max(120, 'Title must be at most 120 characters')
-      .trim(),
+// Base object — usable with .partial() for PATCH/PUT routes
+export const triviaBaseSchema = z.object({
+  title: z
+    .string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(120, 'Title must be at most 120 characters')
+    .trim(),
 
-    slug: z
-      .string()
-      .min(2, 'Slug must be at least 2 characters')
-      .max(80, 'Slug must be at most 80 characters')
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens')
-      .trim(),
+  slug: z
+    .string()
+    .min(2, 'Slug must be at least 2 characters')
+    .max(80, 'Slug must be at most 80 characters')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens')
+    .trim(),
 
-    description: z
-      .string()
-      .max(500, 'Description must be at most 500 characters')
-      .trim()
-      .optional()
-      .nullable(),
+  description: z
+    .string()
+    .max(500, 'Description must be at most 500 characters')
+    .trim()
+    .optional()
+    .nullable(),
 
-    logoUrl: z.string().url('Must be a valid URL').optional().nullable(),
+  logoUrl: z.string().url('Must be a valid URL').optional().nullable(),
 
-    companyId: z.string().cuid('Invalid company ID').optional().nullable(),
+  companyId: z.string().cuid('Invalid company ID').optional().nullable(),
 
-    brandIds: z.array(z.string().cuid()).default([]),
+  brandIds: z.array(z.string().cuid()).default([]),
 
-    // Brand colors
-    primaryColor: hexColor.default('#003087'),
-    secondaryColor: hexColor.default('#002060'),
-    accentColor: hexColor.default('#FFD700'),
-    backgroundColor: hexColor.default('#F8FAFC'),
-    textColor: hexColor.default('#1A1A2E'),
+  // Brand colors
+  primaryColor: hexColor.default('#003087'),
+  secondaryColor: hexColor.default('#002060'),
+  accentColor: hexColor.default('#FFD700'),
+  backgroundColor: hexColor.default('#F8FAFC'),
+  textColor: hexColor.default('#1A1A2E'),
 
-    isActive: z.boolean().default(true),
-    isPublic: z.boolean().default(true),
+  isActive: z.boolean().default(true),
+  isPublic: z.boolean().default(true),
 
-    startDate: z.coerce.date().optional().nullable(),
-    endDate: z.coerce.date().optional().nullable(),
+  startDate: z.coerce.date().optional().nullable(),
+  endDate: z.coerce.date().optional().nullable(),
 
-    maxPlaysPerUser: z
-      .number()
-      .int('Must be a whole number')
-      .min(1, 'Must allow at least 1 play')
-      .max(100, 'Cannot exceed 100 plays per user')
-      .default(1),
-  })
-  .refine(
-    (data) => {
-      if (data.startDate && data.endDate) {
-        return data.endDate > data.startDate
-      }
-      return true
-    },
-    {
-      message: 'End date must be after start date',
-      path: ['endDate'],
-    },
-  )
+  maxPlaysPerUser: z
+    .number()
+    .int('Must be a whole number')
+    .min(1, 'Must allow at least 1 play')
+    .max(100, 'Cannot exceed 100 plays per user')
+    .default(1),
+
+  gameInstructions: z.string().optional().nullable(),
+  termsAndConditions: z.string().optional().nullable(),
+})
+
+// Full schema with cross-field refinement — use for POST (create)
+export const triviaSchema = triviaBaseSchema.refine(
+  (data) => {
+    if (data.startDate && data.endDate) {
+      return data.endDate > data.startDate
+    }
+    return true
+  },
+  {
+    message: 'End date must be after start date',
+    path: ['endDate'],
+  },
+)
 
 export type TriviaInput = z.infer<typeof triviaSchema>
 
@@ -126,7 +131,7 @@ export type QuestionInput = z.infer<typeof questionSchema>
 
 // ─── FormField ────────────────────────────────────────────────────────────────
 
-const FIELD_TYPES = ['text', 'email', 'phone', 'select', 'number'] as const
+const FIELD_TYPES = ['text', 'email', 'phone', 'select', 'number', 'brand_models'] as const
 
 export const formFieldSchema = z.object({
   triviaId: z.string().cuid('Invalid trivia ID').optional(),
