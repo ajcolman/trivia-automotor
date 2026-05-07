@@ -34,7 +34,7 @@ export async function GET(
       formFields: { orderBy: { orderIndex: 'asc' } },
       prizes: { orderBy: { position: 'asc' } },
       company: { select: { id: true, name: true, logoUrl: true } },
-      brands: { select: { id: true, name: true, logoUrl: true, models: true }, take: 1 },
+      brands: { select: { id: true, name: true, logoUrl: true, models: true } },
     },
   })
 
@@ -63,5 +63,21 @@ export async function GET(
     },
   }).catch(() => {})
 
-  return NextResponse.json(trivia)
+  // Auto-populate brand_models fields with "MARCA MODELO" options
+  const brandModelOptions = trivia.brands
+    .flatMap(b => (b.models as string[]).map(m => `${b.name.toUpperCase()} ${m.toUpperCase()}`))
+    .sort()
+
+  const formFields = trivia.formFields.map(f => {
+    if ((f.fieldType as string) === 'brand_models') {
+      return { ...f, fieldType: 'select', options: brandModelOptions }
+    }
+    return f
+  })
+
+  return NextResponse.json({
+    ...trivia,
+    brand: trivia.brands[0] ?? null, // backward compat for IntroScreen/ResultScreen
+    formFields,
+  })
 }

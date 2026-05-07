@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent } from '@/components/ui/card'
-import { Save, ArrowLeft, Loader2, ExternalLink, Plus, Trash2, GripVertical, X, RotateCcw } from 'lucide-react'
+import { Save, ArrowLeft, Loader2, ExternalLink, Plus, Trash2, GripVertical, X, RotateCcw, Trophy } from 'lucide-react'
 import { ColorPicker } from './ColorPicker'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { UploadDropzone } from './UploadDropzone'
@@ -59,7 +59,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     textColor: trivia?.textColor ?? '#1A1A2E',
   })
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm({
     defaultValues: {
       title: trivia?.title ?? '',
       description: trivia?.description ?? '',
@@ -75,6 +75,30 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       termsAndConditions: trivia?.termsAndConditions ?? '',
     },
   })
+
+  // Sincronizar formulario cuando cambian los datos (edición)
+  useEffect(() => {
+    if (trivia) {
+      reset({
+        title: trivia.title ?? '',
+        description: trivia.description ?? '',
+        slug: trivia.slug ?? '',
+        companyId: trivia.companyId ?? '',
+        brandIds: trivia.brands?.map((b: { id: string }) => b.id) ?? [],
+        isActive: trivia.isActive ?? true,
+        isPublic: trivia.isPublic ?? true,
+        maxPlaysPerUser: trivia.maxPlaysPerUser ?? 1,
+        startDate: trivia.startDate ? new Date(trivia.startDate).toISOString().slice(0, 16) : '',
+        endDate: trivia.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
+        gameInstructions: trivia.gameInstructions ?? '',
+        termsAndConditions: trivia.termsAndConditions ?? '',
+      })
+      setLogoUrl(trivia.logoUrl ?? '')
+      setQuestions(trivia.questions ?? [])
+      setPrizes(trivia.prizes ?? [])
+      setFormFields(trivia.formFields ?? [])
+    }
+  }, [trivia, reset])
 
   const title = watch('title')
   const companyId = watch('companyId')
@@ -191,6 +215,33 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     setFormFields(fs => fs.filter(f => f.id !== id))
   }
 
+  const savePrize = async (pData: any) => {
+    if (!savedId) { alert('Guarda la trivia primero'); return }
+    const isNew = !pData.id
+    const url = isNew ? '/api/admin/prizes' : `/api/admin/prizes/${pData.id}`
+    const method = isNew ? 'POST' : 'PUT'
+    
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...pData, triviaId: savedId }),
+    })
+    
+    if (res.ok) {
+      const saved = await res.json()
+      setPrizes(prev => isNew ? [...prev, saved] : prev.map(p => p.id === saved.id ? saved : p))
+    } else {
+      const err = await res.json()
+      alert(err.error || 'Error al guardar premio')
+    }
+  }
+
+  const deletePrize = async (id: string) => {
+    if (!confirm('¿Eliminar este premio?')) return
+    const res = await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' })
+    if (res.ok) setPrizes(prev => prev.filter(p => p.id !== id))
+  }
+
   return (
     <div className="space-y-4 max-w-5xl">
       {/* Header */}
@@ -245,11 +296,12 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="design">Diseño</TabsTrigger>
           <TabsTrigger value="questions">Preguntas {questions.length > 0 && `(${questions.length})`}</TabsTrigger>
           <TabsTrigger value="form">Formulario</TabsTrigger>
+          <TabsTrigger value="prizes">Premios</TabsTrigger>
           <TabsTrigger value="terms">Términos</TabsTrigger>
         </TabsList>
 
@@ -535,6 +587,67 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         </TabsContent>
 
         {/* ── Terms ── */}
+        {/* ── Prizes ── */}
+        <TabsContent value="prizes">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-black text-slate-800">Premios configurados</h3>
+                  <p className="text-xs text-slate-500">Define los premios que se mostrarán en la landing y al final del juego.</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white" 
+                  onClick={() => {
+                    const name = prompt('Nombre del premio (Ej: iPhone 15 Pro Max)')
+                    if (!name) return
+                    const pos = prompt('Posición (1, 2, 3...):', (prizes.length + 1).toString())
+                    savePrize({ name, position: Number(pos) || prizes.length + 1 })
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Agregar Premio
+                </Button>
+              </div>
+
+              {prizes.length === 0 ? (
+                <div className="text-center py-12 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4">
+                    <Trophy className="w-8 h-8 text-slate-200" />
+                  </div>
+                  <p className="text-slate-400 text-sm font-medium">No hay premios configurados aún.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {prizes.sort((a,b) => a.position - b.position).map((p, i) => (
+                    <div key={p.id} className="group relative flex items-center gap-4 p-4 bg-white border rounded-2xl shadow-sm hover:shadow-md transition-all">
+                      <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 font-black text-lg shadow-inner">
+                        {p.position <= 3 ? ['🥇', '🥈', '🥉'][p.position - 1] : `${p.position}°`}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-800 truncate">{p.name}</h4>
+                        <p className="text-xs text-slate-500 line-clamp-1">{p.description || 'Sin descripción adicional'}</p>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {
+                          const name = prompt('Nombre del premio:', p.name)
+                          if (!name) return
+                          const desc = prompt('Descripción:', p.description || '')
+                          const pos = prompt('Posición:', p.position.toString())
+                          savePrize({ ...p, name, description: desc, position: Number(pos) || p.position })
+                        }}>✎</Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => deletePrize(p.id)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="terms">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-6 space-y-6">
@@ -585,7 +698,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         initialData={editingF}
         onClose={() => { setFDialogOpen(false); setEditingF(null) }}
         onSave={saveField}
-        suggestedModels={brands.filter(b => watch('brandIds')?.includes(b.id)).flatMap(b => b.models)}
+        suggestedModels={brands.filter(b => watch('brandIds')?.includes(b.id)).flatMap(b => b.models.map(m => `${b.name.toUpperCase()} ${m.toUpperCase()}`))}
       />
     </div>
   )
@@ -754,6 +867,9 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
                 <option value="phone">Teléfono</option>
                 <option value="number">Número</option>
                 <option value="select">Lista de Selección</option>
+                <option value="checkbox">Casilla de Verificación (Checkbox)</option>
+                <option value="textarea">Área de Texto (Largo)</option>
+                <option value="brand_models">Modelos de Marca (automático)</option>
               </select>
             </div>
             <div className="flex items-end pb-2 gap-2">
@@ -762,12 +878,30 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
             </div>
           </div>
 
+          {type === 'brand_models' && (
+            <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 text-sm text-blue-700 space-y-1.5">
+              <p className="font-bold">Opciones automáticas</p>
+              <p className="text-blue-600 text-xs">
+                Las opciones se generan automáticamente con los modelos de las marcas asociadas a la trivia, en formato <strong>MARCA MODELO</strong>.
+              </p>
+              {suggestedModels.length > 0 ? (
+                <div className="pt-1 flex flex-wrap gap-1">
+                  {Array.from(new Set(suggestedModels)).map(m => (
+                    <span key={m} className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{m}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-blue-400 italic">Asigná marcas a la trivia para ver una vista previa.</p>
+              )}
+            </div>
+          )}
+
           {type === 'select' && (
             <div className="space-y-2">
               <Label>Opciones (separadas por comas)</Label>
-              <Textarea 
-                {...register('options')} 
-                placeholder="Opción 1, Opción 2, Opción 3" 
+              <Textarea
+                {...register('options')}
+                placeholder="Opción 1, Opción 2, Opción 3"
                 rows={3}
                 className="text-sm"
               />

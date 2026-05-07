@@ -1,33 +1,32 @@
 // Author: Angel Colman
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
-import { z } from 'zod'
 
-const prizeSchema = z.object({
-  triviaId: z.string().min(1),
-  name: z.string().min(1).max(200),
-  description: z.string().max(500).optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
-  position: z.number().int().min(1).max(10),
-})
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-export async function POST(req: NextRequest) {
-  const { session, error } = await requireAuth()
-  if (error) return error
+    const { triviaId, name, description, position } = await req.json()
+    
+    if (!triviaId || !name) {
+      return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 })
+    }
 
-  const body = await req.json().catch(() => null)
-  const parsed = prizeSchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Datos inválidos', details: parsed.error.flatten() }, { status: 422 })
+    const prize = await prisma.prize.create({
+      data: {
+        triviaId,
+        name,
+        description,
+        position: Number(position),
+      }
+    })
+
+    return NextResponse.json(prize)
+  } catch (error) {
+    console.error('Error creating prize:', error)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
-
-  const trivia = await prisma.trivia.findUnique({ where: { id: parsed.data.triviaId } })
-  if (!trivia) return NextResponse.json({ error: 'Trivia no encontrada' }, { status: 404 })
-  if (!isSuperAdmin(session.user.role) && trivia.createdBy !== session.user.id) {
-    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-  }
-
-  const prize = await prisma.prize.create({ data: parsed.data })
-  return NextResponse.json(prize, { status: 201 })
 }

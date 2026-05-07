@@ -93,6 +93,26 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                             <option key={opt} value={opt}>{opt}</option>
                           ))}
                         </select>
+                      ) : field.fieldType === 'checkbox' ? (
+                        <div className="flex items-start gap-3 p-3 bg-white/50 rounded-xl border-2 transition-all hover:bg-white" style={{ borderColor: `${trivia.primaryColor}20` }}>
+                          <input 
+                            type="checkbox" 
+                            id={field.id}
+                            {...register(field.fieldName, { required: field.isRequired ? `${field.fieldLabel} es obligatorio` : false })}
+                            className="w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <label htmlFor={field.id} className="text-sm cursor-pointer select-none leading-tight" style={{ color: trivia.textColor }}>
+                            {field.fieldLabel}{field.isRequired && ' *'}
+                          </label>
+                        </div>
+                      ) : field.fieldType === 'textarea' ? (
+                        <textarea
+                          placeholder={field.placeholder ?? ''}
+                          {...register(field.fieldName, { required: field.isRequired ? `${field.fieldLabel} es requerido` : false })}
+                          rows={3}
+                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus:border-blue-500"
+                          style={{ borderColor: errors[field.fieldName] ? '#ef4444' : `${trivia.primaryColor}30`, color: trivia.textColor }}
+                        />
                       ) : (
                         <input
                           type={getInputType(field.fieldType)}

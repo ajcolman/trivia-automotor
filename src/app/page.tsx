@@ -299,7 +299,11 @@ export default async function HomePage() {
                       return (
                         <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                           <span className="w-7 text-center flex-shrink-0 text-lg leading-none">
-                            {i < 3 ? MEDALS[i] : <span className="text-xs font-bold text-slate-400">{i + 1}</span>}
+                            {trivia.prizes.some(p => p.position === i + 1) && i < 3 ? (
+                              MEDALS[i]
+                            ) : (
+                              <span className="text-xs font-bold text-slate-400">{i + 1}</span>
+                            )}
                           </span>
                           <span className="flex-1 text-sm font-semibold text-slate-700 truncate">{displayName}</span>
                           <span className="font-black text-sm tabular-nums" style={{ color: trivia.primaryColor }}>
