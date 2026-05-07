@@ -40,3 +40,18 @@ next-env.d.ts
 public/uploads/*
 !public/uploads/.gitkeep
 !public/uploads/logoa.png
+
+# logs and temporary files
+.playwright-mcp/
+reference-image.png
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# images
+public/images/*.avif
+public/images/*.png
+!public/images/404-rally.png
+!public/images/403-restricted.png
+
