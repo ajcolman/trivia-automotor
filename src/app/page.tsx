@@ -66,7 +66,7 @@ export default async function HomePage() {
 
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
-        <header className="relative overflow-hidden">
+        <header className="relative overflow-hidden lg:min-h-[520px]">
           {/* Pixel art background image */}
           <div
             className="absolute inset-0"
@@ -77,14 +77,14 @@ export default async function HomePage() {
               imageRendering: 'pixelated',
             }}
           />
-          {/* Dark overlay to keep text readable */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,20,70,0.82) 0%, rgba(0,30,90,0.70) 50%, rgba(0,15,50,0.88) 100%)' }} />
+          {/* Dark overlay — lighter in the bottom so the cars show through */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,20,70,0.88) 0%, rgba(0,25,80,0.72) 45%, rgba(0,15,50,0.55) 100%)' }} />
           {/* Scanline effect for retro feel */}
           <div className="absolute inset-0 pointer-events-none" style={{
             backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)',
           }} />
 
-          <div className="relative max-w-6xl mx-auto px-4 py-20 text-center">
+          <div className="relative max-w-6xl mx-auto px-4 py-20 lg:py-28 text-center">
 
 
             <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight">
