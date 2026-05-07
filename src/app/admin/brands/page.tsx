@@ -28,6 +28,7 @@ export default function BrandsPage() {
   const [saving, setSaving] = useState(false)
   const [modelInput, setModelInput] = useState('')
   const [form, setForm] = useState({ name: '', companyId: '', logoUrl: '' as string, models: [] as string[], isActive: true })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const load = async () => {
     const [b, c] = await Promise.all([fetch('/api/admin/brands'), fetch('/api/admin/companies')])
@@ -40,12 +41,14 @@ export default function BrandsPage() {
   const openCreate = () => {
     setEditing(null)
     setForm({ name: '', companyId: companies[0]?.id ?? '', logoUrl: '', models: [], isActive: true })
+    setErrors({})
     setDialogOpen(true)
   }
 
   const openEdit = (b: Brand) => {
     setEditing(b)
     setForm({ name: b.name, companyId: b.companyId, logoUrl: b.logoUrl ?? '', models: b.models, isActive: b.isActive })
+    setErrors({})
     setDialogOpen(true)
   }
 
@@ -59,6 +62,16 @@ export default function BrandsPage() {
   const removeModel = (m: string) => setForm(f => ({ ...f, models: f.models.filter(x => x !== m) }))
 
   const save = async () => {
+    const newErrors: Record<string, string> = {}
+    if (!form.name.trim()) newErrors.name = 'El nombre es obligatorio'
+    if (!form.companyId) newErrors.companyId = 'Debes seleccionar una empresa'
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    setErrors({})
     setSaving(true)
     const url = editing ? `/api/admin/brands/${editing.id}` : '/api/admin/brands'
     const method = editing ? 'PUT' : 'POST'
@@ -124,17 +137,33 @@ export default function BrandsPage() {
           <DialogHeader><DialogTitle>{editing ? 'Editar Marca' : 'Nueva Marca'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Empresa *</Label>
+              <Label className={errors.companyId ? 'text-red-500' : ''}>Empresa *</Label>
               <div className="mt-1">
                 <SearchableSelect
                   options={companies.map(c => ({ value: c.id, label: c.name }))}
                   value={form.companyId}
-                  onChange={val => setForm(f => ({ ...f, companyId: val }))}
+                  onChange={val => {
+                    setForm(f => ({ ...f, companyId: val }))
+                    if (val) setErrors(e => { const { companyId, ...rest } = e; return rest })
+                  }}
                   placeholder="Seleccionar empresa..."
                 />
               </div>
+              {errors.companyId && <p className="text-xs text-red-500 mt-1">{errors.companyId}</p>}
             </div>
-            <div><Label>Nombre *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="mt-1" /></div>
+            <div>
+              <Label className={errors.name ? 'text-red-500' : ''}>Nombre *</Label>
+              <Input 
+                value={form.name} 
+                onChange={e => {
+                  setForm(f => ({ ...f, name: e.target.value }))
+                  if (e.target.value.trim()) setErrors(err => { const { name, ...rest } = err; return rest })
+                }} 
+                aria-invalid={!!errors.name}
+                className="mt-1" 
+              />
+              {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+            </div>
             <div><Label>Logo</Label><div className="mt-1"><UploadDropzone value={form.logoUrl} onUpload={url => setForm(f => ({ ...f, logoUrl: url }))} /></div></div>
             <div>
               <Label>Modelos de vehículos</Label>

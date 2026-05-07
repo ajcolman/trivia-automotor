@@ -27,6 +27,7 @@ export interface ScoredAnswer {
   maxPoints: number
   timeTakenMs: number
   speedBonus: number
+  correctAnswer: number
 }
 
 /** Full result returned by `calculateScore`. */
@@ -97,6 +98,7 @@ export function calculateScore(
         maxPoints: question.points,
         timeTakenMs: 0,
         speedBonus: 0,
+        correctAnswer: question.correctAnswer,
       })
       continue
     }
@@ -112,6 +114,7 @@ export function calculateScore(
         maxPoints: question.points,
         timeTakenMs: clientAnswer.timeMs,
         speedBonus: 0,
+        correctAnswer: question.correctAnswer,
       })
       continue
     }
@@ -141,6 +144,7 @@ export function calculateScore(
       maxPoints: question.points,
       timeTakenMs: elapsed,
       speedBonus: Math.max(0, speedBonus),
+      correctAnswer: question.correctAnswer,
     })
   }
 

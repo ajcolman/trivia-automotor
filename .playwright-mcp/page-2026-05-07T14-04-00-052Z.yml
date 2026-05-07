@@ -1,0 +1,48 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e6]
+        - generic [ref=e12]: Automotor Trivia
+      - link "Panel Admin →" [ref=e13] [cursor=pointer]:
+        - /url: /admin/login
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e16]
+        - generic [ref=e18]: Grupo Automotor Paraguay
+      - heading "Trivias y Promociones" [level=1] [ref=e19]
+      - paragraph [ref=e20]: Participa en nuestras trivias interactivas, gana premios y demuestra tu conocimiento.
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - img [ref=e23]
+          - generic [ref=e28]: 0 participantes
+        - generic [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: 1 trivias activas
+  - main [ref=e33]:
+    - heading "Trivias Disponibles 1" [level=2] [ref=e34]:
+      - text: Trivias Disponibles
+      - generic [ref=e35]: "1"
+    - link "Logo Automotor S.A. Trivia Mundial 2026 ¡Ponete a prueba con todo lo que sabés sobre el Mundial de Fútbol 2026! Respondé rápido y ganá increíbles premios de Automotor. 🥇 1er Lugar 🥈 2do Lugar 0 Jugar" [ref=e37] [cursor=pointer]:
+      - /url: /play/mundial-2026-automotor
+      - img "Logo" [ref=e39]
+      - generic [ref=e40]:
+        - generic [ref=e42]: Automotor S.A.
+        - heading "Trivia Mundial 2026" [level=3] [ref=e43]
+        - paragraph [ref=e44]: ¡Ponete a prueba con todo lo que sabés sobre el Mundial de Fútbol 2026! Respondé rápido y ganá increíbles premios de Automotor.
+        - generic [ref=e45]:
+          - generic [ref=e46]: 🥇 1er Lugar
+          - generic [ref=e47]: 🥈 2do Lugar
+        - generic [ref=e48]:
+          - generic [ref=e50]:
+            - img [ref=e51]
+            - text: "0"
+          - generic [ref=e56]:
+            - text: Jugar
+            - img [ref=e57]
+  - contentinfo [ref=e59]:
+    - generic [ref=e60]:
+      - paragraph [ref=e61]: © 2026 Automotor S.A. / Carmotor S.A. · Todos los derechos reservados
+      - paragraph [ref=e62]:
+        - text: Desarrollado por
+        - strong [ref=e63]: Angel Colman

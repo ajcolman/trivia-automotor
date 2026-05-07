@@ -135,7 +135,7 @@ export default async function HomePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeTrivias.map(trivia => {
                   const flyer = trivia.flyers[0]
-                  const logo = trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl
+                  const logo = trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl
                   const pct = Math.min(100, Math.round((trivia._count.leads / 100) * 100))
 
                   return (

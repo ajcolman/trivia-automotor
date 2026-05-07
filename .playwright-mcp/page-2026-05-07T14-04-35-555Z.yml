@@ -1,0 +1,50 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img "Logo" [ref=e9]
+      - heading "Trivia Mundial 2026" [level=1] [ref=e10]
+      - paragraph [ref=e11]: ¡Ponete a prueba con todo lo que sabés sobre el Mundial de Fútbol 2026! Respondé rápido y ganá increíbles premios de Automotor.
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - img [ref=e16]
+          - generic [ref=e22]: "10"
+          - generic [ref=e23]: Preguntas
+        - generic [ref=e24]:
+          - img [ref=e26]
+          - generic [ref=e29]: 25s
+          - generic [ref=e30]: Máx. seg.
+        - generic [ref=e31]:
+          - img [ref=e33]
+          - generic [ref=e35]: "1150"
+          - generic [ref=e36]: Puntos
+      - generic [ref=e37]:
+        - paragraph [ref=e38]:
+          - generic [ref=e39]: ✓
+          - text: Responde correctamente para ganar puntos.
+        - paragraph [ref=e40]:
+          - generic [ref=e41]: ⚡
+          - strong [ref=e42]: "Bono de velocidad:"
+          - text: las respuestas más rápidas suman más puntos.
+        - paragraph [ref=e43]:
+          - generic [ref=e44]: i
+          - text: Registra tus datos al finalizar para guardar tu puntaje.
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img [ref=e47]
+          - generic [ref=e51]: Premios disponibles
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - generic [ref=e54]: 🥇
+            - generic [ref=e55]: 1er LugarPremio especial Automotor — ¡Sorpresa!
+          - generic [ref=e56]:
+            - generic [ref=e57]: 🥈
+            - generic [ref=e58]: 2do LugarPremio Automotor
+          - generic [ref=e59]:
+            - generic [ref=e60]: 🥉
+            - generic [ref=e61]: 3er LugarPremio Automotor
+      - button "¡Comenzar Trivia!" [ref=e62] [cursor=pointer]:
+        - img [ref=e63]
+        - text: ¡Comenzar Trivia!
+      - paragraph [ref=e65]: Automotor S.A.
+  - alert [ref=e66]

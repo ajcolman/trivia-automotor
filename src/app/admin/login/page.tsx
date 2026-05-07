@@ -16,14 +16,26 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [form, setForm] = useState({ email: '', password: '' })
 
   const hasError = searchParams.get('error')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    const errors: Record<string, string> = {}
+    if (!form.email.trim()) errors.email = 'El email es obligatorio'
+    if (!form.password.trim()) errors.password = 'La contraseña es obligatoria'
+    
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+
     setIsLoading(true)
     setError('')
+    setFieldErrors({})
 
     const res = await signIn('credentials', {
       email: form.email,
@@ -140,33 +152,41 @@ function LoginForm() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
-                <Label className="text-slate-700 text-sm font-semibold">Email</Label>
+                <Label className={`text-sm font-semibold ${fieldErrors.email ? 'text-red-500' : 'text-slate-700'}`}>Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.email ? 'text-red-400' : 'text-slate-400'}`} />
                   <Input
                     type="email"
                     placeholder="admin@automotor.com.py"
                     value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    required
+                    onChange={e => {
+                      setForm(f => ({ ...f, email: e.target.value }))
+                      if (e.target.value.trim()) setFieldErrors(prev => { const { email, ...rest } = prev; return rest })
+                    }}
+                    aria-invalid={!!fieldErrors.email}
                     className="pl-10 bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 h-11 rounded-xl"
                   />
                 </div>
+                {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-slate-700 text-sm font-semibold">Contraseña</Label>
+                <Label className={`text-sm font-semibold ${fieldErrors.password ? 'text-red-500' : 'text-slate-700'}`}>Contraseña</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.password ? 'text-red-400' : 'text-slate-400'}`} />
                   <Input
                     type="password"
                     placeholder="••••••••"
                     value={form.password}
-                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    required
+                    onChange={e => {
+                      setForm(f => ({ ...f, password: e.target.value }))
+                      if (e.target.value.trim()) setFieldErrors(prev => { const { password, ...rest } = prev; return rest })
+                    }}
+                    aria-invalid={!!fieldErrors.password}
                     className="pl-10 bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 h-11 rounded-xl"
                   />
                 </div>
+                {fieldErrors.password && <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>}
               </div>
 
               <Button

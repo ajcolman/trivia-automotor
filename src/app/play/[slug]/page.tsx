@@ -33,7 +33,6 @@ export default async function PlayPage({ params }: PageProps) {
         select: {
           id: true, question: true, options: true,
           points: true, timeLimit: true, orderIndex: true,
-          // correctAnswer intentionally excluded
         },
       },
       formFields: { orderBy: { orderIndex: 'asc' } },

@@ -196,25 +196,54 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
             <CardContent className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <Label>Título *</Label>
-                  <Input {...register('title', { required: true })} placeholder="Copa Mundial 2026" className="mt-1" />
+                  <Label className={errors.title ? 'text-red-500' : ''}>Título *</Label>
+                  <Input 
+                    {...register('title', { required: 'El título es obligatorio' })} 
+                    aria-invalid={!!errors.title}
+                    placeholder="Copa Mundial 2026" 
+                    className="mt-1" 
+                  />
+                  {errors.title && <p className="text-xs text-red-500 mt-1">{String(errors.title.message)}</p>}
                 </div>
                 <div className="col-span-2">
                   <Label>Descripción</Label>
                   <Textarea {...register('description')} placeholder="Descripción opcional..." rows={2} className="mt-1" />
                 </div>
                 <div>
-                  <Label>Slug (URL) *</Label>
+                  <Label className={errors.slug ? 'text-red-500' : ''}>Slug (URL) *</Label>
                   <div className="flex gap-2 mt-1">
-                    <Input {...register('slug', { required: true })} placeholder="copa-mundial-2026" />
+                    <Input 
+                      {...register('slug', { 
+                        required: 'El slug es obligatorio',
+                        pattern: { value: /^[a-z0-9-]+$/, message: 'Solo letras minúsculas, números y guiones' }
+                      })} 
+                      aria-invalid={!!errors.slug}
+                      placeholder="copa-mundial-2026" 
+                    />
                     <Button type="button" variant="outline" size="sm" onClick={() => setValue('slug', slugify(watch('title')))}>↻</Button>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">/play/<strong>{watch('slug') || 'slug'}</strong></p>
+                  {errors.slug && <p className="text-xs text-red-500 mt-1">{String(errors.slug.message)}</p>}
+                  {!errors.slug && <p className="text-xs text-slate-400 mt-1">/play/<strong>{watch('slug') || 'slug'}</strong></p>}
                 </div>
                 <div>
-                  <Label>Máx. participaciones</Label>
-                  <Input type="number" min={1} max={100} {...register('maxPlaysPerUser')} className="mt-1" />
-                  <p className="text-xs text-slate-400 mt-1">Por participante</p>
+                  <Label className={errors.maxPlaysPerUser ? 'text-red-500' : ''}>Máx. participaciones</Label>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={100} 
+                    {...register('maxPlaysPerUser', { 
+                      required: 'Campo requerido',
+                      min: { value: 1, message: 'Mínimo 1' },
+                      max: { value: 100, message: 'Máximo 100' }
+                    })} 
+                    aria-invalid={!!errors.maxPlaysPerUser}
+                    className="mt-1" 
+                  />
+                  {errors.maxPlaysPerUser ? (
+                    <p className="text-xs text-red-500 mt-1">{String(errors.maxPlaysPerUser.message)}</p>
+                  ) : (
+                    <p className="text-xs text-slate-400 mt-1">Por participante</p>
+                  )}
                 </div>
                 <div>
                   <Label>Empresa</Label>
@@ -263,16 +292,35 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   </div>
                 </div>
                 <div>
-                  <Label>Fecha inicio</Label>
-                  <Input type="datetime-local" {...register('startDate')} className="mt-1" />
+                  <Label className={errors.startDate ? 'text-red-500' : ''}>Fecha inicio</Label>
+                  <Input 
+                    type="datetime-local" 
+                    {...register('startDate')} 
+                    aria-invalid={!!errors.startDate}
+                    className="mt-1" 
+                  />
+                  {errors.startDate && <p className="text-xs text-red-500 mt-1">{String(errors.startDate.message)}</p>}
                 </div>
                 <div>
-                  <Label>Fecha fin</Label>
-                  <Input type="datetime-local" {...register('endDate')} className="mt-1" />
+                  <Label className={errors.endDate ? 'text-red-500' : ''}>Fecha fin</Label>
+                  <Input 
+                    type="datetime-local" 
+                    {...register('endDate')} 
+                    aria-invalid={!!errors.endDate}
+                    className="mt-1" 
+                  />
+                  {errors.endDate && <p className="text-xs text-red-500 mt-1">{String(errors.endDate.message)}</p>}
                 </div>
                 <div className="col-span-2">
-                  <Label>Instrucciones de juego</Label>
-                  <Textarea {...register('gameInstructions')} placeholder="Instrucciones personalizadas para los participantes..." rows={3} className="mt-1" />
+                  <Label className={errors.gameInstructions ? 'text-red-500' : ''}>Instrucciones de juego</Label>
+                  <Textarea 
+                    {...register('gameInstructions')} 
+                    aria-invalid={!!errors.gameInstructions}
+                    placeholder="Instrucciones personalizadas para los participantes..." 
+                    rows={3} 
+                    className="mt-1" 
+                  />
+                  {errors.gameInstructions && <p className="text-xs text-red-500 mt-1">{String(errors.gameInstructions.message)}</p>}
                 </div>
               </div>
               <div className="flex gap-6">
@@ -442,7 +490,7 @@ function QuestionDialog({ open, initialData, onClose, onSave }: {
   onClose: () => void
   onSave: (data: any) => void
 }) {
-  const { register, handleSubmit, reset } = useForm<any>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<any>({
     defaultValues: initialData ? {
       question: initialData.question,
       optionA: (initialData.options as string[])[0] ?? '',
@@ -476,16 +524,36 @@ function QuestionDialog({ open, initialData, onClose, onSave }: {
         </DialogHeader>
         <form onSubmit={handleSubmit(onSave)} className="space-y-3">
           <div>
-            <Label>Pregunta *</Label>
-            <Textarea {...register('question', { required: true })} rows={2} className="mt-1" placeholder="Escribe la pregunta aquí..." />
+            <Label className={errors.question ? 'text-red-500' : ''}>Pregunta *</Label>
+            <Textarea 
+              {...register('question', { required: 'La pregunta es obligatoria' })} 
+              aria-invalid={!!errors.question}
+              rows={2} 
+              className="mt-1" 
+              placeholder="Escribe la pregunta aquí..." 
+            />
+            {errors.question && <p className="text-xs text-red-500 mt-1">{String(errors.question.message)}</p>}
           </div>
-          {['A', 'B', 'C', 'D'].map((letter, idx) => (
-            <div key={letter} className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-bold text-sm flex items-center justify-center flex-shrink-0">{letter}</span>
-              <Input {...register(`option${letter}` as any, { required: idx < 2 })} placeholder={`Opción ${letter}`} />
-              <input type="radio" value={idx} {...register('correctAnswer')} className="flex-shrink-0" />
-            </div>
-          ))}
+          {['A', 'B', 'C', 'D'].map((letter, idx) => {
+            const fieldName = `option${letter}` as const;
+            const error = errors[fieldName];
+            return (
+              <div key={letter} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className={`w-7 h-7 rounded-full font-bold text-sm flex items-center justify-center flex-shrink-0 ${error ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
+                    {letter}
+                  </span>
+                  <Input 
+                    {...register(fieldName, { required: idx < 2 ? `La opción ${letter} es obligatoria` : false })} 
+                    aria-invalid={!!error}
+                    placeholder={`Opción ${letter}`} 
+                  />
+                  <input type="radio" value={idx} {...register('correctAnswer')} className="flex-shrink-0" title="Respuesta correcta" />
+                </div>
+                {error && <p className="text-[10px] text-red-500 ml-9">{String(error.message)}</p>}
+              </div>
+            )
+          })}
           <p className="text-xs text-slate-400">Selecciona el radio de la respuesta correcta (A, B, C o D)</p>
           <div className="grid grid-cols-2 gap-3">
             <div>

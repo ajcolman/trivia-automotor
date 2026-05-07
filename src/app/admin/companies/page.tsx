@@ -24,6 +24,7 @@ export default function CompaniesPage() {
   const [editing, setEditing] = useState<Company | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ name: '', slug: '', description: '', website: '', logoUrl: '' as string, isActive: true })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const load = async () => {
     const res = await fetch('/api/admin/companies')
@@ -35,16 +36,28 @@ export default function CompaniesPage() {
   const openCreate = () => {
     setEditing(null)
     setForm({ name: '', slug: '', description: '', website: '', logoUrl: '', isActive: true })
+    setErrors({})
     setDialogOpen(true)
   }
 
   const openEdit = (c: Company) => {
     setEditing(c)
     setForm({ name: c.name, slug: c.slug, description: c.description ?? '', website: c.website ?? '', logoUrl: c.logoUrl ?? '', isActive: c.isActive })
+    setErrors({})
     setDialogOpen(true)
   }
 
   const save = async () => {
+    const newErrors: Record<string, string> = {}
+    if (!form.name.trim()) newErrors.name = 'El nombre es obligatorio'
+    if (!form.slug.trim()) newErrors.slug = 'El slug es obligatorio'
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    setErrors({})
     setSaving(true)
     const url = editing ? `/api/admin/companies/${editing.id}` : '/api/admin/companies'
     const method = editing ? 'PUT' : 'POST'
@@ -116,12 +129,30 @@ export default function CompaniesPage() {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Nombre *</Label>
-              <Input value={form.name} onChange={e => { setForm(f => ({ ...f, name: e.target.value, slug: slugify(e.target.value) })) }} className="mt-1" />
+              <Label className={errors.name ? 'text-red-500' : ''}>Nombre *</Label>
+              <Input 
+                value={form.name} 
+                onChange={e => { 
+                  setForm(f => ({ ...f, name: e.target.value, slug: slugify(e.target.value) })) 
+                  if (e.target.value.trim()) setErrors(errs => { const { name, slug, ...rest } = errs; return rest })
+                }} 
+                aria-invalid={!!errors.name}
+                className="mt-1" 
+              />
+              {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
             </div>
             <div>
-              <Label>Slug</Label>
-              <Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} className="mt-1" />
+              <Label className={errors.slug ? 'text-red-500' : ''}>Slug *</Label>
+              <Input 
+                value={form.slug} 
+                onChange={e => {
+                  setForm(f => ({ ...f, slug: e.target.value }))
+                  if (e.target.value.trim()) setErrors(errs => { const { slug, ...rest } = errs; return rest })
+                }} 
+                aria-invalid={!!errors.slug}
+                className="mt-1" 
+              />
+              {errors.slug && <p className="text-xs text-red-500 mt-1">{errors.slug}</p>}
             </div>
             <div>
               <Label>Logo</Label>

@@ -60,10 +60,23 @@ function Confetti({ color }: { color: string }) {
   )
 }
 
+interface ScoredAnswer {
+  questionId: string
+  chosen: number
+  correct: boolean
+  earnedPoints: number
+  maxPoints: number
+  timeTakenMs: number
+  speedBonus: number
+  correctAnswer: number
+}
+
 export function ResultScreen({ trivia, result }: ResultScreenProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [displayScore, setDisplayScore] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
+  const scoredAnswers = result.scoredAnswers as ScoredAnswer[]
+  const incorrectAnswers = scoredAnswers.filter(a => !a.correct)
 
   const pct = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : 0
   const rating = RATINGS.find(r => pct >= r.min) ?? RATINGS[RATINGS.length - 1]
@@ -262,6 +275,39 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
               </div>
             </div>
           </div>
+
+          {/* ── INCORRECT ANSWERS SUMMARY ────────────────────────── */}
+          {incorrectAnswers.length > 0 && (
+            <div className="rounded-3xl overflow-hidden shadow-lg border border-red-100" style={{ animation: 'fadeUp 0.5s 0.1s ease both', opacity: 0 }}>
+              <div className="px-5 py-3.5 bg-red-50 flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-red-500" />
+                <h3 className="font-black text-red-700 text-sm">Resumen de errores ({incorrectAnswers.length})</h3>
+              </div>
+              <div className="bg-white p-4 space-y-4">
+                {incorrectAnswers.map((ans, i) => {
+                  const q = trivia.questions.find(x => x.id === ans.questionId)
+                  if (!q) return null
+                  return (
+                    <div key={ans.questionId} className="space-y-2 pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                      <p className="text-sm font-bold text-slate-800 leading-tight">
+                        {i + 1}. {q.question}
+                      </p>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        <div className="flex items-center gap-2 text-xs bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100">
+                          <span className="font-bold flex-shrink-0 w-4 h-4 rounded-full bg-red-200 flex items-center justify-center text-[10px]">Tu</span>
+                          <span className="flex-1">{ans.chosen === -1 ? 'Sin respuesta (tiempo agotado)' : q.options[ans.chosen]}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-100">
+                          <span className="font-bold flex-shrink-0 w-4 h-4 rounded-full bg-green-200 flex items-center justify-center text-[10px]">✓</span>
+                          <span className="flex-1"><strong>Correcta:</strong> {q.options[ans.correctAnswer]}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* ── LEADERBOARD ────────────────────────────────────────── */}
           {leaderboard.length > 0 && (
