@@ -1,15 +1,17 @@
 // Author: Angel Colman
 import { getServerSession } from 'next-auth'
-import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { Sidebar } from '@/components/admin/Sidebar'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user) redirect('/admin/login')
+
+  // No session → render bare (only /admin/login reaches here unauthenticated;
+  // middleware blocks everything else and redirects to /admin/login).
+  if (!session?.user) return <>{children}</>
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-[#f0f4ff]">
       <Sidebar user={{
         name: session.user.name ?? session.user.email ?? 'Admin',
         email: session.user.email ?? '',

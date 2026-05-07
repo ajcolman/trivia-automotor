@@ -2,6 +2,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
@@ -41,10 +42,10 @@ export function Sidebar({ user }: SidebarProps) {
         href={href}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150',
+          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
           active
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'text-slate-400 hover:text-white hover:bg-slate-700'
+            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+            : 'text-slate-400 hover:text-white hover:bg-slate-700/60'
         )}
       >
         <Icon className="w-4 h-4 flex-shrink-0" />
@@ -57,26 +58,27 @@ export function Sidebar({ user }: SidebarProps) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-slate-700/50">
-        <Link href="/admin/dashboard" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="text-white font-black text-sm leading-tight">Automotor</div>
-            <div className="text-slate-400 text-xs">Trivia Admin</div>
-          </div>
+      <div className="px-5 py-5 border-b border-white/5">
+        <Link href="/admin/dashboard" className="flex items-center justify-center">
+          <Image
+            src="/uploads/logoa.png"
+            alt="Automotor"
+            width={148}
+            height={48}
+            className="h-9 w-auto object-contain brightness-0 invert opacity-90 hover:opacity-100 transition-opacity"
+            unoptimized
+          />
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(item => <NavItem key={item.href} {...item} />)}
 
         {isSuperAdmin && (
           <>
-            <div className="px-4 py-2 mt-4">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Super Admin</span>
+            <div className="px-3 pt-5 pb-1.5">
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Super Admin</span>
             </div>
             {superAdminItems.map(item => <NavItem key={item.href} {...item} />)}
           </>
@@ -84,18 +86,23 @@ export function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* User */}
-      <div className="px-3 py-4 border-t border-slate-700/50">
-        <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-slate-700/30">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">{getInitials(user.name)}</span>
+      <div className="px-3 py-4 border-t border-white/5">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold shadow-inner"
+            style={{ background: 'linear-gradient(135deg, #003087, #0052cc)' }}
+          >
+            {getInitials(user.name)}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold truncate">{user.name}</p>
-            <p className="text-slate-400 text-xs truncate">{user.role === 'super_admin' ? 'Super Admin' : 'Admin'}</p>
+            <p className="text-slate-400 text-xs truncate">
+              {user.role === 'super_admin' ? 'Super Admin' : 'Administrador'}
+            </p>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/admin/login' })}
-            className="text-slate-400 hover:text-red-400 transition-colors p-1"
+            className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-400/10"
             title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />
@@ -108,14 +115,18 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-slate-800 flex-shrink-0 min-h-screen">
+      <aside
+        className="hidden lg:flex flex-col w-60 flex-shrink-0 min-h-screen"
+        style={{ background: 'linear-gradient(180deg, #0d1b3e 0%, #0a1628 100%)' }}
+      >
         <SidebarContent />
       </aside>
 
       {/* Mobile toggle button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-white shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg"
+        style={{ background: 'linear-gradient(135deg, #003087, #0052cc)' }}
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -123,11 +134,14 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-64 bg-slate-800 h-full">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside
+            className="relative w-60 h-full"
+            style={{ background: 'linear-gradient(180deg, #0d1b3e 0%, #0a1628 100%)' }}
+          >
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
             >
               <X className="w-5 h-5" />
             </button>

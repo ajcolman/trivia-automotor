@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: 'Automotor Trivia | Plataforma de Trivias',
   description: 'Plataforma de trivias interactivas para Automotor S.A. y Carmotor S.A.',
   authors: [{ name: 'Angel Colman' }],
+  icons: { icon: '/favicon.png', shortcut: '/favicon.png' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,9 +1,11 @@
 // Author: Angel Colman
 'use client'
 
-import { Play, Trophy, Clock, Zap, Gift } from 'lucide-react'
+import { useState } from 'react'
+import { Play, Trophy, Clock, Zap, Gift, ChevronRight, Star, ArrowLeft } from 'lucide-react'
 import type { TriviaData } from './GameShell'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface IntroScreenProps {
   trivia: TriviaData
@@ -13,85 +15,164 @@ interface IntroScreenProps {
 const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
 export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
+  const [hovered, setHovered] = useState(false)
   const logo = trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl
+  const totalPoints = trivia.questions.reduce((s, q) => s + q.points, 0)
+  const maxTime = Math.max(...trivia.questions.map(q => q.timeLimit))
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div
+      className="flex items-center justify-center min-h-screen p-4"
+      style={{ backgroundColor: `${trivia.primaryColor}08` }}
+    >
+      {/* Back to home */}
+      <Link
+        href="/"
+        className="fixed top-4 left-4 z-50 flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm border border-white/60 transition-all hover:-translate-x-0.5 hover:shadow-md"
+        style={{ color: trivia.primaryColor }}
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Volver al inicio
+      </Link>
+
       <div className="w-full max-w-lg animate-fade-in-up">
-        {/* Card */}
+
+        {/* ── HERO CARD ──────────────────────────────────────────── */}
         <div className="rounded-3xl shadow-2xl overflow-hidden">
-          {/* Header */}
+
+          {/* Header banner */}
           <div
-            className="p-8 text-white text-center relative overflow-hidden"
-            style={{ background: `linear-gradient(135deg, var(--trivia-primary), var(--trivia-secondary))` }}
+            className="relative px-8 pt-10 pb-8 text-white text-center overflow-hidden"
+            style={{ background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)` }}
           >
-            <div className="absolute inset-0 opacity-10"
-              style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 80%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }}
+            {/* Background pattern */}
+            <div
+              className="absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)',
+                backgroundSize: '24px 24px',
+              }}
             />
-            {logo ? (
-              <div className="flex justify-center mb-4">
-                <Image src={logo} alt="Logo" width={120} height={48} className="object-contain h-12 w-auto" unoptimized />
+            {/* Decorative glow top-right */}
+            <div
+              className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-20"
+              style={{ backgroundColor: trivia.accentColor }}
+            />
+
+            <div className="relative">
+              {/* Accent badge */}
+              <div
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold mb-5"
+                style={{ backgroundColor: `${trivia.accentColor}25`, color: trivia.accentColor, border: `1px solid ${trivia.accentColor}40` }}
+              >
+                <Star className="w-3 h-3 fill-current" />
+                {trivia.company?.name ?? 'Trivia'}
               </div>
-            ) : (
-              <Trophy className="w-16 h-16 mx-auto mb-4 opacity-90" style={{ color: 'var(--trivia-accent)' }} />
-            )}
-            <h1 className="text-3xl font-black mb-2 tracking-tight">{trivia.title}</h1>
-            {trivia.description && (
-              <p className="text-white/80 text-sm mt-2 max-w-sm mx-auto">{trivia.description}</p>
-            )}
+
+              {/* Logo / trophy */}
+              {logo ? (
+                <div className="flex justify-center mb-5">
+                  <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-6 py-3">
+                    <Image
+                      src={logo}
+                      alt="Logo"
+                      width={140}
+                      height={56}
+                      className="h-14 w-auto object-contain"
+                      unoptimized
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                  style={{ backgroundColor: `${trivia.accentColor}20`, border: `2px solid ${trivia.accentColor}40` }}
+                >
+                  <Trophy className="w-10 h-10" style={{ color: trivia.accentColor }} />
+                </div>
+              )}
+
+              <h1 className="text-3xl font-black tracking-tight leading-tight mb-2">
+                {trivia.title}
+              </h1>
+              {trivia.description && (
+                <p className="text-white/70 text-sm max-w-sm mx-auto leading-relaxed">
+                  {trivia.description}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Body */}
-          <div className="p-6 space-y-4" style={{ backgroundColor: 'var(--trivia-bg)' }}>
+          <div className="bg-white p-6 space-y-5">
+
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-3">
               {[
                 { icon: <Trophy className="w-5 h-5" />, label: 'Preguntas', value: trivia.questions.length.toString() },
-                { icon: <Clock className="w-5 h-5" />, label: 'Máx. seg.', value: `${Math.max(...trivia.questions.map(q => q.timeLimit))}s` },
-                { icon: <Zap className="w-5 h-5" />, label: 'Puntos', value: `${trivia.questions.reduce((s, q) => s + q.points, 0)}` },
+                { icon: <Clock className="w-5 h-5" />, label: 'Seg. / preg.', value: `${maxTime}s` },
+                { icon: <Zap className="w-5 h-5" />, label: 'Pts. totales', value: totalPoints.toLocaleString() },
               ].map((stat, i) => (
-                <div key={i}
-                  className="rounded-2xl p-3 text-center"
-                  style={{ backgroundColor: `${trivia.primaryColor}15`, color: trivia.primaryColor }}
+                <div
+                  key={i}
+                  className="rounded-2xl p-3.5 text-center border"
+                  style={{
+                    backgroundColor: `${trivia.primaryColor}08`,
+                    borderColor: `${trivia.primaryColor}20`,
+                    color: trivia.primaryColor,
+                  }}
                 >
-                  <div className="flex justify-center mb-1">{stat.icon}</div>
-                  <div className="font-bold text-lg">{stat.value}</div>
-                  <div className="text-xs opacity-70">{stat.label}</div>
+                  <div className="flex justify-center mb-1.5 opacity-80">{stat.icon}</div>
+                  <div className="font-black text-xl leading-none mb-1">{stat.value}</div>
+                  <div className="text-xs opacity-60 font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Rules */}
-            <div className="text-sm space-y-2" style={{ color: trivia.textColor }}>
-              <p className="flex items-start gap-2">
-                <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: trivia.primaryColor }}>✓</span>
-                Responde correctamente para ganar puntos.
-              </p>
-              <p className="flex items-start gap-2">
-                <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: trivia.accentColor }}>⚡</span>
-                <strong>Bono de velocidad:</strong> las respuestas más rápidas suman más puntos.
-              </p>
-              <p className="flex items-start gap-2">
-                <span className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: trivia.secondaryColor }}>i</span>
-                Registra tus datos al finalizar para guardar tu puntaje.
-              </p>
+            <div
+              className="rounded-2xl p-4 space-y-2.5"
+              style={{ backgroundColor: `${trivia.primaryColor}06`, border: `1px solid ${trivia.primaryColor}15` }}
+            >
+              {[
+                { icon: '✓', bg: trivia.primaryColor, text: 'Respondé correctamente para ganar puntos.' },
+                { icon: '⚡', bg: trivia.accentColor, text: <><strong>Bono de velocidad:</strong> las respuestas más rápidas suman más puntos.</> },
+                { icon: 'i', bg: trivia.secondaryColor, text: 'Registrá tus datos al finalizar para guardar tu puntaje.' },
+              ].map((rule, i) => (
+                <p key={i} className="flex items-start gap-2.5 text-sm" style={{ color: trivia.textColor }}>
+                  <span
+                    className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black"
+                    style={{ backgroundColor: rule.bg }}
+                  >
+                    {rule.icon}
+                  </span>
+                  <span className="opacity-80">{rule.text}</span>
+                </p>
+              ))}
             </div>
 
             {/* Prizes */}
             {trivia.prizes.length > 0 && (
-              <div className="rounded-2xl p-4 border" style={{ borderColor: `${trivia.accentColor}60`, backgroundColor: `${trivia.accentColor}10` }}>
+              <div
+                className="rounded-2xl p-4 border"
+                style={{ borderColor: `${trivia.accentColor}50`, backgroundColor: `${trivia.accentColor}08` }}
+              >
                 <div className="flex items-center gap-2 mb-3">
                   <Gift className="w-4 h-4" style={{ color: trivia.accentColor }} />
-                  <span className="font-bold text-sm" style={{ color: trivia.primaryColor }}>Premios disponibles</span>
+                  <span className="font-black text-sm" style={{ color: trivia.primaryColor }}>
+                    Premios disponibles
+                  </span>
                 </div>
                 <div className="space-y-2">
                   {trivia.prizes.slice(0, 3).map(prize => (
-                    <div key={prize.id} className="flex items-center gap-2 text-sm">
-                      <span className="text-lg">{MEDAL[prize.position] ?? '🏅'}</span>
+                    <div key={prize.id} className="flex items-center gap-2.5 text-sm">
+                      <span className="text-xl">{MEDAL[prize.position] ?? '🏅'}</span>
                       <div>
-                        <span className="font-semibold" style={{ color: trivia.textColor }}>{prize.name}</span>
+                        <span className="font-bold" style={{ color: trivia.textColor }}>{prize.name}</span>
                         {prize.description && (
-                          <span className="ml-2 opacity-60" style={{ color: trivia.textColor }}>{prize.description}</span>
+                          <span className="ml-1.5 text-xs opacity-50" style={{ color: trivia.textColor }}>
+                            {prize.description}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -100,18 +181,27 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
               </div>
             )}
 
-            {/* Start button */}
+            {/* CTA */}
             <button
               onClick={onStart}
-              className="w-full py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-3 transition-all duration-200 hover:opacity-90 active:scale-[0.98] shadow-lg"
-              style={{ background: `linear-gradient(135deg, var(--trivia-primary), var(--trivia-secondary))` }}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              className="w-full py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})`,
+                boxShadow: hovered
+                  ? `0 12px 32px ${trivia.primaryColor}50`
+                  : `0 6px 20px ${trivia.primaryColor}35`,
+                transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+              }}
             >
               <Play className="w-5 h-5 fill-current" />
               ¡Comenzar Trivia!
+              <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${hovered ? 'translate-x-1' : ''}`} />
             </button>
 
             {trivia.company && (
-              <p className="text-center text-xs opacity-40" style={{ color: trivia.textColor }}>
+              <p className="text-center text-xs opacity-30" style={{ color: trivia.textColor }}>
                 {trivia.company.name}
                 {trivia.brand ? ` · ${trivia.brand.name}` : ''}
               </p>
