@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent } from '@/components/ui/card'
 import { Save, ArrowLeft, Loader2, ExternalLink, Plus, Trash2, GripVertical, X } from 'lucide-react'
 import { ColorPicker } from './ColorPicker'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { UploadDropzone } from './UploadDropzone'
 import { QuestionImporter } from './QuestionImporter'
 import { MarkdownEditor } from './MarkdownEditor'
@@ -217,10 +218,17 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                 </div>
                 <div>
                   <Label>Empresa</Label>
-                  <select {...register('companyId')} className="w-full mt-1 px-3 py-2 border rounded-xl text-sm bg-white">
-                    <option value="">Sin empresa</option>
-                    {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  <div className="mt-1">
+                    <SearchableSelect
+                      options={[
+                        { value: '', label: 'Sin empresa' },
+                        ...companies.map(c => ({ value: c.id, label: c.name })),
+                      ]}
+                      value={watch('companyId') ?? ''}
+                      onChange={val => setValue('companyId', val)}
+                      placeholder="Sin empresa"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label>Marcas</Label>

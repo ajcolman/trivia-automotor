@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 
 interface Brand {
   id: string; name: string; companyId: string; logoUrl: string | null
@@ -124,9 +125,14 @@ export default function BrandsPage() {
           <div className="space-y-3">
             <div>
               <Label>Empresa *</Label>
-              <select value={form.companyId} onChange={e => setForm(f => ({ ...f, companyId: e.target.value }))} className="w-full mt-1 px-3 py-2 border rounded-xl text-sm bg-white">
-                {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <div className="mt-1">
+                <SearchableSelect
+                  options={companies.map(c => ({ value: c.id, label: c.name }))}
+                  value={form.companyId}
+                  onChange={val => setForm(f => ({ ...f, companyId: val }))}
+                  placeholder="Seleccionar empresa..."
+                />
+              </div>
             </div>
             <div><Label>Nombre *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="mt-1" /></div>
             <div><Label>Logo</Label><div className="mt-1"><UploadDropzone value={form.logoUrl} onUpload={url => setForm(f => ({ ...f, logoUrl: url }))} /></div></div>

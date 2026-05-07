@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatDate } from '@/lib/utils'
 
@@ -129,16 +130,29 @@ export default function UsersPage() {
             <div><Label>{editing ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña *'}</Label>
               <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} className="mt-1" /></div>
             <div><Label>Rol</Label>
-              <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} className="w-full mt-1 px-3 py-2 border rounded-xl text-sm bg-white">
-                <option value="admin">Admin</option>
-                <option value="super_admin">Super Admin</option>
-              </select>
+              <div className="mt-1">
+                <SearchableSelect
+                  options={[
+                    { value: 'admin', label: 'Admin' },
+                    { value: 'super_admin', label: 'Super Admin' },
+                  ]}
+                  value={form.role}
+                  onChange={val => setForm(f => ({ ...f, role: val }))}
+                />
+              </div>
             </div>
             <div><Label>Empresa</Label>
-              <select value={form.companyId} onChange={e => setForm(f => ({ ...f, companyId: e.target.value }))} className="w-full mt-1 px-3 py-2 border rounded-xl text-sm bg-white">
-                <option value="">Sin empresa (acceso total)</option>
-                {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <div className="mt-1">
+                <SearchableSelect
+                  options={[
+                    { value: '', label: 'Sin empresa (acceso total)' },
+                    ...companies.map(c => ({ value: c.id, label: c.name })),
+                  ]}
+                  value={form.companyId}
+                  onChange={val => setForm(f => ({ ...f, companyId: val }))}
+                  placeholder="Sin empresa (acceso total)"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} id="active" />

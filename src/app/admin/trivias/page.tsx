@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatDateShort } from '@/lib/utils'
 import { TriviaToggle } from '@/components/admin/TriviaToggle'
+import { TriviaResetButton } from '@/components/admin/TriviaResetButton'
 
 export default async function TriviasPage() {
   const session = await getServerSession(authOptions)
@@ -103,20 +104,27 @@ export default async function TriviasPage() {
 
                     <div className="flex gap-2 flex-shrink-0">
                       <Link href={`/play/${trivia.slug}`} target="_blank">
-                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-blue-600">
+                        <Button variant="ghost" size="sm" title="Ver trivia" className="text-slate-500 hover:text-blue-600">
                           <Eye className="w-4 h-4" />
                         </Button>
                       </Link>
                       <Link href={`/admin/trivias/${trivia.id}/leads`}>
-                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-600">
+                        <Button variant="ghost" size="sm" title="Ver métricas" className="text-slate-500 hover:text-green-600">
                           <BarChart3 className="w-4 h-4" />
                         </Button>
                       </Link>
                       <Link href={`/admin/trivias/${trivia.id}`}>
-                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-blue-600">
+                        <Button variant="ghost" size="sm" title="Editar" className="text-slate-500 hover:text-blue-600">
                           <Pencil className="w-4 h-4" />
                         </Button>
                       </Link>
+                      {!trivia.isActive && (
+                        <TriviaResetButton
+                          triviaId={trivia.id}
+                          triviaTitle={trivia.title}
+                          leadsCount={trivia._count.leads}
+                        />
+                      )}
                     </div>
                   </div>
                 </CardContent>
