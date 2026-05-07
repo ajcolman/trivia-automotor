@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  super_admin
+  admin
+}
+
+enum FieldType {
+  text
+  email
+  phone
+  select
+  number
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  logoUrl     String?
+  description String?
+  website     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brands  Brand[]
+  trivias Trivia[]
+  users   User[]
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  companyId String
+  name      String
+  logoUrl   String?
+  models    Json     @default("[]")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  trivias Trivia[]
+
+  @@unique([companyId, name])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(admin)
+  companyId    String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company         Company?       @relation(fields: [companyId], references: [id])
+  trivias         Trivia[]
+  assets          Asset[]
+  ownedTemplates  TriviaTemplate[] @relation("TemplateOwner")
+  sharedTemplates TemplateShare[]  @relation("SharedWith")
+}
+
+model Trivia {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  slug            String    @unique
+  logoUrl         String?
+  companyId       String?
+  brandId         String?
+  primaryColor    String    @default("#003087")
+  secondaryColor  String    @default("#002060")
+  accentColor     String    @default("#FFD700")
+  backgroundColor String    @default("#F8FAFC")
+  textColor       String    @default("#1A1A2E")
+  isActive            Boolean   @default(true)
+  isPublic            Boolean   @default(true)
+  startDate           DateTime?
+  endDate             DateTime?
+  maxPlaysPerUser     Int       @default(1)
+  gameInstructions    String?
+  termsAndConditions  String?
+  createdBy           String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  creator      User          @relation(fields: [createdBy], references: [id])
+  company      Company?      @relation(fields: [companyId], references: [id])
+  brand        Brand?        @relation(fields: [brandId], references: [id])
+  questions    Question[]
+  formFields   FormField[]
+  leads        Lead[]
+  gameSessions GameSession[]
+  prizes       Prize[]
+  flyers       TriviaFlyer[]
+  pageViews    PageView[]
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  triviaId      String
+  question      String
+  options       Json
+  correctAnswer Int
+  points        Int      @default(100)
+  timeLimit     Int      @default(30)
+  orderIndex    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  trivia Trivia @relation(fields: [triviaId], references: [id], onDelete: Cascade)
+
+  @@index([triviaId, orderIndex])
+}
+
+model FormField {
+  id          String    @id @default(cuid())
+  triviaId    String
+  fieldName   String
+  fieldLabel  String
+  fieldType   FieldType @default(text)
+  isRequired  Boolean   @default(true)
+  options     Json?
+  placeholder String?
+  orderIndex  Int
+
+  trivia Trivia @relation(fields: [triviaId], references: [id], onDelete: Cascade)
+
+  @@index([triviaId])
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  triviaId    String
+  sessionId   String
+  formData    Json
+  score       Int
+  maxScore    Int
+  answers     Json
+  ipAddress   String?
+  userAgent   String?
+  completedAt DateTime @default(now())
+
+  trivia Trivia @relation(fields: [triviaId], references: [id])
+
+  @@index([triviaId, completedAt])
+}
+
+model GameSession {
+  id                String    @id @default(cuid())
+  triviaId          String
+  sessionIdentifier String
+  playCount         Int       @default(0)
+  hasCompleted      Boolean   @default(false)
+  startedAt         DateTime  @default(now())
+  completedAt       DateTime?
+
+  trivia Trivia @relation(fields: [triviaId], references: [id])
+
+  @@unique([triviaId, sessionIdentifier])
+  @@index([sessionIdentifier])
+}
+
+model Asset {
+  id         String   @id @default(cuid())
+  name       String
+  url        String
+  fileType   String
+  sizeBytes  Int
+  uploadedBy String
+  companyId  String?
+  createdAt  DateTime @default(now())
+
+  uploader User @relation(fields: [uploadedBy], references: [id])
+}
+
+model Prize {
+  id          String   @id @default(cuid())
+  triviaId    String
+  name        String
+  description String?
+  imageUrl    String?
+  position    Int      // 1=primero, 2=segundo, etc.
+  createdAt   DateTime @default(now())
+
+  trivia Trivia @relation(fields: [triviaId], references: [id], onDelete: Cascade)
+
+  @@index([triviaId])
+}
+
+model TriviaFlyer {
+  id        String   @id @default(cuid())
+  triviaId  String
+  imageUrl  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  trivia Trivia @relation(fields: [triviaId], references: [id], onDelete: Cascade)
+
+  @@index([triviaId])
+}
+
+// Analytics - tracks page visits and session events
+model PageView {
+  id           String   @id @default(cuid())
+  triviaId     String?
+  path         String
+  sessionId    String?
+  ipAddress    String?
+  userAgent    String?
+  referrer     String?
+  createdAt    DateTime @default(now())
+
+  trivia Trivia? @relation(fields: [triviaId], references: [id])
+
+  @@index([triviaId, createdAt])
+  @@index([path, createdAt])
+}
+
+model TriviaTemplate {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  logoUrl         String?
+  primaryColor    String   @default("#003087")
+  secondaryColor  String   @default("#002060")
+  accentColor     String   @default("#FFD700")
+  backgroundColor String   @default("#F8FAFC")
+  textColor       String   @default("#1A1A2E")
+  questions       Json
+  formFields      Json
+  ownerId         String
+  isPublic        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner  User            @relation("TemplateOwner", fields: [ownerId], references: [id])
+  shares TemplateShare[]
+}
+
+model TemplateShare {
+  id           String   @id @default(cuid())
+  templateId   String
+  sharedWithId String
+  createdAt    DateTime @default(now())
+
+  template   TriviaTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  sharedWith User           @relation("SharedWith", fields: [sharedWithId], references: [id])
+
+  @@unique([templateId, sharedWithId])
+}
+
+// Global platform settings (singleton pattern - only one record)
+model PlatformSettings {
+  id              String   @id @default("singleton")
+  platformTerms   String?  // Terms of use for admin users
+  privacyPolicy   String?
+  updatedAt       DateTime @updatedAt
+}
