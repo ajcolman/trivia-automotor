@@ -61,7 +61,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       description: trivia?.description ?? '',
       slug: trivia?.slug ?? '',
       companyId: trivia?.companyId ?? '',
-      brandId: trivia?.brandId ?? '',
+      brandIds: trivia?.brands?.map((b: { id: string }) => b.id) ?? [],
       isActive: trivia?.isActive ?? true,
       isPublic: trivia?.isPublic ?? true,
       maxPlaysPerUser: trivia?.maxPlaysPerUser ?? 1,
@@ -95,7 +95,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
         maxPlaysPerUser: Number(data.maxPlaysPerUser),
         companyId: data.companyId || null,
-        brandId: data.brandId || null,
+        brandIds: data.brandIds ?? [],
       }
 
       const url = mode === 'create' ? '/api/admin/trivias' : `/api/admin/trivias/${savedId}`
@@ -223,11 +223,36 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   </select>
                 </div>
                 <div>
-                  <Label>Marca</Label>
-                  <select {...register('brandId')} className="w-full mt-1 px-3 py-2 border rounded-xl text-sm bg-white">
-                    <option value="">Sin marca</option>
-                    {filteredBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
+                  <Label>Marcas</Label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {filteredBrands.length === 0 ? (
+                      <p className="text-xs text-slate-400">Sin marcas disponibles para esta empresa.</p>
+                    ) : (
+                      filteredBrands.map(b => {
+                        const selected = (watch('brandIds') ?? []).includes(b.id)
+                        return (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => {
+                              const current: string[] = watch('brandIds') ?? []
+                              setValue(
+                                'brandIds',
+                                selected ? current.filter((id: string) => id !== b.id) : [...current, b.id],
+                              )
+                            }}
+                            className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+                              selected
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400'
+                            }`}
+                          >
+                            {b.name}
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label>Fecha inicio</Label>

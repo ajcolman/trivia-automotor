@@ -66,7 +66,7 @@ async function main() {
 
   // ── 3. Super Admin ────────────────────────────────────────────────────────
 
-  const superAdminEmail = 'admin@automotor.com.py'
+  const superAdminEmail = 'angelcolman2@hotmail.com'
   const plainPassword = 'Admin1234!'
 
   const superAdmin = await prisma.user.upsert({
@@ -98,7 +98,7 @@ async function main() {
       description: '¡Ponete a prueba con todo lo que sabés sobre el Mundial de Fútbol 2026! Respondé rápido y ganá increíbles premios de Automotor.',
       logoUrl: AUTOMOTOR_LOGO,
       companyId: automotor.id,
-      brandId: hyundaiBrand?.id ?? null,
+      brands: { connect: hyundaiBrand ? [{ id: hyundaiBrand.id }] : [] },
       primaryColor: '#003087',
       secondaryColor: '#002060',
       accentColor: '#FFD700',
@@ -240,10 +240,10 @@ async function main() {
 
   if (existingFields === 0) {
     const formFields = [
-      { fieldName: 'nombre', fieldLabel: 'Nombre completo', fieldType: 'text', isRequired: true, placeholder: 'Tu nombre y apellido', orderIndex: 0 },
-      { fieldName: 'email', fieldLabel: 'Correo electrónico', fieldType: 'email', isRequired: true, placeholder: 'correo@ejemplo.com', orderIndex: 1 },
-      { fieldName: 'telefono', fieldLabel: 'Teléfono / Celular', fieldType: 'phone', isRequired: true, placeholder: '0981 000 000', orderIndex: 2 },
-      { fieldName: 'ciudad', fieldLabel: 'Ciudad', fieldType: 'text', isRequired: false, placeholder: 'Asunción', orderIndex: 3 },
+      { fieldName: 'nombre', fieldLabel: 'Nombre completo', fieldType: 'text' as const, isRequired: true, placeholder: 'Tu nombre y apellido', orderIndex: 0 },
+      { fieldName: 'email', fieldLabel: 'Correo electrónico', fieldType: 'email' as const, isRequired: true, placeholder: 'correo@ejemplo.com', orderIndex: 1 },
+      { fieldName: 'telefono', fieldLabel: 'Teléfono / Celular', fieldType: 'phone' as const, isRequired: true, placeholder: '0981 000 000', orderIndex: 2 },
+      { fieldName: 'ciudad', fieldLabel: 'Ciudad', fieldType: 'text' as const, isRequired: false, placeholder: 'Asunción', orderIndex: 3 },
     ]
 
     for (const field of formFields) {
@@ -277,7 +277,7 @@ async function main() {
 
   console.log('\n✅ Seed completado exitosamente!\n')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('  Super admin  : admin@automotor.com.py')
+  console.log('  Super admin  : angelcolman2@hotmail.com')
   console.log('  Contraseña   : Admin1234!')
   console.log('  URL trivia   : /play/mundial-2026-automotor')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')

@@ -35,7 +35,7 @@ export const triviaSchema = z
 
     companyId: z.string().cuid('Invalid company ID').optional().nullable(),
 
-    brandId: z.string().cuid('Invalid brand ID').optional().nullable(),
+    brandIds: z.array(z.string().cuid()).default([]),
 
     // Brand colors
     primaryColor: hexColor.default('#003087'),

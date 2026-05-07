@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       prizes: { orderBy: { position: 'asc' } },
       flyers: true,
       company: true,
-      brand: true,
+      brands: { select: { id: true, name: true, logoUrl: true } },
       _count: { select: { leads: true, gameSessions: true } },
     },
   })
@@ -56,7 +56,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (existing) return NextResponse.json({ error: 'El slug ya está en uso' }, { status: 409 })
   }
 
-  const updated = await prisma.trivia.update({ where: { id: params.id }, data: parsed.data })
+  const { brandIds, ...rest } = parsed.data
+  const updated = await prisma.trivia.update({
+    where: { id: params.id },
+    data: {
+      ...rest,
+      brands: { set: (brandIds ?? []).map((id: string) => ({ id })) },
+    },
+  })
   return NextResponse.json(updated)
 }
 

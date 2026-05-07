@@ -50,7 +50,7 @@ export type TriviaWithRelations = Trivia & {
   questions: Question[]
   formFields: FormField[]
   company: Company | null
-  brand: Brand | null
+  brands: Brand[]
   creator: Pick<User, 'id' | 'name' | 'email'>
   _count?: {
     leads: number
@@ -65,7 +65,7 @@ export type TriviaWithCounts = Trivia & {
     questions: number
   }
   company: Pick<Company, 'id' | 'name' | 'slug'> | null
-  brand: Pick<Brand, 'id' | 'name'> | null
+  brands: Pick<Brand, 'id' | 'name'>[]
 }
 
 // ─── Lead with trivia ─────────────────────────────────────────────────────────

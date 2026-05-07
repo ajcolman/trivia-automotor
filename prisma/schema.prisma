@@ -78,7 +78,6 @@ model Trivia {
   slug            String    @unique
   logoUrl         String?
   companyId       String?
-  brandId         String?
   primaryColor    String    @default("#003087")
   secondaryColor  String    @default("#002060")
   accentColor     String    @default("#FFD700")
@@ -97,7 +96,7 @@ model Trivia {
 
   creator      User          @relation(fields: [createdBy], references: [id])
   company      Company?      @relation(fields: [companyId], references: [id])
-  brand        Brand?        @relation(fields: [brandId], references: [id])
+  brands       Brand[]
   questions    Question[]
   formFields   FormField[]
   leads        Lead[]

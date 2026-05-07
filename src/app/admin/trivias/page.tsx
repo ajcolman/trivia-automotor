@@ -21,7 +21,7 @@ export default async function TriviasPage() {
     orderBy: { createdAt: 'desc' },
     include: {
       company: { select: { name: true } },
-      brand: { select: { name: true } },
+      brands: { select: { name: true }, take: 1 },
       creator: { select: { name: true } },
       _count: { select: { leads: true, questions: true } },
     },
@@ -85,7 +85,7 @@ export default async function TriviasPage() {
                           <p className="text-xs text-slate-500 mt-1">
                             /{trivia.slug}
                             {trivia.company && ` · ${trivia.company.name}`}
-                            {trivia.brand && ` / ${trivia.brand.name}`}
+                            {trivia.brands[0] && ` / ${trivia.brands[0].name}`}
                           </p>
                         </div>
                         <TriviaToggle id={trivia.id} isActive={trivia.isActive} />

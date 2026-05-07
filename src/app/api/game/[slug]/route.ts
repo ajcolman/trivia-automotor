@@ -34,7 +34,7 @@ export async function GET(
       formFields: { orderBy: { orderIndex: 'asc' } },
       prizes: { orderBy: { position: 'asc' } },
       company: { select: { id: true, name: true, logoUrl: true } },
-      brand: { select: { id: true, name: true, logoUrl: true, models: true } },
+      brands: { select: { id: true, name: true, logoUrl: true, models: true }, take: 1 },
     },
   })
 

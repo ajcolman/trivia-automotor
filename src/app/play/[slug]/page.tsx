@@ -39,7 +39,7 @@ export default async function PlayPage({ params }: PageProps) {
       formFields: { orderBy: { orderIndex: 'asc' } },
       prizes: { orderBy: { position: 'asc' } },
       company: { select: { id: true, name: true, logoUrl: true } },
-      brand: { select: { id: true, name: true, logoUrl: true, models: true } },
+      brands: { select: { id: true, name: true, logoUrl: true, models: true }, take: 1 },
     },
   })
 
@@ -93,11 +93,11 @@ export default async function PlayPage({ params }: PageProps) {
       name: trivia.company.name,
       logoUrl: trivia.company.logoUrl,
     } : null,
-    brand: trivia.brand ? {
-      id: trivia.brand.id,
-      name: trivia.brand.name,
-      logoUrl: trivia.brand.logoUrl,
-      models: trivia.brand.models as string[],
+    brand: trivia.brands[0] ? {
+      id: trivia.brands[0].id,
+      name: trivia.brands[0].name,
+      logoUrl: trivia.brands[0].logoUrl,
+      models: trivia.brands[0].models as string[],
     } : null,
   }
 

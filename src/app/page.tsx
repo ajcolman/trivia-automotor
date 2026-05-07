@@ -27,7 +27,7 @@ async function getLandingData() {
       orderBy: { createdAt: 'desc' },
       include: {
         company: { select: { name: true, logoUrl: true } },
-        brand: { select: { name: true, logoUrl: true } },
+        brands: { select: { name: true, logoUrl: true }, take: 1 },
         prizes: { orderBy: { position: 'asc' }, take: 3 },
         flyers: { where: { isActive: true }, take: 1 },
         _count: { select: { leads: true } },
@@ -102,7 +102,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {activeTrivias.map(trivia => {
                 const flyer = trivia.flyers[0]
-                const logo = trivia.company?.logoUrl ?? trivia.brand?.logoUrl
+                const logo = trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl
 
                 return (
                   <Link
@@ -143,9 +143,9 @@ export default async function HomePage() {
                             {trivia.company.name}
                           </span>
                         )}
-                        {trivia.brand && (
+                        {trivia.brands[0] && (
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                            {trivia.brand.name}
+                            {trivia.brands[0].name}
                           </span>
                         )}
                       </div>
