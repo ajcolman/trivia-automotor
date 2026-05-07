@@ -9,7 +9,7 @@ export default function UnauthorizedPage() {
       <div className="max-w-md w-full text-center space-y-6">
         <div className="relative aspect-square w-full rounded-3xl overflow-hidden shadow-2xl border-8 border-slate-800">
           <Image 
-            src="/images/403-rally.png" 
+            src="/images/403-restricted.png" 
             alt="Ruta Cerrada" 
             fill 
             className="object-cover opacity-80"
