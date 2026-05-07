@@ -62,7 +62,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     textColor: trivia?.textColor ?? '#1A1A2E',
   })
 
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm({
+  const { watch, setValue, reset, setError, formState: { errors } } = useForm({
     defaultValues: {
       title: trivia?.title ?? '',
       description: trivia?.description ?? '',
@@ -122,7 +122,25 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
 
   const filteredBrands = brands.filter(b => !companyId || b.companyId === companyId)
 
-  const onSave = handleSubmit(async (data) => {
+  const onSave = async () => {
+    const data = {
+      title: watch('title'),
+      description: watch('description'),
+      slug: watch('slug'),
+      companyId: watch('companyId'),
+      brandIds: watch('brandIds'),
+      isActive: watch('isActive'),
+      isPublic: watch('isPublic'),
+      maxPlaysPerUser: watch('maxPlaysPerUser'),
+      startDate: watch('startDate'),
+      endDate: watch('endDate'),
+      gameInstructions: watch('gameInstructions'),
+      termsAndConditions: watch('termsAndConditions'),
+    }
+
+    if (!data.title?.trim()) { setError('title', { message: 'El título es obligatorio' }); setTab('general'); return }
+    if (!data.slug?.trim()) { setError('slug', { message: 'El slug es obligatorio' }); setTab('general'); return }
+
     setSaving(true)
     try {
       const body = {
@@ -155,7 +173,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     } finally {
       setSaving(false)
     }
-  })
+  }
 
   const saveQuestion = async (qData: QuestionForm) => {
     if (!savedId) { alert('Guarda la trivia primero'); return }
@@ -322,28 +340,33 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label className={errors.title ? 'text-red-500' : ''}>Título *</Label>
-                  <Input 
-                    {...register('title', { required: 'El título es obligatorio' })} 
+                  <Input
+                    value={watch('title') ?? ''}
+                    onChange={e => setValue('title', e.target.value, { shouldValidate: true })}
                     aria-invalid={!!errors.title}
-                    placeholder="Copa Mundial 2026" 
-                    className="mt-1" 
+                    placeholder="Copa Mundial 2026"
+                    className="mt-1"
                   />
                   {errors.title && <p className="text-xs text-red-500 mt-1">{String(errors.title.message)}</p>}
                 </div>
                 <div className="col-span-2">
                   <Label>Descripción</Label>
-                  <Textarea {...register('description')} placeholder="Descripción opcional..." rows={2} className="mt-1" />
+                  <Textarea
+                    value={watch('description') ?? ''}
+                    onChange={e => setValue('description', e.target.value)}
+                    placeholder="Descripción opcional..."
+                    rows={2}
+                    className="mt-1"
+                  />
                 </div>
                 <div>
                   <Label className={errors.slug ? 'text-red-500' : ''}>Slug (URL) *</Label>
                   <div className="flex gap-2 mt-1">
-                    <Input 
-                      {...register('slug', { 
-                        required: 'El slug es obligatorio',
-                        pattern: { value: /^[a-z0-9-]+$/, message: 'Solo letras minúsculas, números y guiones' }
-                      })} 
+                    <Input
+                      value={watch('slug') ?? ''}
+                      onChange={e => setValue('slug', e.target.value, { shouldValidate: true })}
                       aria-invalid={!!errors.slug}
-                      placeholder="copa-mundial-2026" 
+                      placeholder="copa-mundial-2026"
                     />
                     <Button type="button" variant="outline" size="sm" onClick={() => setValue('slug', slugify(watch('title')))}>↻</Button>
                   </div>
@@ -352,17 +375,14 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                 </div>
                 <div>
                   <Label className={errors.maxPlaysPerUser ? 'text-red-500' : ''}>Máx. participaciones</Label>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    max={100} 
-                    {...register('maxPlaysPerUser', { 
-                      required: 'Campo requerido',
-                      min: { value: 1, message: 'Mínimo 1' },
-                      max: { value: 100, message: 'Máximo 100' }
-                    })} 
+                  <Input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={watch('maxPlaysPerUser') ?? 1}
+                    onChange={e => setValue('maxPlaysPerUser', Number(e.target.value), { shouldValidate: true })}
                     aria-invalid={!!errors.maxPlaysPerUser}
-                    className="mt-1" 
+                    className="mt-1"
                   />
                   {errors.maxPlaysPerUser ? (
                     <p className="text-xs text-red-500 mt-1">{String(errors.maxPlaysPerUser.message)}</p>
@@ -417,44 +437,47 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   </div>
                 </div>
                 <div>
-                  <Label className={errors.startDate ? 'text-red-500' : ''}>Fecha inicio</Label>
-                  <Input 
-                    type="datetime-local" 
-                    {...register('startDate')} 
-                    aria-invalid={!!errors.startDate}
-                    className="mt-1" 
+                  <Label>Fecha inicio</Label>
+                  <Input
+                    type="datetime-local"
+                    value={watch('startDate') ?? ''}
+                    onChange={e => setValue('startDate', e.target.value)}
+                    className="mt-1"
                   />
-                  {errors.startDate && <p className="text-xs text-red-500 mt-1">{String(errors.startDate.message)}</p>}
                 </div>
                 <div>
-                  <Label className={errors.endDate ? 'text-red-500' : ''}>Fecha fin</Label>
-                  <Input 
-                    type="datetime-local" 
-                    {...register('endDate')} 
-                    aria-invalid={!!errors.endDate}
-                    className="mt-1" 
+                  <Label>Fecha fin</Label>
+                  <Input
+                    type="datetime-local"
+                    value={watch('endDate') ?? ''}
+                    onChange={e => setValue('endDate', e.target.value)}
+                    className="mt-1"
                   />
-                  {errors.endDate && <p className="text-xs text-red-500 mt-1">{String(errors.endDate.message)}</p>}
                 </div>
                 <div className="col-span-2">
-                  <Label className={errors.gameInstructions ? 'text-red-500' : ''}>Instrucciones de juego</Label>
-                  <Textarea 
-                    {...register('gameInstructions')} 
-                    aria-invalid={!!errors.gameInstructions}
-                    placeholder="Instrucciones personalizadas para los participantes..." 
-                    rows={3} 
-                    className="mt-1" 
+                  <Label>Instrucciones de juego</Label>
+                  <Textarea
+                    value={watch('gameInstructions') ?? ''}
+                    onChange={e => setValue('gameInstructions', e.target.value)}
+                    placeholder="Instrucciones personalizadas para los participantes..."
+                    rows={3}
+                    className="mt-1"
                   />
-                  {errors.gameInstructions && <p className="text-xs text-red-500 mt-1">{String(errors.gameInstructions.message)}</p>}
                 </div>
               </div>
               <div className="flex gap-6">
                 <div className="flex items-center gap-2">
-                  <Switch {...register('isActive')} defaultChecked={trivia?.isActive ?? true} onCheckedChange={v => setValue('isActive', v)} />
+                  <Switch
+                    checked={watch('isActive') ?? true}
+                    onCheckedChange={v => setValue('isActive', v)}
+                  />
                   <Label>Trivia activa</Label>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch {...register('isPublic')} defaultChecked={trivia?.isPublic ?? true} onCheckedChange={v => setValue('isPublic', v)} />
+                  <Switch
+                    checked={watch('isPublic') ?? true}
+                    onCheckedChange={v => setValue('isPublic', v)}
+                  />
                   <Label>Visible en landing page</Label>
                 </div>
               </div>
