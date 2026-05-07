@@ -51,7 +51,7 @@ const config: Config = {
         brand: {
           primary: '#003087',
           secondary: '#002060',
-          accent: '#FFD700',
+          accent: '#F97316',
           bg: '#F8FAFC',
           text: '#1A1A2E',
         },
@@ -139,7 +139,7 @@ const config: Config = {
       },
       backgroundImage: {
         'gradient-brand': 'linear-gradient(135deg, #003087 0%, #002060 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
         'shimmer-gradient':
           'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
       },
@@ -150,7 +150,7 @@ const config: Config = {
       },
       boxShadow: {
         'brand': '0 4px 14px 0 rgba(0, 48, 135, 0.3)',
-        'accent': '0 4px 14px 0 rgba(255, 215, 0, 0.4)',
+        'accent': '0 4px 14px 0 rgba(249, 115, 22, 0.4)',
         'glow': '0 0 20px rgba(0, 48, 135, 0.5)',
         'card': '0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
       },

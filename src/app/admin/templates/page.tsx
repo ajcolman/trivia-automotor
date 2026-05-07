@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Template {
   id: string; title: string; description: string | null
@@ -25,6 +27,7 @@ export default function TemplatesPage() {
   const [sharingTemplate, setSharingTemplate] = useState<Template | null>(null)
   const [shareEmail, setShareEmail] = useState('')
   const [sharing, setSharing] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const router = useRouter()
 
   const load = async () => {
@@ -55,8 +58,8 @@ export default function TemplatesPage() {
   }
 
   const deleteTemplate = async (id: string) => {
-    if (!confirm('¿Eliminar plantilla?')) return
     await fetch(`/api/admin/templates/${id}`, { method: 'DELETE' })
+    toast.success('Plantilla eliminada')
     load()
   }
 
@@ -68,13 +71,13 @@ export default function TemplatesPage() {
     const usersRes = await fetch('/api/admin/users')
     const users = await usersRes.json()
     const user = users.find((u: any) => u.email === shareEmail)
-    if (!user) { alert('Usuario no encontrado'); setSharing(false); return }
+    if (!user) { toast.error('Usuario no encontrado'); setSharing(false); return }
 
     const res = await fetch(`/api/admin/templates/${sharingTemplate.id}/share`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user.id }),
     })
-    if (res.ok) { setShareDialogOpen(false); alert('¡Plantilla compartida!') }
-    else { const d = await res.json(); alert(d.error) }
+    if (res.ok) { setShareDialogOpen(false); toast.success('¡Plantilla compartida!') }
+    else { const d = await res.json(); toast.error(d.error) }
     setSharing(false)
   }
 
@@ -99,7 +102,7 @@ export default function TemplatesPage() {
               <Button variant="ghost" size="sm" onClick={() => openShare(t)}>
                 <Share2 className="w-3 h-3" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-red-400" onClick={() => deleteTemplate(t.id)}>
+              <Button variant="ghost" size="sm" className="text-red-400" onClick={() => setDeleteId(t.id)}>
                 <Trash2 className="w-3 h-3" />
               </Button>
             </>
@@ -152,6 +155,16 @@ export default function TemplatesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        title="¿Eliminar plantilla?"
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={() => { deleteTemplate(deleteId!); setDeleteId(null) }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   )
 }

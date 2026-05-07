@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { RotateCcw, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { toast } from 'sonner'
 
 interface TriviaResetButtonProps {
   triviaId: string
@@ -26,7 +27,7 @@ export function TriviaResetButton({ triviaId, triviaTitle, leadsCount }: TriviaR
       window.location.reload()
     } else {
       const d = await res.json()
-      alert(d.error ?? 'Error al resetear')
+      toast.error(d.error ?? 'Error al resetear')
     }
     setLoading(false)
   }

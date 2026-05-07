@@ -39,7 +39,7 @@ export default async function PlayPage({ params }: PageProps) {
       formFields: { orderBy: { orderIndex: 'asc' } },
       prizes: { orderBy: { position: 'asc' } },
       company: { select: { id: true, name: true, logoUrl: true } },
-      brands: { select: { id: true, name: true, logoUrl: true, models: true }, take: 1 },
+      brands: { select: { id: true, name: true, logoUrl: true, models: true } },
     },
   })
 
@@ -81,14 +81,20 @@ export default async function PlayPage({ params }: PageProps) {
     maxPlaysPerUser: trivia.maxPlaysPerUser,
     startDate: trivia.startDate?.toISOString() ?? null,
     endDate: trivia.endDate?.toISOString() ?? null,
+    gameInstructions: trivia.gameInstructions ?? null,
     questions: trivia.questions.map(q => ({
       ...q,
       options: q.options as string[],
     })),
-    formFields: trivia.formFields.map(f => ({
-      ...f,
-      options: f.options as string[] | null,
-    })),
+    formFields: trivia.formFields.map(f => {
+      if (f.fieldType === 'brand_models') {
+        const opts = trivia.brands
+          .flatMap(b => (b.models as string[]).map(m => `${b.name.toUpperCase()} ${m.toUpperCase()}`))
+          .sort()
+        return { ...f, fieldType: 'select', options: opts }
+      }
+      return { ...f, options: f.options as string[] | null }
+    }),
     prizes: trivia.prizes.map(p => ({ ...p, description: p.description ?? null, imageUrl: p.imageUrl ?? null })),
     company: trivia.company ? {
       id: trivia.company.id,

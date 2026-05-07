@@ -10,7 +10,7 @@ const templateSchema = z.object({
   logoUrl: z.string().url().optional().or(z.literal('')),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#003087'),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#002060'),
-  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#FFD700'),
+  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#F97316'),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#F8FAFC'),
   textColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default('#1A1A2E'),
   questions: z.array(z.unknown()).default([]),

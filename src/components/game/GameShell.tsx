@@ -24,6 +24,7 @@ export interface TriviaData {
   maxPlaysPerUser: number
   startDate: string | null
   endDate: string | null
+  gameInstructions: string | null
   questions: QuestionData[]
   formFields: FormFieldData[]
   prizes: PrizeData[]
@@ -123,18 +124,15 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
   }, [currentIndex, trivia.questions.length])
 
   const handleFormSubmit = useCallback(async (formData: Record<string, string>) => {
-    try {
-      const res = await fetch('/api/game/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ triviaId: trivia.id, answers, formData }),
-      })
-      const data = await res.json()
-      setResult(data)
-      setGameState('result')
-    } catch {
-      setGameState('result')
-    }
+    const res = await fetch('/api/game/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ triviaId: trivia.id, answers, formData }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error ?? 'Error al enviar')
+    setResult(data)
+    setGameState('result')
   }, [trivia.id, answers])
 
   return (

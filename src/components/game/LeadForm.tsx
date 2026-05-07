@@ -25,14 +25,18 @@ function getInputType(fieldType: string): string {
 
 export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const { register, handleSubmit, formState: { errors } } = useForm<Record<string, string>>()
 
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl)
 
   const doSubmit = async (data: Record<string, string>) => {
     setIsSubmitting(true)
+    setSubmitError(null)
     try {
       await onSubmit(data)
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : 'Error al enviar los datos')
     } finally {
       setIsSubmitting(false)
     }
@@ -133,6 +137,12 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                   )
                 })}
               </div>
+
+              {submitError && (
+                <div className="col-span-2 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium text-center">
+                  {submitError}
+                </div>
+              )}
 
               <button
                 type="submit"

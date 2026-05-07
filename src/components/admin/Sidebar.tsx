@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Trophy, Copy, Users, Image as ImageIcon,
-  Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings
+  Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings, Home
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn, getInitials } from '@/lib/utils'
@@ -84,6 +84,17 @@ export function Sidebar({ user }: SidebarProps) {
           </>
         )}
       </nav>
+
+      {/* Back to site */}
+      <div className="px-3 pb-2">
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-white hover:bg-slate-700/60 transition-all"
+        >
+          <Home className="w-4 h-4 flex-shrink-0" />
+          <span>Ir al sitio</span>
+        </Link>
+      </div>
 
       {/* User */}
       <div className="px-3 py-4 border-t border-white/5">

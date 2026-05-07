@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatDate } from '@/lib/utils'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface UserData {
   id: string; email: string; name: string; role: string
@@ -29,8 +31,9 @@ export default function UsersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<UserData | null>(null)
   const [saving, setSaving] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<any>({
+  const { handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<any>({
     resolver: zodResolver(editing ? updateUserSchema : createUserSchema),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
@@ -66,19 +69,20 @@ export default function UsersPage() {
       body: JSON.stringify({ ...data, companyId: data.companyId || null }) 
     })
     
-    if (res.ok) { 
+    if (res.ok) {
       setDialogOpen(false)
-      load() 
-    } else { 
+      toast.success(editing ? 'Usuario actualizado' : 'Usuario creado')
+      load()
+    } else {
       const d = await res.json()
-      alert(d.error || 'Error al guardar') 
+      toast.error(d.error || 'Error al guardar')
     }
     setSaving(false)
   })
 
   const deleteUser = async (id: string) => {
-    if (!confirm('¿Eliminar este usuario?')) return
     await fetch(`/api/admin/users/${id}`, { method: 'DELETE' })
+    toast.success('Usuario eliminado')
     load()
   }
 
@@ -127,7 +131,7 @@ export default function UsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
                       <Button variant="ghost" size="sm" onClick={() => openEdit(u)}><Pencil className="w-3 h-3" /></Button>
-                      <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600" onClick={() => deleteUser(u.id)}><Trash2 className="w-3 h-3" /></Button>
+                      <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600" onClick={() => setDeleteId(u.id)}><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -145,19 +149,19 @@ export default function UsersPage() {
           <form onSubmit={onSave} className="space-y-4">
             <div>
               <Label className={errors.name ? 'text-red-500' : ''}>Nombre *</Label>
-              <Input {...register('name')} className="mt-1" aria-invalid={!!errors.name} />
+              <Input value={watch('name') ?? ''} onChange={e => setValue('name', e.target.value, { shouldValidate: true })} className="mt-1" aria-invalid={!!errors.name} />
               {errors.name && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {String(errors.name.message)}</p>}
             </div>
-            
+
             <div>
               <Label className={errors.email ? 'text-red-500' : ''}>Email *</Label>
-              <Input type="email" {...register('email')} className="mt-1" disabled={!!editing} aria-invalid={!!errors.email} />
+              <Input type="email" value={watch('email') ?? ''} onChange={e => setValue('email', e.target.value, { shouldValidate: true })} className="mt-1" disabled={!!editing} aria-invalid={!!errors.email} />
               {errors.email && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {String(errors.email.message)}</p>}
             </div>
 
             <div>
               <Label className={errors.password ? 'text-red-500' : ''}>{editing ? 'Nueva contraseña (opcional)' : 'Contraseña *'}</Label>
-              <Input type="password" {...register('password')} className="mt-1" aria-invalid={!!errors.password} />
+              <Input type="password" value={watch('password') ?? ''} onChange={e => setValue('password', e.target.value, { shouldValidate: true })} className="mt-1" aria-invalid={!!errors.password} />
               {errors.password && <div className="text-xs text-red-500 mt-1 space-y-1">
                 {String(errors.password.message).split(',').map((msg, i) => (
                   <p key={i} className="flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {msg}</p>
@@ -217,6 +221,16 @@ export default function UsersPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        title="¿Eliminar usuario?"
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={() => { deleteUser(deleteId!); setDeleteId(null) }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { ArrowLeft, Download, Users, TrendingUp, Award } from 'lucide-react'
+import { ArrowLeft, Download, FileSpreadsheet, Users, TrendingUp, Award } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -46,9 +46,14 @@ export default async function TriviaLeadsPage({ params }: PageProps) {
         <div className="flex-1">
           <h1 className="text-xl font-black text-slate-800">Contactos — {trivia.title}</h1>
         </div>
-        <a href={`/api/admin/leads/export?triviaId=${params.id}`}>
+        <a href={`/api/admin/trivias/${params.id}/export`}>
           <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" /> Exportar CSV
+            <FileSpreadsheet className="w-4 h-4 mr-2" /> Exportar Excel
+          </Button>
+        </a>
+        <a href={`/api/admin/trivias/${params.id}/report`} target="_blank">
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" /> Informe PDF
           </Button>
         </a>
       </div>

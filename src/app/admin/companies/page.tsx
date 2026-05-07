@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { slugify } from '@/lib/utils'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Company {
   id: string; name: string; slug: string; logoUrl: string | null
@@ -26,6 +28,7 @@ export default function CompaniesPage() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ name: '', slug: '', description: '', website: '', logoUrl: '' as string, isActive: true })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const load = async () => {
     const res = await fetch('/api/admin/companies')
@@ -63,14 +66,20 @@ export default function CompaniesPage() {
     const url = editing ? `/api/admin/companies/${editing.id}` : '/api/admin/companies'
     const method = editing ? 'PUT' : 'POST'
     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-    if (res.ok) { setDialogOpen(false); load() }
-    else { const d = await res.json(); alert(d.error) }
+    if (res.ok) {
+      setDialogOpen(false)
+      toast.success(editing ? 'Empresa actualizada' : 'Empresa creada')
+      load()
+    } else {
+      const d = await res.json()
+      toast.error(d.error)
+    }
     setSaving(false)
   }
 
   const deleteCompany = async (id: string) => {
-    if (!confirm('¿Eliminar empresa? Se eliminarán también sus marcas.')) return
     await fetch(`/api/admin/companies/${id}`, { method: 'DELETE' })
+    toast.success('Empresa eliminada')
     load()
   }
 
@@ -114,7 +123,7 @@ export default function CompaniesPage() {
                 <Button variant="outline" size="sm" onClick={() => openEdit(c)} className="flex-1">
                   <Pencil className="w-3 h-3 mr-1" /> Editar
                 </Button>
-                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600" onClick={() => deleteCompany(c.id)}>
+                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-600" onClick={() => setDeleteId(c.id)}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
@@ -178,6 +187,16 @@ export default function CompaniesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        title="¿Eliminar empresa?"
+        description="Se eliminarán también sus marcas asociadas. Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={() => { deleteCompany(deleteId!); setDeleteId(null) }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   )
 }

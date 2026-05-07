@@ -4,11 +4,12 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Loader2, AlertCircle, Lock, Mail, ChevronRight, Star } from 'lucide-react'
+import { Loader2, AlertCircle, Lock, Mail, ChevronRight, Star, ArrowLeft } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export function LoginForm() {
   const router = useRouter()
@@ -22,11 +23,11 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const errors: Record<string, string> = {}
     if (!form.email.trim()) errors.email = 'El email es obligatorio'
     if (!form.password.trim()) errors.password = 'La contraseña es obligatoria'
-    
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       return
@@ -58,7 +59,7 @@ export function LoginForm() {
         className="hidden lg:flex flex-col w-[45%] relative overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #001a4d 0%, #003087 50%, #0052cc 100%)' }}
       >
-        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #FFD700, transparent)' }} />
+        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
         <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #ffffff, transparent)' }} />
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)', backgroundSize: '28px 28px' }} />
 
@@ -70,7 +71,7 @@ export function LoginForm() {
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-white/70 text-xs font-semibold mb-6">
               <Star className="w-3 h-3 text-yellow-300 fill-yellow-300" /> Grupo Automotor Paraguay
             </div>
-            <h2 className="text-4xl font-black text-white leading-tight mb-4">Panel de <span style={{ color: '#FFD700' }}>Administración</span></h2>
+            <h2 className="text-4xl font-black text-white leading-tight mb-4">Panel de <span style={{ color: '#F97316' }}>Administración</span></h2>
             <p className="text-white/60 text-sm leading-relaxed max-w-xs">Gestioná trivias, participantes, métricas y premios desde un solo lugar.</p>
           </div>
           <p className="text-white/30 text-xs">© {new Date().getFullYear()} Automotor S.A. · Carmotor S.A.</p>
@@ -116,7 +117,13 @@ export function LoginForm() {
               </Button>
             </form>
           </div>
-          <p className="text-center text-slate-400 text-xs mt-6">© {new Date().getFullYear()} Automotor S.A. · Desarrollado por <strong className="text-slate-500">Angel Colman</strong></p>
+          <div className="flex items-center justify-center mt-6 gap-4">
+            <Link href="/" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+              <ArrowLeft className="w-3 h-3" /> Volver al inicio
+            </Link>
+            <span className="text-slate-200">·</span>
+            <p className="text-slate-400 text-xs">© {new Date().getFullYear()} Automotor S.A.</p>
+          </div>
         </div>
       </div>
     </div>

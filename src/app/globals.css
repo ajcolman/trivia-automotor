@@ -31,13 +31,13 @@
     /* ─── Brand / Theme Custom Properties ─── */
     --trivia-primary: #003087;
     --trivia-secondary: #002060;
-    --trivia-accent: #FFD700;
+    --trivia-accent: #F97316;
     --trivia-bg: #F8FAFC;
     --trivia-text: #1A1A2E;
     --trivia-primary-light: #1a4ca8;
     --trivia-primary-dark: #001f5a;
-    --trivia-accent-light: #ffe44d;
-    --trivia-accent-dark: #ccac00;
+    --trivia-accent-light: #FDBA74;
+    --trivia-accent-dark: #EA580C;
   }
 
   .dark {

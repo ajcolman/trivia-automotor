@@ -23,11 +23,17 @@ interface ResultScreenProps {
 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
-const RATINGS = [
+const RATINGS_MULTI = [
   { min: 90, label: '¡Excelente!', emoji: '🏆', stars: 3 },
   { min: 70, label: '¡Muy bien!', emoji: '⭐', stars: 3 },
   { min: 50, label: 'Bien hecho', emoji: '👍', stars: 2 },
-  { min: 0, label: 'Sigue participando', emoji: '💪', stars: 1 },
+  { min: 0, label: '¡Podés mejorar!', emoji: '💪', stars: 1 },
+]
+const RATINGS_SINGLE = [
+  { min: 90, label: '¡Excelente!', emoji: '🏆', stars: 3 },
+  { min: 70, label: '¡Muy bien!', emoji: '⭐', stars: 3 },
+  { min: 50, label: 'Bien hecho', emoji: '👍', stars: 2 },
+  { min: 0, label: '¡Gracias por participar!', emoji: '💪', stars: 1 },
 ]
 
 function Confetti({ color }: { color: string }) {
@@ -80,6 +86,7 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
   const incorrectAnswers = scoredAnswers.filter(a => !a.correct)
 
   const pct = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : 0
+  const RATINGS = trivia.maxPlaysPerUser === 1 ? RATINGS_SINGLE : RATINGS_MULTI
   const rating = RATINGS.find(r => pct >= r.min) ?? RATINGS[RATINGS.length - 1]
 
   // Animate score counter
@@ -259,13 +266,15 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
               </div>
 
               <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Intentar de nuevo
-                </button>
+                {trivia.maxPlaysPerUser > 1 && (
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Intentar de nuevo
+                  </button>
+                )}
                 <Link
                   href="/"
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"

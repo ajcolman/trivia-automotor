@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { mediaUrl } from '@/lib/utils'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Brand {
   id: string; name: string; companyId: string; logoUrl: string | null
@@ -30,6 +32,7 @@ export default function BrandsPage() {
   const [modelInput, setModelInput] = useState('')
   const [form, setForm] = useState({ name: '', companyId: '', logoUrl: '' as string, models: [] as string[], isActive: true })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const load = async () => {
     const [b, c] = await Promise.all([fetch('/api/admin/brands'), fetch('/api/admin/companies')])
@@ -77,14 +80,20 @@ export default function BrandsPage() {
     const url = editing ? `/api/admin/brands/${editing.id}` : '/api/admin/brands'
     const method = editing ? 'PUT' : 'POST'
     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-    if (res.ok) { setDialogOpen(false); load() }
-    else { const d = await res.json(); alert(d.error) }
+    if (res.ok) {
+      setDialogOpen(false)
+      toast.success(editing ? 'Marca actualizada' : 'Marca creada')
+      load()
+    } else {
+      const d = await res.json()
+      toast.error(d.error)
+    }
     setSaving(false)
   }
 
   const deleteBrand = async (id: string) => {
-    if (!confirm('¿Eliminar esta marca?')) return
     await fetch(`/api/admin/brands/${id}`, { method: 'DELETE' })
+    toast.success('Marca eliminada')
     load()
   }
 
@@ -124,7 +133,7 @@ export default function BrandsPage() {
                 <Button variant="outline" size="sm" onClick={() => openEdit(b)} className="flex-1">
                   <Pencil className="w-3 h-3 mr-1" /> Editar
                 </Button>
-                <Button variant="ghost" size="sm" className="text-red-400" onClick={() => deleteBrand(b.id)}>
+                <Button variant="ghost" size="sm" className="text-red-400" onClick={() => setDeleteId(b.id)}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
@@ -190,6 +199,16 @@ export default function BrandsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        title="¿Eliminar marca?"
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={() => { deleteBrand(deleteId!); setDeleteId(null) }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   )
 }

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Play, Trophy, Clock, Zap, Gift, ChevronRight, Star, ArrowLeft } from 'lucide-react'
+import { Play, Trophy, Clock, Zap, Gift, ChevronRight, Star, ArrowLeft, BookOpen, ChevronDown } from 'lucide-react'
 import type { TriviaData } from './GameShell'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -17,6 +17,7 @@ const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
 export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
   const [hovered, setHovered] = useState(false)
+  const [instrOpen, setInstrOpen] = useState(false)
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl)
   const totalPoints = trivia.questions.reduce((s, q) => s + q.points, 0)
   const maxTime = Math.max(...trivia.questions.map(q => q.timeLimit))
@@ -106,6 +107,35 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
 
           {/* Body */}
           <div className="bg-white p-6 space-y-5">
+
+            {/* Game instructions (collapsible) */}
+            {trivia.gameInstructions && (
+              <div className="rounded-2xl border overflow-hidden" style={{ borderColor: `${trivia.primaryColor}20` }}>
+                <button
+                  type="button"
+                  onClick={() => setInstrOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                  style={{ backgroundColor: `${trivia.primaryColor}08` }}
+                >
+                  <span className="flex items-center gap-2 text-sm font-bold" style={{ color: trivia.primaryColor }}>
+                    <BookOpen className="w-4 h-4" />
+                    Instrucciones del juego
+                  </span>
+                  <ChevronDown
+                    className="w-4 h-4 transition-transform duration-200"
+                    style={{ color: trivia.primaryColor, transform: instrOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  />
+                </button>
+                {instrOpen && (
+                  <div
+                    className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap border-t"
+                    style={{ color: trivia.textColor, borderColor: `${trivia.primaryColor}15`, opacity: 0.85 }}
+                  >
+                    {trivia.gameInstructions}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-3">

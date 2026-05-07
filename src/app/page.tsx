@@ -73,7 +73,7 @@ export default async function HomePage() {
           }} />
           {/* Decorative circles */}
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-10"
-            style={{ background: 'radial-gradient(circle, #FFD700, transparent)' }} />
+            style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
           <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full opacity-10"
             style={{ background: 'radial-gradient(circle, #ffffff, transparent)' }} />
           {/* Premium Mesh Pattern */}
@@ -112,7 +112,7 @@ export default async function HomePage() {
 
 
             <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight">
-              Trivias &amp; <span style={{ color: '#FFD700' }}>Premios</span>
+              Trivias &amp; <span style={{ color: '#F97316' }}>Premios</span>
             </h1>
             <p className="text-lg text-white/70 mb-10 max-w-md mx-auto">
               Participá en nuestras trivias interactivas, demostrá tu conocimiento y ganá increíbles premios.

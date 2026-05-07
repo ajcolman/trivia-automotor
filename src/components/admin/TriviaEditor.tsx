@@ -18,8 +18,10 @@ import { UploadDropzone } from './UploadDropzone'
 import { QuestionImporter } from './QuestionImporter'
 import { MarkdownEditor } from './MarkdownEditor'
 import Link from 'next/link'
-import { slugify } from '@/lib/utils'
+import { slugify, mediaUrl } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { toast } from 'sonner'
 
 interface TriviaEditorProps {
   trivia: any | null
@@ -44,6 +46,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
   const [questions, setQuestions] = useState<any[]>(trivia?.questions ?? [])
   const [formFields, setFormFields] = useState<any[]>(trivia?.formFields ?? [])
   const [prizes, setPrizes] = useState<any[]>(trivia?.prizes ?? [])
+  const [flyers, setFlyers] = useState<any[]>(trivia?.flyers ?? [])
   const [importOpen, setImportOpen] = useState(false)
   const [qDialogOpen, setQDialogOpen] = useState(false)
   const [fDialogOpen, setFDialogOpen] = useState(false)
@@ -52,12 +55,19 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
   const [editingF, setEditingF] = useState<any | null>(null)
   const [editingP, setEditingP] = useState<any | null>(null)
   const [prizeForm, setPrizeForm] = useState({ name: '', description: '', imageUrl: '', position: 1 })
+  const [confirmDlg, setConfirmDlg] = useState<{
+    open: boolean; title: string; description?: string; destructive?: boolean; confirmLabel?: string; action: () => void | Promise<void>
+  }>({ open: false, title: '', action: () => {} })
+
+  const askConfirm = (title: string, description: string | undefined, action: () => void | Promise<void>, destructive = false, confirmLabel?: string) => {
+    setConfirmDlg({ open: true, title, description, destructive, confirmLabel, action })
+  }
   const [logoUrl, setLogoUrl] = useState<string>(trivia?.logoUrl ?? '')
   const [reseting, setReseting] = useState(false)
   const [colors, setColors] = useState({
     primaryColor: trivia?.primaryColor ?? '#003087',
     secondaryColor: trivia?.secondaryColor ?? '#002060',
-    accentColor: trivia?.accentColor ?? '#FFD700',
+    accentColor: trivia?.accentColor ?? '#F97316',
     backgroundColor: trivia?.backgroundColor ?? '#F8FAFC',
     textColor: trivia?.textColor ?? '#1A1A2E',
   })
@@ -165,10 +175,10 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
           setSavedId(result.id)
           router.push(`/admin/trivias/${result.id}`)
         } else {
-          alert('¡Trivia guardada correctamente!')
+          toast.success('¡Trivia guardada correctamente!')
         }
       } else {
-        alert(result.error ?? 'Error al guardar')
+        toast.error(result.error ?? 'Error al guardar')
       }
     } finally {
       setSaving(false)
@@ -176,7 +186,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
   }
 
   const saveQuestion = async (qData: QuestionForm) => {
-    if (!savedId) { alert('Guarda la trivia primero'); return }
+    if (!savedId) { toast.warning('Guarda la trivia primero'); return }
     const options = [qData.optionA, qData.optionB, qData.optionC, qData.optionD].filter(Boolean)
     const body = {
       triviaId: savedId,
@@ -204,14 +214,16 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     setEditingQ(null)
   }
 
-  const deleteQuestion = async (id: string) => {
-    if (!confirm('¿Eliminar esta pregunta?')) return
-    await fetch(`/api/admin/questions/${id}`, { method: 'DELETE' })
-    setQuestions(qs => qs.filter(q => q.id !== id))
+  const deleteQuestion = (id: string) => {
+    askConfirm('¿Eliminar pregunta?', 'Esta acción no se puede deshacer.', async () => {
+      await fetch(`/api/admin/questions/${id}`, { method: 'DELETE' })
+      setQuestions(qs => qs.filter(q => q.id !== id))
+      toast.success('Pregunta eliminada')
+    }, true, 'Eliminar')
   }
 
   const saveField = async (fData: any) => {
-    if (!savedId) { alert('Guarda la trivia primero'); return }
+    if (!savedId) { toast.warning('Guarda la trivia primero'); return }
     const body = {
       triviaId: savedId,
       fieldName: fData.fieldName,
@@ -237,14 +249,16 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     setFDialogOpen(false)
   }
 
-  const deleteField = async (id: string) => {
-    if (!confirm('¿Eliminar este campo?')) return
-    await fetch(`/api/admin/form-fields/${id}`, { method: 'DELETE' })
-    setFormFields(fs => fs.filter(f => f.id !== id))
+  const deleteField = (id: string) => {
+    askConfirm('¿Eliminar campo?', 'Esta acción no se puede deshacer.', async () => {
+      await fetch(`/api/admin/form-fields/${id}`, { method: 'DELETE' })
+      setFormFields(fs => fs.filter(f => f.id !== id))
+      toast.success('Campo eliminado')
+    }, true, 'Eliminar')
   }
 
   const savePrize = async (pData: any) => {
-    if (!savedId) { alert('Guarda la trivia primero'); return }
+    if (!savedId) { toast.warning('Guarda la trivia primero'); return }
     const isNew = !pData.id
     const url = isNew ? '/api/admin/prizes' : `/api/admin/prizes/${pData.id}`
     const method = isNew ? 'POST' : 'PUT'
@@ -260,14 +274,15 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       setPrizes(prev => isNew ? [...prev, saved] : prev.map(p => p.id === saved.id ? saved : p))
     } else {
       const err = await res.json()
-      alert(err.error || 'Error al guardar premio')
+      toast.error(err.error || 'Error al guardar premio')
     }
   }
 
-  const deletePrize = async (id: string) => {
-    if (!confirm('¿Eliminar este premio?')) return
-    const res = await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' })
-    if (res.ok) setPrizes(prev => prev.filter(p => p.id !== id))
+  const deletePrize = (id: string) => {
+    askConfirm('¿Eliminar premio?', 'Esta acción no se puede deshacer.', async () => {
+      const res = await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' })
+      if (res.ok) { setPrizes(prev => prev.filter(p => p.id !== id)); toast.success('Premio eliminado') }
+    }, true, 'Eliminar')
   }
 
   return (
@@ -289,22 +304,20 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                 variant="outline" 
                 size="sm" 
                 className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
-                onClick={async () => {
-                  if (!confirm('¿Estás seguro de que deseas resetear esta trivia? Se eliminarán todas las participaciones y estadísticas.')) return
-                  setReseting(true)
-                  try {
-                    const res = await fetch(`/api/admin/trivias/${savedId}/reset`, { method: 'POST' })
-                    if (res.ok) {
-                      alert('Trivia reseteada correctamente')
-                      router.refresh()
-                    } else {
-                      const d = await res.json()
-                      alert(d.error || 'Error al resetear')
-                    }
-                  } finally {
-                    setReseting(false)
-                  }
-                }}
+                onClick={() => askConfirm(
+                  'Resetear trivia',
+                  '¿Estás seguro? Se eliminarán todas las participaciones y estadísticas.',
+                  async () => {
+                    setReseting(true)
+                    try {
+                      const res = await fetch(`/api/admin/trivias/${savedId}/reset`, { method: 'POST' })
+                      if (res.ok) { toast.success('Trivia reseteada correctamente'); router.refresh() }
+                      else { const d = await res.json(); toast.error(d.error || 'Error al resetear') }
+                    } finally { setReseting(false) }
+                  },
+                  true,
+                  'Sí, resetear',
+                )}
                 disabled={reseting}
               >
                 {reseting ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RotateCcw className="w-3 h-3 mr-1" />}
@@ -500,6 +513,80 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                 <div className="mt-3">
                   <ColorPicker value={colors} onChange={setColors} />
                 </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-bold">Flyers / Imágenes promocionales</Label>
+                <p className="text-xs text-slate-400 mt-1 mb-3">Imágenes que se muestran en la landing page de la trivia.</p>
+                {!savedId ? (
+                  <p className="text-sm text-amber-600 bg-amber-50 rounded-xl p-3">
+                    ⚠️ Guarda la trivia primero para poder subir flyers.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="max-w-xs">
+                      <UploadDropzone
+                        value={null}
+                        onUpload={async (url) => {
+                          const res = await fetch('/api/admin/flyers', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ triviaId: savedId, imageUrl: url, isActive: true }),
+                          })
+                          if (res.ok) {
+                            const flyer = await res.json()
+                            setFlyers(prev => [...prev, flyer])
+                            toast.success('Flyer subido')
+                          } else {
+                            toast.error('Error al subir flyer')
+                          }
+                        }}
+                        label="Subir flyer"
+                      />
+                    </div>
+                    {flyers.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
+                        {flyers.map(flyer => (
+                          <div key={flyer.id} className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group">
+                            <img src={mediaUrl(flyer.imageUrl)} alt="Flyer" className="w-full aspect-video object-cover" />
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                title={flyer.isActive ? 'Desactivar' : 'Activar'}
+                                onClick={async () => {
+                                  const res = await fetch(`/api/admin/flyers/${flyer.id}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ isActive: !flyer.isActive }),
+                                  })
+                                  if (res.ok) setFlyers(prev => prev.map(f => f.id === flyer.id ? { ...f, isActive: !f.isActive } : f))
+                                }}
+                                className={`w-7 h-7 rounded-full text-xs font-bold shadow ${flyer.isActive ? 'bg-green-500 text-white' : 'bg-slate-300 text-slate-600'}`}
+                              >
+                                {flyer.isActive ? '✓' : '○'}
+                              </button>
+                              <button
+                                type="button"
+                                title="Eliminar"
+                                onClick={async () => {
+                                  await fetch(`/api/admin/flyers/${flyer.id}`, { method: 'DELETE' })
+                                  setFlyers(prev => prev.filter(f => f.id !== flyer.id))
+                                  toast.success('Flyer eliminado')
+                                }}
+                                className="w-7 h-7 rounded-full bg-red-500 text-white text-xs font-bold shadow"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            <div className={`absolute bottom-0 inset-x-0 text-[10px] text-center py-0.5 font-bold ${flyer.isActive ? 'bg-green-500/80 text-white' : 'bg-slate-400/80 text-white'}`}>
+                              {flyer.isActive ? 'Activo' : 'Inactivo'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -801,6 +888,19 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDlg.open}
+        title={confirmDlg.title}
+        description={confirmDlg.description}
+        destructive={confirmDlg.destructive}
+        confirmLabel={confirmDlg.confirmLabel}
+        onConfirm={async () => {
+          setConfirmDlg(s => ({ ...s, open: false }))
+          await confirmDlg.action()
+        }}
+        onCancel={() => setConfirmDlg(s => ({ ...s, open: false }))}
+      />
     </div>
   )
 }
@@ -811,7 +911,7 @@ function QuestionDialog({ open, initialData, onClose, onSave }: {
   onClose: () => void
   onSave: (data: any) => void
 }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<any>({
+  const { watch, setValue, reset, setError, formState: { errors } } = useForm<any>({
     defaultValues: initialData ? {
       question: initialData.question,
       optionA: (initialData.options as string[])[0] ?? '',
@@ -837,39 +937,65 @@ function QuestionDialog({ open, initialData, onClose, onSave }: {
     } : { correctAnswer: 0, points: 100, timeLimit: 30 })
   }, [initialData, reset])
 
+  const submit = () => {
+    let valid = true
+    if (!watch('question')?.trim()) { setError('question', { message: 'La pregunta es obligatoria' }); valid = false }
+    if (!watch('optionA')?.trim()) { setError('optionA', { message: 'La opción A es obligatoria' }); valid = false }
+    if (!watch('optionB')?.trim()) { setError('optionB', { message: 'La opción B es obligatoria' }); valid = false }
+    if (!valid) return
+    onSave({
+      question: watch('question'),
+      optionA: watch('optionA'),
+      optionB: watch('optionB'),
+      optionC: watch('optionC'),
+      optionD: watch('optionD'),
+      correctAnswer: Number(watch('correctAnswer')),
+      points: Number(watch('points')),
+      timeLimit: Number(watch('timeLimit')),
+    })
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{initialData ? 'Editar Pregunta' : 'Nueva Pregunta'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSave)} className="space-y-3">
+        <div className="space-y-3">
           <div>
             <Label className={errors.question ? 'text-red-500' : ''}>Pregunta *</Label>
-            <Textarea 
-              {...register('question', { required: 'La pregunta es obligatoria' })} 
+            <Textarea
+              value={watch('question') ?? ''}
+              onChange={e => setValue('question', e.target.value, { shouldValidate: true })}
               aria-invalid={!!errors.question}
-              rows={2} 
-              className="mt-1" 
-              placeholder="Escribe la pregunta aquí..." 
+              rows={2}
+              className="mt-1"
+              placeholder="Escribe la pregunta aquí..."
             />
             {errors.question && <p className="text-xs text-red-500 mt-1">{String(errors.question.message)}</p>}
           </div>
-          {['A', 'B', 'C', 'D'].map((letter, idx) => {
-            const fieldName = `option${letter}` as const;
-            const error = errors[fieldName];
+          {(['A', 'B', 'C', 'D'] as const).map((letter, idx) => {
+            const fieldName = `option${letter}` as const
+            const error = errors[fieldName]
             return (
               <div key={letter} className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className={`w-7 h-7 rounded-full font-bold text-sm flex items-center justify-center flex-shrink-0 ${error ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
                     {letter}
                   </span>
-                  <Input 
-                    {...register(fieldName, { required: idx < 2 ? `La opción ${letter} es obligatoria` : false })} 
+                  <Input
+                    value={watch(fieldName) ?? ''}
+                    onChange={e => setValue(fieldName, e.target.value, { shouldValidate: true })}
                     aria-invalid={!!error}
-                    placeholder={`Opción ${letter}`} 
+                    placeholder={`Opción ${letter}`}
                   />
-                  <input type="radio" value={idx} {...register('correctAnswer')} className="flex-shrink-0" title="Respuesta correcta" />
+                  <input
+                    type="radio"
+                    checked={Number(watch('correctAnswer')) === idx}
+                    onChange={() => setValue('correctAnswer', idx)}
+                    className="flex-shrink-0"
+                    title="Respuesta correcta"
+                  />
                 </div>
                 {error && <p className="text-[10px] text-red-500 ml-9">{String(error.message)}</p>}
               </div>
@@ -879,18 +1005,32 @@ function QuestionDialog({ open, initialData, onClose, onSave }: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Puntos</Label>
-              <Input type="number" min={1} max={10000} {...register('points')} className="mt-1" />
+              <Input
+                type="number"
+                min={1}
+                max={10000}
+                value={watch('points') ?? 100}
+                onChange={e => setValue('points', e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div>
               <Label>Tiempo (segundos)</Label>
-              <Input type="number" min={5} max={300} {...register('timeLimit')} className="mt-1" />
+              <Input
+                type="number"
+                min={5}
+                max={300}
+                value={watch('timeLimit') ?? 30}
+                onChange={e => setValue('timeLimit', e.target.value)}
+                className="mt-1"
+              />
             </div>
           </div>
           <div className="flex gap-2 justify-end pt-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Guardar Pregunta</Button>
+            <Button type="button" onClick={submit} className="bg-blue-600 hover:bg-blue-700">Guardar Pregunta</Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   )
@@ -903,7 +1043,7 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
   onSave: (data: any) => void
   suggestedModels: string[]
 }) {
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<any>({
+  const { watch, setValue, reset, setError, formState: { errors } } = useForm<any>({
     defaultValues: initialData ? {
       fieldName: initialData.fieldName,
       fieldLabel: initialData.fieldLabel,
@@ -925,33 +1065,48 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
     } : { fieldType: 'text', isRequired: true, options: '' })
   }, [initialData, reset])
 
+  const submit = () => {
+    let valid = true
+    if (!watch('fieldLabel')?.trim()) { setError('fieldLabel', { message: 'La etiqueta es obligatoria' }); valid = false }
+    if (!watch('fieldName')?.trim()) { setError('fieldName', { message: 'El identificador es obligatorio' }); valid = false }
+    if (!valid) return
+    onSave({
+      fieldLabel: watch('fieldLabel'),
+      fieldName: watch('fieldName'),
+      fieldType: watch('fieldType'),
+      isRequired: watch('isRequired'),
+      options: watch('options'),
+    })
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{initialData ? 'Editar Campo' : 'Nuevo Campo del Formulario'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSave)} className="space-y-4">
+        <div className="space-y-4">
           <div>
             <Label className={errors.fieldLabel ? 'text-red-500' : ''}>Etiqueta (Lo que verá el usuario) *</Label>
-            <Input 
-              {...register('fieldLabel', { required: 'La etiqueta es obligatoria' })} 
+            <Input
+              value={watch('fieldLabel') ?? ''}
               onChange={e => {
-                setValue('fieldLabel', e.target.value)
+                setValue('fieldLabel', e.target.value, { shouldValidate: true })
                 if (!initialData) setValue('fieldName', slugify(e.target.value).replace(/-/g, '_'))
               }}
-              placeholder="Ej: Modelo de interés" 
-              className="mt-1" 
+              placeholder="Ej: Modelo de interés"
+              className="mt-1"
               aria-invalid={!!errors.fieldLabel}
             />
             {errors.fieldLabel && <p className="text-xs text-red-500 mt-1">{String(errors.fieldLabel.message)}</p>}
           </div>
           <div>
             <Label className={errors.fieldName ? 'text-red-500' : ''}>Identificador (Slug interno) *</Label>
-            <Input 
-              {...register('fieldName', { required: 'El identificador es obligatorio' })} 
-              placeholder="ej_modelo_interes" 
-              className="mt-1 font-mono text-xs" 
+            <Input
+              value={watch('fieldName') ?? ''}
+              onChange={e => setValue('fieldName', e.target.value, { shouldValidate: true })}
+              placeholder="ej_modelo_interes"
+              className="mt-1 font-mono text-xs"
               aria-invalid={!!errors.fieldName}
             />
             {errors.fieldName && <p className="text-xs text-red-500 mt-1">{String(errors.fieldName.message)}</p>}
@@ -959,8 +1114,9 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Tipo de Campo</Label>
-              <select 
-                {...register('fieldType')} 
+              <select
+                value={watch('fieldType') ?? 'text'}
+                onChange={e => setValue('fieldType', e.target.value)}
                 className="w-full mt-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 <option value="text">Texto Corto</option>
@@ -974,7 +1130,7 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
               </select>
             </div>
             <div className="flex items-end pb-2 gap-2">
-              <Switch {...register('isRequired')} onCheckedChange={v => setValue('isRequired', v)} />
+              <Switch checked={watch('isRequired') ?? true} onCheckedChange={v => setValue('isRequired', v)} />
               <Label className="mb-0.5">Obligatorio</Label>
             </div>
           </div>
@@ -1001,7 +1157,8 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
             <div className="space-y-2">
               <Label>Opciones (separadas por comas)</Label>
               <Textarea
-                {...register('options')}
+                value={watch('options') ?? ''}
+                onChange={e => setValue('options', e.target.value)}
                 placeholder="Opción 1, Opción 2, Opción 3"
                 rows={3}
                 className="text-sm"
@@ -1034,9 +1191,9 @@ function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-            <Button type="submit">Guardar Campo</Button>
+            <Button type="button" onClick={submit}>Guardar Campo</Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   )

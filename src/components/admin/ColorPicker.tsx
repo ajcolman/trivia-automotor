@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { isValidHexColor } from '@/lib/utils'
 
 const PRESETS = [
-  { name: 'Automotor Azul', primary: '#003087', secondary: '#002060', accent: '#FFD700', bg: '#F8FAFC', text: '#1A1A2E' },
+  { name: 'Automotor Azul', primary: '#003087', secondary: '#002060', accent: '#F97316', bg: '#F8FAFC', text: '#1A1A2E' },
   { name: 'Hyundai Dark', primary: '#002C5F', secondary: '#00AAD2', accent: '#FFFFFF', bg: '#0F1923', text: '#FFFFFF' },
   { name: 'Sport Rojo', primary: '#C41E3A', secondary: '#8B0000', accent: '#FF6B35', bg: '#FFF8F6', text: '#1A0A0A' },
   { name: 'Elegante Oscuro', primary: '#1A1A2E', secondary: '#16213E', accent: '#E94560', bg: '#0F3460', text: '#FFFFFF' },

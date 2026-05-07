@@ -7,6 +7,8 @@ import { mediaUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Asset {
   id: string; name: string; url: string; fileType: string
@@ -16,6 +18,7 @@ interface Asset {
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [copied, setCopied] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const load = async () => {
     const res = await fetch('/api/admin/assets')
@@ -31,8 +34,8 @@ export default function AssetsPage() {
   }
 
   const deleteAsset = async (id: string) => {
-    if (!confirm('¿Eliminar este archivo?')) return
     await fetch('/api/admin/assets', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+    toast.success('Archivo eliminado')
     load()
   }
 
@@ -74,7 +77,7 @@ export default function AssetsPage() {
               <Button
                 variant="ghost" size="sm"
                 className="text-red-300 hover:bg-white/20"
-                onClick={() => deleteAsset(asset.id)}
+                onClick={() => setDeleteId(asset.id)}
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
@@ -87,6 +90,16 @@ export default function AssetsPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        title="¿Eliminar archivo?"
+        description="Esta acción no se puede deshacer."
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={() => { deleteAsset(deleteId!); setDeleteId(null) }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   )
 }

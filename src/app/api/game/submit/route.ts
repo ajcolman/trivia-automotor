@@ -42,6 +42,25 @@ export async function POST(req: NextRequest) {
       })
       if (!trivia) throw new Error('TRIVIA_NOT_FOUND')
 
+      // Cedula/CI uniqueness check
+      const cedulaField = await tx.formField.findFirst({
+        where: {
+          triviaId,
+          fieldName: { in: ['cedula_de_identidad', 'cedula', 'ci', 'dni', 'cédula'] },
+        },
+        select: { fieldName: true },
+      })
+      if (cedulaField) {
+        const cedulaValue = String((formData as Record<string, unknown>)[cedulaField.fieldName] ?? '').trim()
+        if (cedulaValue) {
+          const duplicate = await tx.lead.findFirst({
+            where: { triviaId, formData: { path: [cedulaField.fieldName], equals: cedulaValue } },
+            select: { id: true },
+          })
+          if (duplicate) throw new Error('DUPLICATE_CEDULA')
+        }
+      }
+
       // Server-side scoring
       const questions = await tx.question.findMany({
         where: { triviaId },
@@ -78,6 +97,9 @@ export async function POST(req: NextRequest) {
     const msg = err instanceof Error ? err.message : 'Error interno'
     if (msg === 'SESSION_NOT_FOUND') {
       return NextResponse.json({ error: 'Sesión no válida' }, { status: 400 })
+    }
+    if (msg === 'DUPLICATE_CEDULA') {
+      return NextResponse.json({ error: 'Ya existe un participante registrado con esa cédula de identidad.' }, { status: 409 })
     }
     console.error('Submit error:', err)
     return NextResponse.json({ error: 'Error al guardar resultados' }, { status: 500 })

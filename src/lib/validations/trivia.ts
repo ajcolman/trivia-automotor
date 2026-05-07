@@ -40,7 +40,7 @@ export const triviaBaseSchema = z.object({
   // Brand colors
   primaryColor: hexColor.default('#003087'),
   secondaryColor: hexColor.default('#002060'),
-  accentColor: hexColor.default('#FFD700'),
+  accentColor: hexColor.default('#F97316'),
   backgroundColor: hexColor.default('#F8FAFC'),
   textColor: hexColor.default('#1A1A2E'),
 
