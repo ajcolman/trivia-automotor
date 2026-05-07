@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   let url: string
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (process.env.VERCEL && process.env.BLOB_READ_WRITE_TOKEN) {
     // Vercel Blob — private store: upload with access:'private', serve via /api/media proxy
     try {
       const { put } = await import('@vercel/blob')
