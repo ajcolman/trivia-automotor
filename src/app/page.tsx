@@ -66,7 +66,7 @@ export default async function HomePage() {
 
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
-        <header className="relative overflow-hidden lg:min-h-[520px]">
+        <header className="relative overflow-hidden min-h-[420px] lg:min-h-[620px]">
           {/* Pixel art background image */}
           <div
             className="absolute inset-0"
@@ -77,20 +77,25 @@ export default async function HomePage() {
               imageRendering: 'pixelated',
             }}
           />
-          {/* Dark overlay — lighter in the bottom so the cars show through */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,20,70,0.88) 0%, rgba(0,25,80,0.72) 45%, rgba(0,15,50,0.55) 100%)' }} />
-          {/* Scanline effect for retro feel */}
+          {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
+          <div className="absolute inset-0" style={{
+            background: 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
+          }} />
+          {/* Scanlines retro */}
           <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)',
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)',
+          }} />
+          {/* Fade al fondo de la página en la base */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none" style={{
+            background: 'linear-gradient(to bottom, transparent, #f0f4ff)',
           }} />
 
-          <div className="relative max-w-6xl mx-auto px-4 py-20 lg:py-28 text-center">
-
-
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight">
+          {/* Contenido alineado arriba para dejar los autos visibles abajo */}
+          <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-40 lg:pt-20 lg:pb-52 text-center">
+            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg">
               Trivias &amp; <span style={{ color: '#F97316' }}>Premios</span>
             </h1>
-            <p className="text-lg text-white/70 mb-10 max-w-md mx-auto">
+            <p className="text-lg text-white/75 mb-10 max-w-md mx-auto drop-shadow">
               Participá en nuestras trivias interactivas, demostrá tu conocimiento y ganá increíbles premios.
             </p>
 
@@ -101,23 +106,16 @@ export default async function HomePage() {
                 { icon: <Zap className="w-4 h-4" />, value: `${activeTrivias.length}`, label: 'trivias activas' },
                 { icon: <Award className="w-4 h-4" />, value: `${activeTrivias.reduce((s, t) => s + t.prizes.length, 0)}`, label: 'premios en juego' },
               ].map((s, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2.5 text-white backdrop-blur-md shadow-lg hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 group"
+                <div
+                  key={i}
+                  className="flex items-center gap-2 bg-black/25 border border-white/15 rounded-full px-5 py-2.5 text-white backdrop-blur-sm shadow-lg hover:bg-black/35 hover:border-white/25 transition-all duration-300 hover:scale-105 group"
                 >
-                  <span className="text-yellow-400 group-hover:scale-110 transition-transform">{s.icon}</span>
+                  <span className="text-orange-400 group-hover:scale-110 transition-transform">{s.icon}</span>
                   <span className="font-black text-lg tracking-tight">{s.value}</span>
                   <span className="text-white/50 text-xs font-bold uppercase tracking-wider">{s.label}</span>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Wave */}
-          <div className="relative h-12 overflow-hidden">
-            <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute bottom-0 w-full">
-              <path d="M0 48L480 16L960 40L1440 8V48H0Z" fill="#f0f4ff" />
-            </svg>
           </div>
         </header>
 
