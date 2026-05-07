@@ -76,8 +76,8 @@ export const updateUserSchema = z.object({
     .trim()
     .optional(),
 
-  /** Leave undefined to keep the existing password. */
-  password: passwordField.optional(),
+  /** Leave undefined or empty to keep the existing password. */
+  password: z.preprocess((v) => (v === '' ? undefined : v), passwordField.optional()),
 
   role: z.enum(USER_ROLES).optional(),
 

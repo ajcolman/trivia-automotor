@@ -51,9 +51,11 @@ export default async function PlayPage({ params }: PageProps) {
   // Check session - has this player already hit the limit?
   const cookieStore = cookies()
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value
-  let initialState: 'intro' | 'already_played' | 'expired' = 'intro'
+  let initialState: 'intro' | 'already_played' | 'expired' | 'not_started' = 'intro'
 
-  if (isExpired || isNotStarted) {
+  if (isNotStarted) {
+    initialState = 'not_started'
+  } else if (isExpired) {
     initialState = 'expired'
   } else if (sessionId && trivia.maxPlaysPerUser > 0) {
     const session = await prisma.gameSession.findUnique({

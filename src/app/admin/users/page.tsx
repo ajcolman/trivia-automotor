@@ -2,7 +2,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Loader2, Shield, User } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, Shield, User, AlertCircle } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { createUserSchema, updateUserSchema } from '@/lib/validations/user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,7 +29,10 @@ export default function UsersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<UserData | null>(null)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ email: '', name: '', password: '', role: 'admin', companyId: '', isActive: true })
+
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<any>({
+    resolver: zodResolver(editing ? updateUserSchema : createUserSchema)
+  })
 
   const load = async () => {
     const [u, c] = await Promise.all([fetch('/api/admin/users'), fetch('/api/admin/companies')])
@@ -38,25 +44,35 @@ export default function UsersPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ email: '', name: '', password: '', role: 'admin', companyId: '', isActive: true })
+    reset({ email: '', name: '', password: '', role: 'admin', companyId: '', isActive: true })
     setDialogOpen(true)
   }
 
   const openEdit = (u: UserData) => {
     setEditing(u)
-    setForm({ email: u.email, name: u.name, password: '', role: u.role, companyId: u.companyId ?? '', isActive: u.isActive })
+    reset({ email: u.email, name: u.name, password: '', role: u.role, companyId: u.companyId ?? '', isActive: u.isActive })
     setDialogOpen(true)
   }
 
-  const save = async () => {
+  const onSave = handleSubmit(async (data) => {
     setSaving(true)
     const url = editing ? `/api/admin/users/${editing.id}` : '/api/admin/users'
     const method = editing ? 'PUT' : 'POST'
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, companyId: form.companyId || null }) })
-    if (res.ok) { setDialogOpen(false); load() }
-    else { const d = await res.json(); alert(d.error) }
+    const res = await fetch(url, { 
+      method, 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ ...data, companyId: data.companyId || null }) 
+    })
+    
+    if (res.ok) { 
+      setDialogOpen(false)
+      load() 
+    } else { 
+      const d = await res.json()
+      alert(d.error || 'Error al guardar') 
+    }
     setSaving(false)
-  }
+  })
 
   const deleteUser = async (id: string) => {
     if (!confirm('¿Eliminar este usuario?')) return
@@ -124,47 +140,78 @@ export default function UsersPage() {
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar Usuario' : 'Nuevo Usuario'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Nombre *</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="mt-1" /></div>
-            <div><Label>Email *</Label><Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="mt-1" disabled={!!editing} /></div>
-            <div><Label>{editing ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña *'}</Label>
-              <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} className="mt-1" /></div>
-            <div><Label>Rol</Label>
-              <div className="mt-1">
-                <SearchableSelect
-                  options={[
-                    { value: 'admin', label: 'Admin' },
-                    { value: 'super_admin', label: 'Super Admin' },
-                  ]}
-                  value={form.role}
-                  onChange={val => setForm(f => ({ ...f, role: val }))}
-                />
+          <form onSubmit={onSave} className="space-y-4">
+            <div>
+              <Label className={errors.name ? 'text-red-500' : ''}>Nombre *</Label>
+              <Input {...register('name')} className="mt-1" aria-invalid={!!errors.name} />
+              {errors.name && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {String(errors.name.message)}</p>}
+            </div>
+            
+            <div>
+              <Label className={errors.email ? 'text-red-500' : ''}>Email *</Label>
+              <Input type="email" {...register('email')} className="mt-1" disabled={!!editing} aria-invalid={!!errors.email} />
+              {errors.email && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {String(errors.email.message)}</p>}
+            </div>
+
+            <div>
+              <Label className={errors.password ? 'text-red-500' : ''}>{editing ? 'Nueva contraseña (opcional)' : 'Contraseña *'}</Label>
+              <Input type="password" {...register('password')} className="mt-1" aria-invalid={!!errors.password} />
+              {errors.password && <div className="text-xs text-red-500 mt-1 space-y-1">
+                {String(errors.password.message).split(',').map((msg, i) => (
+                  <p key={i} className="flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {msg}</p>
+                ))}
+              </div>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Rol</Label>
+                <div className="mt-1">
+                  <SearchableSelect
+                    options={[
+                      { value: 'admin', label: 'Admin' },
+                      { value: 'super_admin', label: 'Super Admin' },
+                    ]}
+                    value={watch('role')}
+                    onChange={val => setValue('role', val)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>Empresa</Label>
+                <div className="mt-1">
+                  <SearchableSelect
+                    options={[
+                      { value: '', label: 'Sin empresa' },
+                      ...companies.map(c => ({ value: c.id, label: c.name })),
+                    ]}
+                    value={watch('companyId')}
+                    onChange={val => setValue('companyId', val)}
+                    placeholder="Sin empresa"
+                  />
+                </div>
               </div>
             </div>
-            <div><Label>Empresa</Label>
-              <div className="mt-1">
-                <SearchableSelect
-                  options={[
-                    { value: '', label: 'Sin empresa (acceso total)' },
-                    ...companies.map(c => ({ value: c.id, label: c.name })),
-                  ]}
-                  value={form.companyId}
-                  onChange={val => setForm(f => ({ ...f, companyId: val }))}
-                  placeholder="Sin empresa (acceso total)"
-                />
-              </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input 
+                type="checkbox" 
+                id="active" 
+                className="w-4 h-4 rounded border-slate-300"
+                checked={watch('isActive')} 
+                onChange={e => setValue('isActive', e.target.checked)} 
+              />
+              <Label htmlFor="active" className="cursor-pointer">Usuario activo</Label>
             </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} id="active" />
-              <Label htmlFor="active">Usuario activo</Label>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)} className="flex-1">Cancelar</Button>
-              <Button onClick={save} disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700">
+
+            <div className="flex gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="flex-1">Cancelar</Button>
+              <Button type="submit" disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar'}
               </Button>
             </div>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

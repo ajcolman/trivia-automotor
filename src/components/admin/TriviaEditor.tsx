@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent } from '@/components/ui/card'
-import { Save, ArrowLeft, Loader2, ExternalLink, Plus, Trash2, GripVertical, X } from 'lucide-react'
+import { Save, ArrowLeft, Loader2, ExternalLink, Plus, Trash2, GripVertical, X, RotateCcw } from 'lucide-react'
 import { ColorPicker } from './ColorPicker'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { UploadDropzone } from './UploadDropzone'
@@ -46,8 +46,11 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
   const [prizes, setPrizes] = useState<any[]>(trivia?.prizes ?? [])
   const [importOpen, setImportOpen] = useState(false)
   const [qDialogOpen, setQDialogOpen] = useState(false)
+  const [fDialogOpen, setFDialogOpen] = useState(false)
   const [editingQ, setEditingQ] = useState<any | null>(null)
+  const [editingF, setEditingF] = useState<any | null>(null)
   const [logoUrl, setLogoUrl] = useState<string>(trivia?.logoUrl ?? '')
+  const [reseting, setReseting] = useState(false)
   const [colors, setColors] = useState({
     primaryColor: trivia?.primaryColor ?? '#003087',
     secondaryColor: trivia?.secondaryColor ?? '#002060',
@@ -155,6 +158,39 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
     setQuestions(qs => qs.filter(q => q.id !== id))
   }
 
+  const saveField = async (fData: any) => {
+    if (!savedId) { alert('Guarda la trivia primero'); return }
+    const body = {
+      triviaId: savedId,
+      fieldName: fData.fieldName,
+      fieldLabel: fData.fieldLabel,
+      fieldType: fData.fieldType,
+      isRequired: !!fData.isRequired,
+      options: fData.options ? fData.options.split(',').map((o: string) => o.trim()).filter(Boolean) : [],
+    }
+
+    if (editingF?.id) {
+      const res = await fetch(`/api/admin/form-fields/${editingF.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      })
+      const updated = await res.json()
+      setFormFields(fs => fs.map(f => f.id === editingF.id ? updated : f))
+    } else {
+      const res = await fetch('/api/admin/form-fields', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      })
+      const created = await res.json()
+      setFormFields(fs => [...fs, created])
+    }
+    setFDialogOpen(false)
+  }
+
+  const deleteField = async (id: string) => {
+    if (!confirm('¿Eliminar este campo?')) return
+    await fetch(`/api/admin/form-fields/${id}`, { method: 'DELETE' })
+    setFormFields(fs => fs.filter(f => f.id !== id))
+  }
+
   return (
     <div className="space-y-4 max-w-5xl">
       {/* Header */}
@@ -169,11 +205,38 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         </div>
         <div className="flex gap-2">
           {savedId && (
-            <Link href={`/play/${watch('slug')}`} target="_blank">
-              <Button variant="outline" size="sm" className="text-xs">
-                <ExternalLink className="w-3 h-3 mr-1" /> Ver trivia
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                onClick={async () => {
+                  if (!confirm('¿Estás seguro de que deseas resetear esta trivia? Se eliminarán todas las participaciones y estadísticas.')) return
+                  setReseting(true)
+                  try {
+                    const res = await fetch(`/api/admin/trivias/${savedId}/reset`, { method: 'POST' })
+                    if (res.ok) {
+                      alert('Trivia reseteada correctamente')
+                      router.refresh()
+                    } else {
+                      const d = await res.json()
+                      alert(d.error || 'Error al resetear')
+                    }
+                  } finally {
+                    setReseting(false)
+                  }
+                }}
+                disabled={reseting}
+              >
+                {reseting ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RotateCcw className="w-3 h-3 mr-1" />}
+                Resetear
               </Button>
-            </Link>
+              <Link href={`/play/${watch('slug')}`} target="_blank">
+                <Button variant="outline" size="sm" className="text-xs">
+                  <ExternalLink className="w-3 h-3 mr-1" /> Ver trivia
+                </Button>
+              </Link>
+            </>
           )}
           <Button onClick={onSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
             {saving ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Guardando...</> : <><Save className="w-4 h-4 mr-2" />Guardar</>}
@@ -413,22 +476,58 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         <TabsContent value="form">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-6">
-              <p className="text-sm text-slate-500 mb-4">
-                Define qué datos recopilar de los participantes al finalizar la trivia.
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Define qué datos recopilar de los participantes al finalizar la trivia.
+                  </p>
+                </div>
+                <Button size="sm" onClick={() => { setEditingF(null); setFDialogOpen(true) }}>
+                  <Plus className="w-4 h-4 mr-1" /> Agregar campo
+                </Button>
+              </div>
+
+              {!savedId && (
+                <p className="text-sm text-amber-600 bg-amber-50 rounded-xl p-3 mb-4">
+                  ⚠️ Guarda la trivia primero para poder configurar el formulario.
+                </p>
+              )}
+
               <div className="space-y-2">
                 {formFields.map((f, i) => (
                   <div key={f.id ?? i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border">
-                    <span className="text-xs font-mono text-slate-400 w-20 truncate">{f.fieldName}</span>
-                    <span className="flex-1 text-sm font-medium">{f.fieldLabel}</span>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{f.fieldType}</span>
-                    {f.isRequired && <span className="text-xs text-red-400">*requerido</span>}
+                    <GripVertical className="w-4 h-4 text-slate-300 flex-shrink-0" />
+                    <div className="w-20 truncate">
+                      <span className="text-[10px] font-mono text-slate-400 block uppercase">Slug</span>
+                      <span className="text-xs font-mono text-slate-600">{f.fieldName}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Etiqueta</span>
+                      <span className="text-sm font-medium text-slate-700">{f.fieldLabel}</span>
+                    </div>
+                    <div className="text-center w-20">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Tipo</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase">{f.fieldType}</span>
+                    </div>
+                    <div className="w-16 text-center">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Req?</span>
+                      <span className={`text-[10px] font-bold ${f.isRequired ? 'text-red-500' : 'text-slate-400'}`}>{f.isRequired ? 'SÍ' : 'NO'}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingF(f); setFDialogOpen(true) }}>✎</Button>
+                      <Button variant="ghost" size="sm" onClick={() => deleteField(f.id)} className="text-red-400 hover:text-red-600">
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
                 {formFields.length === 0 && (
-                  <p className="text-slate-400 text-sm py-4 text-center">
-                    Sin campos personalizados. Se usarán los campos predeterminados (nombre, apellido, teléfono, email).
-                  </p>
+                  <div className="text-center py-8 border-2 border-dashed rounded-2xl border-slate-100">
+                    <p className="text-slate-400 text-sm">
+                      Sin campos personalizados. Se usarán los predeterminados:<br/>
+                      <span className="text-[10px] mt-1 inline-block">Nombre, Apellido, Teléfono, Email</span>
+                    </p>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -480,6 +579,14 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
           }}
         />
       )}
+      {/* Field dialog */}
+      <FieldDialog
+        open={fDialogOpen}
+        initialData={editingF}
+        onClose={() => { setFDialogOpen(false); setEditingF(null) }}
+        onSave={saveField}
+        suggestedModels={brands.filter(b => watch('brandIds')?.includes(b.id)).flatMap(b => b.models)}
+      />
     </div>
   )
 }
@@ -568,6 +675,131 @@ function QuestionDialog({ open, initialData, onClose, onSave }: {
           <div className="flex gap-2 justify-end pt-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Guardar Pregunta</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function FieldDialog({ open, initialData, onClose, onSave, suggestedModels }: {
+  open: boolean
+  initialData: any | null
+  onClose: () => void
+  onSave: (data: any) => void
+  suggestedModels: string[]
+}) {
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<any>({
+    defaultValues: initialData ? {
+      fieldName: initialData.fieldName,
+      fieldLabel: initialData.fieldLabel,
+      fieldType: initialData.fieldType,
+      isRequired: initialData.isRequired,
+      options: initialData.options?.join(', ') ?? '',
+    } : { fieldType: 'text', isRequired: true, options: '' },
+  })
+
+  const type = watch('fieldType')
+
+  useEffect(() => {
+    reset(initialData ? {
+      fieldName: initialData.fieldName,
+      fieldLabel: initialData.fieldLabel,
+      fieldType: initialData.fieldType,
+      isRequired: initialData.isRequired,
+      options: initialData.options?.join(', ') ?? '',
+    } : { fieldType: 'text', isRequired: true, options: '' })
+  }, [initialData, reset])
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{initialData ? 'Editar Campo' : 'Nuevo Campo del Formulario'}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSave)} className="space-y-4">
+          <div>
+            <Label className={errors.fieldLabel ? 'text-red-500' : ''}>Etiqueta (Lo que verá el usuario) *</Label>
+            <Input 
+              {...register('fieldLabel', { required: 'La etiqueta es obligatoria' })} 
+              onChange={e => {
+                setValue('fieldLabel', e.target.value)
+                if (!initialData) setValue('fieldName', slugify(e.target.value).replace(/-/g, '_'))
+              }}
+              placeholder="Ej: Modelo de interés" 
+              className="mt-1" 
+              aria-invalid={!!errors.fieldLabel}
+            />
+            {errors.fieldLabel && <p className="text-xs text-red-500 mt-1">{String(errors.fieldLabel.message)}</p>}
+          </div>
+          <div>
+            <Label className={errors.fieldName ? 'text-red-500' : ''}>Identificador (Slug interno) *</Label>
+            <Input 
+              {...register('fieldName', { required: 'El identificador es obligatorio' })} 
+              placeholder="ej_modelo_interes" 
+              className="mt-1 font-mono text-xs" 
+              aria-invalid={!!errors.fieldName}
+            />
+            {errors.fieldName && <p className="text-xs text-red-500 mt-1">{String(errors.fieldName.message)}</p>}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Tipo de Campo</Label>
+              <select 
+                {...register('fieldType')} 
+                className="w-full mt-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="text">Texto Corto</option>
+                <option value="email">Email</option>
+                <option value="phone">Teléfono</option>
+                <option value="number">Número</option>
+                <option value="select">Lista de Selección</option>
+              </select>
+            </div>
+            <div className="flex items-end pb-2 gap-2">
+              <Switch {...register('isRequired')} onCheckedChange={v => setValue('isRequired', v)} />
+              <Label className="mb-0.5">Obligatorio</Label>
+            </div>
+          </div>
+
+          {type === 'select' && (
+            <div className="space-y-2">
+              <Label>Opciones (separadas por comas)</Label>
+              <Textarea 
+                {...register('options')} 
+                placeholder="Opción 1, Opción 2, Opción 3" 
+                rows={3}
+                className="text-sm"
+              />
+              {suggestedModels.length > 0 && (
+                <div className="pt-1">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Sugerencias de modelos:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {Array.from(new Set(suggestedModels)).map(m => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => {
+                          const current = watch('options')
+                          const opts = current ? current.split(',').map((o: string) => o.trim()) : []
+                          if (!opts.includes(m)) {
+                            setValue('options', opts.length > 0 ? [...opts, m].join(', ') : m)
+                          }
+                        }}
+                        className="text-[10px] bg-slate-100 hover:bg-blue-100 hover:text-blue-700 px-2 py-0.5 rounded-full transition-colors"
+                      >
+                        + {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+            <Button type="submit">Guardar Campo</Button>
           </div>
         </form>
       </DialogContent>

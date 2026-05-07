@@ -8,7 +8,7 @@ import { LeadForm } from './LeadForm'
 import { ResultScreen } from './ResultScreen'
 import { AlreadyPlayed } from './AlreadyPlayed'
 
-export type GameState = 'intro' | 'playing' | 'form' | 'result' | 'already_played' | 'expired'
+export type GameState = 'intro' | 'playing' | 'form' | 'result' | 'already_played' | 'expired' | 'not_started'
 
 export interface TriviaData {
   id: string
@@ -175,11 +175,32 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
         )}
         {gameState === 'expired' && (
           <div className="flex items-center justify-center min-h-screen p-4">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold mb-4" style={{ color: trivia.primaryColor }}>
+            <div className="text-center bg-white p-10 rounded-3xl shadow-xl max-w-sm w-full">
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400">
+                <Clock className="w-10 h-10" />
+              </div>
+              <h1 className="text-3xl font-black mb-3" style={{ color: trivia.primaryColor }}>
                 Trivia Finalizada
               </h1>
-              <p className="text-lg opacity-70">Esta trivia ya no está disponible.</p>
+              <p className="text-slate-500 leading-relaxed">
+                El periodo de participación para esta trivia ha concluido. ¡Te esperamos en la próxima!
+              </p>
+            </div>
+          </div>
+        )}
+        {gameState === 'not_started' && (
+          <div className="flex items-center justify-center min-h-screen p-4">
+            <div className="text-center bg-white p-10 rounded-3xl shadow-xl max-w-sm w-full">
+              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500">
+                <Clock className="w-10 h-10" />
+              </div>
+              <h1 className="text-3xl font-black mb-3" style={{ color: trivia.primaryColor }}>
+                Próximamente
+              </h1>
+              <p className="text-slate-500 leading-relaxed">
+                Esta trivia aún no ha comenzado.<br/>
+                Vuelve el <strong>{new Date(trivia.startDate!).toLocaleDateString('es-PY')}</strong>.
+              </p>
             </div>
           </div>
         )}
