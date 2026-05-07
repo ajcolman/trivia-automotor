@@ -67,46 +67,22 @@ export default async function HomePage() {
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
         <header className="relative overflow-hidden">
-          {/* Gradient background */}
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(135deg, #001a4d 0%, #003087 40%, #0052cc 70%, #0d6efd 100%)'
+          {/* Pixel art background image */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'url(/images/fondo.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center bottom',
+              imageRendering: 'pixelated',
+            }}
+          />
+          {/* Dark overlay to keep text readable */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,20,70,0.82) 0%, rgba(0,30,90,0.70) 50%, rgba(0,15,50,0.88) 100%)' }} />
+          {/* Scanline effect for retro feel */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)',
           }} />
-          {/* Decorative circles */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-10"
-            style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
-          <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full opacity-10"
-            style={{ background: 'radial-gradient(circle, #ffffff, transparent)' }} />
-          {/* Premium Mesh Pattern */}
-          <div className="absolute inset-0 opacity-[0.08]" 
-            style={{ 
-              backgroundImage: `
-                linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
-              `,
-              backgroundSize: '40px 40px'
-            }} 
-          />
-          <div className="absolute inset-0 opacity-[0.03]" 
-            style={{ 
-              backgroundImage: `
-                linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
-              `,
-              backgroundSize: '8px 8px'
-            }} 
-          />
-          
-          {/* Animated Glow / Scanline */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute inset-x-0 h-40 bg-gradient-to-b from-transparent via-white/5 to-transparent -top-40 animate-[scanline_8s_linear_infinite]" />
-          </div>
-
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes scanline {
-              0% { transform: translateY(0); }
-              100% { transform: translateY(100vh); }
-            }
-          `}} />
 
           <div className="relative max-w-6xl mx-auto px-4 py-20 text-center">
 
