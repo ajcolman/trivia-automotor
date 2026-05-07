@@ -9,8 +9,8 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-    const { triviaId, name, description, position } = await req.json()
-    
+    const { triviaId, name, description, imageUrl, position } = await req.json()
+
     if (!triviaId || !name) {
       return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 })
     }
@@ -20,6 +20,7 @@ export async function POST(req: Request) {
         triviaId,
         name,
         description,
+        imageUrl: imageUrl || null,
         position: Number(position),
       }
     })

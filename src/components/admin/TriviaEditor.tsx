@@ -47,8 +47,11 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
   const [importOpen, setImportOpen] = useState(false)
   const [qDialogOpen, setQDialogOpen] = useState(false)
   const [fDialogOpen, setFDialogOpen] = useState(false)
+  const [pDialogOpen, setPDialogOpen] = useState(false)
   const [editingQ, setEditingQ] = useState<any | null>(null)
   const [editingF, setEditingF] = useState<any | null>(null)
+  const [editingP, setEditingP] = useState<any | null>(null)
+  const [prizeForm, setPrizeForm] = useState({ name: '', description: '', imageUrl: '', position: 1 })
   const [logoUrl, setLogoUrl] = useState<string>(trivia?.logoUrl ?? '')
   const [reseting, setReseting] = useState(false)
   const [colors, setColors] = useState({
@@ -596,14 +599,13 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   <h3 className="text-lg font-black text-slate-800">Premios configurados</h3>
                   <p className="text-xs text-slate-500">Define los premios que se mostrarán en la landing y al final del juego.</p>
                 </div>
-                <Button 
-                  size="sm" 
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white" 
+                <Button
+                  size="sm"
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
                   onClick={() => {
-                    const name = prompt('Nombre del premio (Ej: iPhone 15 Pro Max)')
-                    if (!name) return
-                    const pos = prompt('Posición (1, 2, 3...):', (prizes.length + 1).toString())
-                    savePrize({ name, position: Number(pos) || prizes.length + 1 })
+                    setEditingP(null)
+                    setPrizeForm({ name: '', description: '', imageUrl: '', position: prizes.length + 1 })
+                    setPDialogOpen(true)
                   }}
                 >
                   <Plus className="w-4 h-4 mr-1" /> Agregar Premio
@@ -619,22 +621,24 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {prizes.sort((a,b) => a.position - b.position).map((p, i) => (
+                  {prizes.sort((a,b) => a.position - b.position).map((p) => (
                     <div key={p.id} className="group relative flex items-center gap-4 p-4 bg-white border rounded-2xl shadow-sm hover:shadow-md transition-all">
-                      <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-600 font-black text-lg shadow-inner">
-                        {p.position <= 3 ? ['🥇', '🥈', '🥉'][p.position - 1] : `${p.position}°`}
-                      </div>
+                      {p.imageUrl ? (
+                        <img src={p.imageUrl} alt={p.name} className="w-12 h-12 rounded-xl object-cover border border-slate-100 flex-shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center text-lg shadow-inner flex-shrink-0">
+                          {p.position <= 3 ? ['🥇', '🥈', '🥉'][p.position - 1] : `${p.position}°`}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-slate-800 truncate">{p.name}</h4>
                         <p className="text-xs text-slate-500 line-clamp-1">{p.description || 'Sin descripción adicional'}</p>
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => {
-                          const name = prompt('Nombre del premio:', p.name)
-                          if (!name) return
-                          const desc = prompt('Descripción:', p.description || '')
-                          const pos = prompt('Posición:', p.position.toString())
-                          savePrize({ ...p, name, description: desc, position: Number(pos) || p.position })
+                          setEditingP(p)
+                          setPrizeForm({ name: p.name, description: p.description ?? '', imageUrl: p.imageUrl ?? '', position: p.position })
+                          setPDialogOpen(true)
                         }}>✎</Button>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => deletePrize(p.id)}>
                           <Trash2 className="w-3.5 h-3.5" />
@@ -700,6 +704,73 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         onSave={saveField}
         suggestedModels={brands.filter(b => watch('brandIds')?.includes(b.id)).flatMap(b => b.models.map(m => `${b.name.toUpperCase()} ${m.toUpperCase()}`))}
       />
+
+      {/* ── Prize dialog ── */}
+      <Dialog open={pDialogOpen} onOpenChange={open => { if (!open) { setPDialogOpen(false); setEditingP(null) } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingP ? 'Editar Premio' : 'Nuevo Premio'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Nombre del premio *</Label>
+              <Input
+                value={prizeForm.name}
+                onChange={e => setPrizeForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Ej: iPhone 16 Pro Max"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Descripción</Label>
+              <Input
+                value={prizeForm.description}
+                onChange={e => setPrizeForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="Detalles adicionales del premio..."
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Posición</Label>
+              <Input
+                type="number"
+                min={1}
+                max={20}
+                value={prizeForm.position}
+                onChange={e => setPrizeForm(f => ({ ...f, position: Number(e.target.value) || 1 }))}
+                className="mt-1 w-24"
+              />
+              <p className="text-xs text-slate-400 mt-1">1 = primer lugar, 2 = segundo, etc.</p>
+            </div>
+            <div>
+              <Label>Imagen del premio (opcional)</Label>
+              <div className="mt-1">
+                <UploadDropzone
+                  value={prizeForm.imageUrl || null}
+                  onUpload={url => setPrizeForm(f => ({ ...f, imageUrl: url }))}
+                  label="Arrastra la imagen del premio"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" onClick={() => { setPDialogOpen(false); setEditingP(null) }} className="flex-1">
+                Cancelar
+              </Button>
+              <Button
+                disabled={!prizeForm.name.trim()}
+                onClick={async () => {
+                  await savePrize({ ...editingP, ...prizeForm })
+                  setPDialogOpen(false)
+                  setEditingP(null)
+                }}
+                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
+              >
+                Guardar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

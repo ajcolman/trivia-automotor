@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { Trophy, Users, Zap, ChevronRight, Clock, Star, Award, Medal } from 'lucide-react'
 import { formatDateShort, getNowAsuncion, mediaUrl } from '@/lib/utils'
+import { PrizesModal } from '@/components/landing/PrizesModal'
 
 export const revalidate = 60
 
@@ -23,7 +24,7 @@ async function getLandingData() {
     include: {
       company: { select: { name: true, logoUrl: true } },
       brands: { select: { name: true, logoUrl: true }, take: 1 },
-      prizes: { orderBy: { position: 'asc' }, take: 3 },
+      prizes: { orderBy: { position: 'asc' } },
       flyers: { where: { isActive: true }, take: 1 },
       _count: { select: { leads: true, questions: true } },
       leads: {
@@ -231,22 +232,21 @@ export default async function HomePage() {
                           <p className="text-sm text-slate-500 mb-3 line-clamp-2 leading-relaxed">{trivia.description}</p>
                         )}
 
-                        {/* Prizes */}
-                        {trivia.prizes.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-4">
-                            {trivia.prizes.slice(0, 3).map(p => (
-                              <span key={p.id} className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 px-2 py-0.5 rounded-full font-medium">
-                                {p.position === 1 ? '🥇' : p.position === 2 ? '🥈' : '🥉'} {p.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
                         {/* Footer */}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                          <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                            <Users className="w-3.5 h-3.5" />
-                            <span>{trivia._count.leads} participante{trivia._count.leads !== 1 ? 's' : ''}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                              <Users className="w-3.5 h-3.5" />
+                              <span>{trivia._count.leads} participante{trivia._count.leads !== 1 ? 's' : ''}</span>
+                            </div>
+                            {trivia.prizes.length > 0 && (
+                              <PrizesModal
+                                prizes={trivia.prizes}
+                                primaryColor={trivia.primaryColor}
+                                secondaryColor={trivia.secondaryColor}
+                                triviaTitle={trivia.title}
+                              />
+                            )}
                           </div>
                           <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#003087] group-hover:gap-2.5 transition-all">
                             Jugar <ChevronRight className="w-4 h-4" />

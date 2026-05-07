@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Loader2, ImageIcon } from 'lucide-react'
 import Image from 'next/image'
-import { cn } from '@/lib/utils'
+import { cn, mediaUrl } from '@/lib/utils'
 
 interface UploadDropzoneProps {
   value?: string | null
@@ -64,7 +64,7 @@ export function UploadDropzone({
     <div className={cn('space-y-2', className)}>
       {value ? (
         <div className="relative w-full h-32 rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-50">
-          <Image src={value} alt="Preview" fill className="object-contain p-2" unoptimized />
+          <Image src={mediaUrl(value)} alt="Preview" fill className="object-contain p-2" unoptimized />
           <button
             type="button"
             onClick={() => onUpload('')}
