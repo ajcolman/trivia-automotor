@@ -36,6 +36,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploads (only keep gitkeep)
+# uploads (only keep gitkeep and static brand assets)
 public/uploads/*
 !public/uploads/.gitkeep
+!public/uploads/logoa.png

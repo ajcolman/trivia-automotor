@@ -56,6 +56,9 @@
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "tsx": "^4.21.0"
   }
