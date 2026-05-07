@@ -31,7 +31,9 @@ export default function UsersPage() {
   const [saving, setSaving] = useState(false)
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<any>({
-    resolver: zodResolver(editing ? updateUserSchema : createUserSchema)
+    resolver: zodResolver(editing ? updateUserSchema : createUserSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
   })
 
   const load = async () => {
@@ -135,7 +137,7 @@ export default function UsersPage() {
         </div>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} key={editing?.id ?? 'create'}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar Usuario' : 'Nuevo Usuario'}</DialogTitle>
@@ -179,7 +181,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <Label>Empresa</Label>
+                <Label className={errors.companyId ? 'text-red-500' : ''}>Empresa</Label>
                 <div className="mt-1">
                   <SearchableSelect
                     options={[
@@ -187,10 +189,11 @@ export default function UsersPage() {
                       ...companies.map(c => ({ value: c.id, label: c.name })),
                     ]}
                     value={watch('companyId')}
-                    onChange={val => setValue('companyId', val)}
+                    onChange={val => setValue('companyId', val, { shouldValidate: true })}
                     placeholder="Sin empresa"
                   />
                 </div>
+                {errors.companyId && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {String(errors.companyId.message)}</p>}
               </div>
             </div>
 
