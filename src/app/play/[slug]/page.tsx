@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { GameShell } from '@/components/game/GameShell'
 import { SESSION_COOKIE_NAME } from '@/lib/session-fingerprint'
+import { getNowAsuncion } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PlayPage({ params }: PageProps) {
-  const now = new Date()
+  const now = getNowAsuncion()
 
   const trivia = await prisma.trivia.findUnique({
     where: { slug: params.slug, isActive: true },

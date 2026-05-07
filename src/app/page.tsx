@@ -3,14 +3,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { Trophy, Users, Zap, ChevronRight, Clock, Star, Award, Medal } from 'lucide-react'
-import { formatDateShort } from '@/lib/utils'
+import { formatDateShort, getNowAsuncion } from '@/lib/utils'
 
 export const revalidate = 60
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
 async function getLandingData() {
-  const now = new Date()
+  const now = getNowAsuncion()
   const activeTrivias = await prisma.trivia.findMany({
     where: {
       isActive: true, isPublic: true,
