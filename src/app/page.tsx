@@ -75,9 +75,37 @@ export default async function HomePage() {
             style={{ background: 'radial-gradient(circle, #FFD700, transparent)' }} />
           <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full opacity-10"
             style={{ background: 'radial-gradient(circle, #ffffff, transparent)' }} />
-          {/* Dot grid */}
-          <div className="absolute inset-0 opacity-[0.04]"
-            style={{ backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)', backgroundSize: '28px 28px' }} />
+          {/* Premium Mesh Pattern */}
+          <div className="absolute inset-0 opacity-[0.08]" 
+            style={{ 
+              backgroundImage: `
+                linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '40px 40px'
+            }} 
+          />
+          <div className="absolute inset-0 opacity-[0.03]" 
+            style={{ 
+              backgroundImage: `
+                linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '8px 8px'
+            }} 
+          />
+          
+          {/* Animated Glow / Scanline */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-x-0 h-40 bg-gradient-to-b from-transparent via-white/5 to-transparent -top-40 animate-[scanline_8s_linear_infinite]" />
+          </div>
+
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes scanline {
+              0% { transform: translateY(0); }
+              100% { transform: translateY(100vh); }
+            }
+          `}} />
 
           <div className="relative max-w-6xl mx-auto px-4 py-20 text-center">
 
@@ -96,10 +124,13 @@ export default async function HomePage() {
                 { icon: <Zap className="w-4 h-4" />, value: `${activeTrivias.length}`, label: 'trivias activas' },
                 { icon: <Award className="w-4 h-4" />, value: `${activeTrivias.reduce((s, t) => s + t.prizes.length, 0)}`, label: 'premios en juego' },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white backdrop-blur-sm">
-                  <span className="text-yellow-300">{s.icon}</span>
-                  <span className="font-bold">{s.value}</span>
-                  <span className="text-white/60 text-sm">{s.label}</span>
+                <div 
+                  key={i} 
+                  className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2.5 text-white backdrop-blur-md shadow-lg hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 group"
+                >
+                  <span className="text-yellow-400 group-hover:scale-110 transition-transform">{s.icon}</span>
+                  <span className="font-black text-lg tracking-tight">{s.value}</span>
+                  <span className="text-white/50 text-xs font-bold uppercase tracking-wider">{s.label}</span>
                 </div>
               ))}
             </div>
