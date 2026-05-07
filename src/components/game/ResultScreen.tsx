@@ -6,6 +6,7 @@ import { Trophy, Download, Share2, Medal, Star, RotateCcw, Home } from 'lucide-r
 import type { TriviaData, GameResult, AnswerRecord } from './GameShell'
 import Image from 'next/image'
 import Link from 'next/link'
+import { mediaUrl } from '@/lib/utils'
 
 interface LeaderboardEntry {
   position: number
@@ -122,7 +123,7 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
       maxScore: result.maxScore,
       date: new Date().toLocaleDateString('es-PY'),
       companyName: trivia.company?.name,
-      logoUrl: trivia.logoUrl ?? trivia.company?.logoUrl ?? undefined,
+      logoUrl: mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl) || undefined,
     })
   }
 
@@ -135,7 +136,7 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
     }
   }
 
-  const logo = trivia.logoUrl ?? trivia.company?.logoUrl
+  const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl)
 
   return (
     <>

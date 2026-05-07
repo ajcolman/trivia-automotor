@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { Trophy, Users, Zap, ChevronRight, Clock, Star, Award, Medal } from 'lucide-react'
-import { formatDateShort, getNowAsuncion } from '@/lib/utils'
+import { formatDateShort, getNowAsuncion, mediaUrl } from '@/lib/utils'
 
 export const revalidate = 60
 
@@ -166,7 +166,7 @@ export default async function HomePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeTrivias.map(trivia => {
                   const flyer = trivia.flyers[0]
-                  const logo = trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl
+                  const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl)
                   const pct = Math.min(100, Math.round((trivia._count.leads / 100) * 100))
 
                   return (
@@ -178,7 +178,7 @@ export default async function HomePage() {
                       {/* Banner */}
                       {flyer ? (
                         <div className="relative h-44 overflow-hidden">
-                          <Image src={flyer.imageUrl} alt={trivia.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+                          <Image src={mediaUrl(flyer.imageUrl)} alt={trivia.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                           {trivia.endDate && (
                             <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1">

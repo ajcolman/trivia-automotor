@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { mediaUrl } from '@/lib/utils'
 
 interface Brand {
   id: string; name: string; companyId: string; logoUrl: string | null
@@ -103,7 +104,7 @@ export default function BrandsPage() {
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                    {b.logoUrl ? <img src={b.logoUrl} alt={b.name} className="w-8 h-8 object-contain" /> : <Car className="w-5 h-5 text-slate-400" />}
+                    {b.logoUrl ? <img src={mediaUrl(b.logoUrl)} alt={b.name} className="w-8 h-8 object-contain" /> : <Car className="w-5 h-5 text-slate-400" />}
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800">{b.name}</h3>

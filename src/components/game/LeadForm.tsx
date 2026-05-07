@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { Trophy, Loader2 } from 'lucide-react'
 import type { TriviaData, AnswerRecord, FormFieldData } from './GameShell'
 import Image from 'next/image'
+import { mediaUrl } from '@/lib/utils'
 
 interface LeadFormProps {
   trivia: TriviaData
@@ -26,7 +27,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm<Record<string, string>>()
 
-  const logo = trivia.logoUrl ?? trivia.company?.logoUrl
+  const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl)
 
   const doSubmit = async (data: Record<string, string>) => {
     setIsSubmitting(true)
@@ -55,7 +56,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
           >
             {logo ? (
               <div className="flex justify-center mb-3">
-                <Image src={logo} alt="Logo" width={100} height={40} className="h-10 w-auto object-contain" unoptimized />
+                {logo && <Image src={logo} alt="Logo" width={100} height={40} className="h-10 w-auto object-contain" unoptimized />}
               </div>
             ) : (
               <Trophy className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--trivia-accent)' }} />

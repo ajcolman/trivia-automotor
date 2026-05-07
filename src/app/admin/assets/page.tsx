@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { Trash2, Copy, Loader2 } from 'lucide-react'
+import { mediaUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
@@ -56,7 +57,7 @@ export default function AssetsPage() {
         {assets.map(asset => (
           <div key={asset.id} className="group relative bg-white rounded-xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             <div className="aspect-square bg-slate-50 flex items-center justify-center p-2">
-              <img src={asset.url} alt={asset.name} className="w-full h-full object-contain" />
+              <img src={mediaUrl(asset.url)} alt={asset.name} className="w-full h-full object-contain" />
             </div>
             <div className="p-2">
               <p className="text-xs text-slate-600 truncate font-medium">{asset.name}</p>

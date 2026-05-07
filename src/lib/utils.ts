@@ -71,3 +71,16 @@ export function formatPercent(value: number, total: number): string {
 export function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
+
+/**
+ * Wraps Vercel Blob private URLs through the /api/media proxy so they can be
+ * displayed in the browser without exposing the token.
+ * Local /uploads/* URLs and external http URLs pass through unchanged.
+ */
+export function mediaUrl(url: string | null | undefined): string {
+  if (!url) return ''
+  if (url.includes('vercel-storage.com')) {
+    return `/api/media?url=${encodeURIComponent(url)}`
+  }
+  return url
+}

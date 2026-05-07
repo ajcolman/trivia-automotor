@@ -6,6 +6,7 @@ import { Play, Trophy, Clock, Zap, Gift, ChevronRight, Star, ArrowLeft } from 'l
 import type { TriviaData } from './GameShell'
 import Image from 'next/image'
 import Link from 'next/link'
+import { mediaUrl } from '@/lib/utils'
 
 interface IntroScreenProps {
   trivia: TriviaData
@@ -16,7 +17,7 @@ const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
 export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
   const [hovered, setHovered] = useState(false)
-  const logo = trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl
+  const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl)
   const totalPoints = trivia.questions.reduce((s, q) => s + q.points, 0)
   const maxTime = Math.max(...trivia.questions.map(q => q.timeLimit))
 

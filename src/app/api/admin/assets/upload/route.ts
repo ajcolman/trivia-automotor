@@ -27,28 +27,20 @@ export async function POST(req: NextRequest) {
   let url: string
 
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    // Vercel Blob storage
+    // Vercel Blob — private store: upload with access:'private', serve via /api/media proxy
     try {
       const { put } = await import('@vercel/blob')
       const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin'
       const safeName = `logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      // Use tokenType: 'client' only allows private; try public first
-      const blob = await put(safeName, file, { access: 'public', addRandomSuffix: false })
+      const blob = await put(safeName, file, { access: 'private', addRandomSuffix: false })
+      // Store the raw blob URL; /api/media will serve it using the server-side token
       url = blob.url
     } catch (blobErr: unknown) {
       const msg = blobErr instanceof Error ? blobErr.message : String(blobErr)
-      // Private store: Vercel Blob store must be configured as public.
-      // Go to Vercel Dashboard → Storage → your Blob store → Settings → Access → Public
-      if (msg.includes('private store') || msg.includes('public access')) {
-        return NextResponse.json(
-          { error: 'El almacenamiento Vercel Blob está configurado como privado. Cambiá la configuración del store a "public" en el panel de Vercel (Storage → tu store → Settings → Access).' },
-          { status: 500 },
-        )
-      }
-      return NextResponse.json({ error: `Error al subir a Vercel Blob: ${msg}` }, { status: 500 })
+      return NextResponse.json({ error: `Error al subir: ${msg}` }, { status: 500 })
     }
   } else {
-    // Local filesystem fallback (development only)
+    // Local filesystem fallback (development)
     try {
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
