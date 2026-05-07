@@ -93,7 +93,7 @@ export default async function HomePage() {
           {/* Contenido alineado arriba para dejar los autos visibles abajo */}
           <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-40 lg:pt-20 lg:pb-52 text-center">
             <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg">
-              Trivias &amp; <span style={{ color: '#F97316' }}>Premios</span>
+              Trivias &amp; <span style={{ color: '#38BDF8' }}>Premios</span>
             </h1>
             <p className="text-lg text-white/75 mb-10 max-w-md mx-auto drop-shadow">
               Participá en nuestras trivias interactivas, demostrá tu conocimiento y ganá increíbles premios.
@@ -110,7 +110,7 @@ export default async function HomePage() {
                   key={i}
                   className="flex items-center gap-2 bg-black/25 border border-white/15 rounded-full px-5 py-2.5 text-white backdrop-blur-sm shadow-lg hover:bg-black/35 hover:border-white/25 transition-all duration-300 hover:scale-105 group"
                 >
-                  <span className="text-orange-400 group-hover:scale-110 transition-transform">{s.icon}</span>
+                  <span className="text-sky-300 group-hover:scale-110 transition-transform">{s.icon}</span>
                   <span className="font-black text-lg tracking-tight">{s.value}</span>
                   <span className="text-white/50 text-xs font-bold uppercase tracking-wider">{s.label}</span>
                 </div>
