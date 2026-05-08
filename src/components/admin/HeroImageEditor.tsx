@@ -28,18 +28,25 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!value) return
+    if (!value || !containerRef.current) return
     setIsDragging(true)
+    const rect = containerRef.current.getBoundingClientRect()
     setStartPos({
-      x: e.clientX - (settings.x || 0),
-      y: e.clientY - (settings.y || 0)
+      x: e.clientX - (settings.x * rect.width / 100),
+      y: e.clientY - (settings.y * rect.height / 100)
     })
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !value) return
-    const newX = e.clientX - startPos.x
-    const newY = e.clientY - startPos.y
+    if (!isDragging || !value || !containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const newXPx = e.clientX - startPos.x
+    const newYPx = e.clientY - startPos.y
+    
+    // Convert to percentage
+    const newX = (newXPx / rect.width) * 100
+    const newY = (newYPx / rect.height) * 100
+    
     onSettingsChange({ ...settings, x: newX, y: newY })
   }
 
@@ -131,7 +138,7 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
                   alt="Hero preview" 
                   className="absolute pointer-events-none select-none max-w-none"
                   style={{
-                    transform: `translate(${settings.x}px, ${settings.y}px) scale(${settings.zoom})`,
+                    transform: `translate(${settings.x}%, ${settings.y}%) scale(${settings.zoom})`,
                     transformOrigin: 'center',
                     minWidth: '100%',
                     minHeight: '100%'

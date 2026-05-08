@@ -80,7 +80,7 @@ export default async function HomePage() {
               alt="Hero" 
               className="absolute max-w-none pointer-events-none select-none"
               style={{
-                transform: `translate(${heroSet.x}px, ${heroSet.y}px) scale(${heroSet.zoom})`,
+                transform: `translate(${heroSet.x}%, ${heroSet.y}%) scale(${heroSet.zoom})`,
                 transformOrigin: 'center',
                 minWidth: '100%',
                 minHeight: '100%'

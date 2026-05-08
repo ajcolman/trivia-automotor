@@ -61,7 +61,7 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                   alt="Hero" 
                   className="absolute max-w-none pointer-events-none select-none"
                   style={{
-                    transform: `translate(${trivia.heroImageSettings?.x ?? 0}px, ${trivia.heroImageSettings?.y ?? 0}px) scale(${trivia.heroImageSettings?.zoom ?? 1})`,
+                    transform: `translate(${trivia.heroImageSettings?.x ?? 0}%, ${trivia.heroImageSettings?.y ?? 0}%) scale(${trivia.heroImageSettings?.zoom ?? 1})`,
                     transformOrigin: 'center',
                     minWidth: '100%',
                     minHeight: '100%'
