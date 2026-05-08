@@ -34,6 +34,42 @@ export function UploadDropzone({
     setError(null)
 
     try {
+      // 1. Try direct upload to Vercel Blob if in production
+      if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+        try {
+          const { upload } = await import('@vercel/blob/client')
+          const blob = await upload(file.name, file, {
+            access: 'public', // Client uploads are usually public for ease of access
+            handlePayload: async () => {
+              const res = await fetch('/api/admin/assets/upload/token')
+              const data = await res.json()
+              if (!res.ok) throw new Error(data.error)
+              return data.clientToken
+            }
+          })
+          
+          // Register asset in DB (server-side)
+          const regRes = await fetch('/api/admin/assets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: file.name,
+              url: blob.url,
+              fileType: file.type,
+              sizeBytes: file.size
+            })
+          })
+          const regData = await regRes.json()
+          if (!regRes.ok) throw new Error(regData.error)
+          
+          onUpload(blob.url)
+          return
+        } catch (blobErr) {
+          console.warn('Direct upload failed, falling back to server upload', blobErr)
+        }
+      }
+
+      // 2. Fallback to server-side upload
       const formData = new FormData()
       formData.append('file', file)
       const res = await fetch('/api/admin/assets/upload', { method: 'POST', body: formData })
