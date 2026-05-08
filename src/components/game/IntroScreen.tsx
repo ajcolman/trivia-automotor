@@ -45,23 +45,26 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
           {/* Header banner */}
           <div
             className="relative px-8 pt-10 pb-8 text-white text-center overflow-hidden"
-            style={{ background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)` }}
+            style={{ 
+              background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)`,
+              minHeight: trivia.heroImageUrl ? `${trivia.heroImageSettings?.height ?? 400}px` : 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}
           >
             {/* Background pattern / Hero Image */}
             {trivia.heroImageUrl ? (
-              <div 
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  height: `${trivia.heroImageSettings?.height ?? 400}px`
-                }}
-              >
+              <div className="absolute inset-0 pointer-events-none">
                 <img 
                   src={mediaUrl(trivia.heroImageUrl)} 
                   alt="Hero" 
-                  className="absolute max-w-none w-full h-full object-cover"
+                  className="absolute max-w-none pointer-events-none select-none"
                   style={{
                     transform: `translate(${trivia.heroImageSettings?.x ?? 0}px, ${trivia.heroImageSettings?.y ?? 0}px) scale(${trivia.heroImageSettings?.zoom ?? 1})`,
-                    transformOrigin: 'center'
+                    transformOrigin: 'center',
+                    minWidth: '100%',
+                    minHeight: '100%'
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />

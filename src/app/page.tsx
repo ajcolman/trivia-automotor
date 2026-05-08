@@ -72,19 +72,31 @@ export default async function HomePage() {
 
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
-        <header className="relative overflow-hidden" style={{ minHeight: `${heroSet.height}px` }}>
+        <header className="relative overflow-hidden" style={{ minHeight: `${heroSet.height}px`, display: 'flex', alignItems: 'center' }}>
           {/* Background image */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${heroImg})`,
-              backgroundSize: 'cover',
-              backgroundPosition: settings?.heroImageUrl ? 'center' : 'center bottom',
-              imageRendering: settings?.heroImageUrl ? 'auto' : 'pixelated',
-              transform: settings?.heroImageUrl ? `translate(${heroSet.x}px, ${heroSet.y}px) scale(${heroSet.zoom})` : 'none',
-              transformOrigin: 'center'
-            }}
-          />
+          {settings?.heroImageUrl ? (
+            <img 
+              src={heroImg} 
+              alt="Hero" 
+              className="absolute max-w-none pointer-events-none select-none"
+              style={{
+                transform: `translate(${heroSet.x}px, ${heroSet.y}px) scale(${heroSet.zoom})`,
+                transformOrigin: 'center',
+                minWidth: '100%',
+                minHeight: '100%'
+              }}
+            />
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url(${heroImg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center bottom',
+                imageRendering: 'pixelated',
+              }}
+            />
+          )}
           {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
           <div className="absolute inset-0" style={{
             background: settings?.heroImageUrl 
