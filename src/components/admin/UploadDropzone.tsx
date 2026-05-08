@@ -41,7 +41,7 @@ export function UploadDropzone({
           const blob = await upload(file.name, file, {
             access: 'public', // Client uploads are usually public for ease of access
             handlePayload: async () => {
-              const res = await fetch('/api/admin/assets/upload/token')
+              const res = await fetch(`/api/admin/assets/upload/token?pathname=${file.name}`)
               const data = await res.json()
               if (!res.ok) throw new Error(data.error)
               return data.clientToken
