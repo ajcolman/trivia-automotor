@@ -37,15 +37,16 @@ export function UploadDropzone({
       // 1. Try direct upload to Vercel Blob if in production
       if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
         try {
-          const { upload } = await import('@vercel/blob/client')
-          const blob = await upload(file.name, file, {
-            access: 'public', // Client uploads are usually public for ease of access
-            handlePayload: async () => {
-              const res = await fetch(`/api/admin/assets/upload/token?pathname=${file.name}`)
-              const data = await res.json()
-              if (!res.ok) throw new Error(data.error)
-              return data.clientToken
-            }
+          const { put } = await import('@vercel/blob/client')
+          
+          // Get token first
+          const tokenRes = await fetch(`/api/admin/assets/upload/token?pathname=${file.name}`)
+          const tokenData = await tokenRes.json()
+          if (!tokenRes.ok) throw new Error(tokenData.error)
+
+          const blob = await put(file.name, file, {
+            access: 'public',
+            token: tokenData.clientToken
           })
           
           // Register asset in DB (server-side)
