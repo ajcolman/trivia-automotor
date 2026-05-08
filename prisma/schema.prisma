@@ -91,6 +91,8 @@ model Trivia {
   maxPlaysPerUser     Int       @default(1)
   gameInstructions    String?
   termsAndConditions  String?
+  heroImageUrl        String?
+  heroImageSettings   Json?     // { x: number, y: number, zoom: number, height: number }
   createdBy           String
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -266,5 +268,7 @@ model PlatformSettings {
   id              String   @id @default("singleton")
   platformTerms   String?  // Terms of use for admin users
   privacyPolicy   String?
+  heroImageUrl    String?
+  heroImageSettings Json?  // { zoom: number, x: number, y: number, height: number }
   updatedAt       DateTime @updatedAt
 }

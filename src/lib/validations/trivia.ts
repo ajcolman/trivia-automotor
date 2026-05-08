@@ -59,6 +59,13 @@ export const triviaBaseSchema = z.object({
 
   gameInstructions: z.string().optional().nullable(),
   termsAndConditions: z.string().optional().nullable(),
+  heroImageUrl: z.string().optional().nullable(),
+  heroImageSettings: z.object({
+    zoom: z.number().default(1),
+    x: z.number().default(0),
+    y: z.number().default(0),
+    height: z.number().default(400),
+  }).optional().nullable(),
 })
 
 // Full schema with cross-field refinement — use for POST (create)

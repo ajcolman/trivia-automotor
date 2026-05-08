@@ -21,6 +21,7 @@ import Link from 'next/link'
 import { slugify, mediaUrl } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { HeroImageEditor } from './HeroImageEditor'
 import { toast } from 'sonner'
 
 interface TriviaEditorProps {
@@ -86,6 +87,8 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       endDate: trivia?.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
       gameInstructions: trivia?.gameInstructions ?? '',
       termsAndConditions: trivia?.termsAndConditions ?? '',
+      heroImageUrl: trivia?.heroImageUrl ?? '',
+      heroImageSettings: trivia?.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 400 },
     },
   })
 
@@ -105,6 +108,8 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         endDate: trivia.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
         gameInstructions: trivia.gameInstructions ?? '',
         termsAndConditions: trivia.termsAndConditions ?? '',
+        heroImageUrl: trivia.heroImageUrl ?? '',
+        heroImageSettings: trivia.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 400 },
       })
       setLogoUrl(trivia.logoUrl ?? '')
       setQuestions(trivia.questions ?? [])
@@ -162,6 +167,8 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         maxPlaysPerUser: Number(data.maxPlaysPerUser),
         companyId: data.companyId || null,
         brandIds: data.brandIds ?? [],
+        heroImageUrl: watch('heroImageUrl') || null,
+        heroImageSettings: watch('heroImageSettings') || null,
       }
 
       const url = mode === 'create' ? '/api/admin/trivias' : `/api/admin/trivias/${savedId}`
@@ -513,6 +520,16 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                 <div className="mt-3">
                   <ColorPicker value={colors} onChange={setColors} />
                 </div>
+              </div>
+
+              <div className="pt-6 border-t">
+                <HeroImageEditor
+                  value={watch('heroImageUrl') ?? ''}
+                  settings={watch('heroImageSettings') ?? { zoom: 1, x: 0, y: 0, height: 400 }}
+                  onChange={val => setValue('heroImageUrl', val)}
+                  onSettingsChange={val => setValue('heroImageSettings', val)}
+                  primaryColor={colors.primaryColor}
+                />
               </div>
 
               <div>

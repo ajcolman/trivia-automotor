@@ -47,19 +47,41 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
             className="relative px-8 pt-10 pb-8 text-white text-center overflow-hidden"
             style={{ background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)` }}
           >
-            {/* Background pattern */}
-            <div
-              className="absolute inset-0 opacity-[0.07]"
-              style={{
-                backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)',
-                backgroundSize: '24px 24px',
-              }}
-            />
-            {/* Decorative glow top-right */}
-            <div
-              className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-20"
-              style={{ backgroundColor: trivia.accentColor }}
-            />
+            {/* Background pattern / Hero Image */}
+            {trivia.heroImageUrl ? (
+              <div 
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  height: `${trivia.heroImageSettings?.height ?? 400}px`
+                }}
+              >
+                <img 
+                  src={mediaUrl(trivia.heroImageUrl)} 
+                  alt="Hero" 
+                  className="absolute max-w-none w-full h-full object-cover"
+                  style={{
+                    transform: `translate(${trivia.heroImageSettings?.x ?? 0}px, ${trivia.heroImageSettings?.y ?? 0}px) scale(${trivia.heroImageSettings?.zoom ?? 1})`,
+                    transformOrigin: 'center'
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+              </div>
+            ) : (
+              <>
+                <div
+                  className="absolute inset-0 opacity-[0.07]"
+                  style={{
+                    backgroundImage: 'radial-gradient(circle, white 1.5px, transparent 1.5px)',
+                    backgroundSize: '24px 24px',
+                  }}
+                />
+                {/* Decorative glow top-right */}
+                <div
+                  className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-20"
+                  style={{ backgroundColor: trivia.accentColor }}
+                />
+              </>
+            )}
 
             <div className="relative">
               {/* Accent badge */}

@@ -34,12 +34,18 @@ async function getLandingData() {
       },
     },
   })
-  return { activeTrivias }
+  const settings = await prisma.platformSettings.findUnique({
+    where: { id: 'singleton' },
+  })
+  return { activeTrivias, settings }
 }
 
 export default async function HomePage() {
-  const { activeTrivias } = await getLandingData()
+  const { activeTrivias, settings } = await getLandingData()
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
+  
+  const heroImg = settings?.heroImageUrl ? mediaUrl(settings.heroImageUrl) : '/images/fondo.png'
+  const heroSet: any = settings?.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 620 }
 
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex flex-col">
@@ -66,20 +72,24 @@ export default async function HomePage() {
 
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
-        <header className="relative overflow-hidden min-h-[420px] lg:min-h-[620px]">
-          {/* Pixel art background image */}
+        <header className="relative overflow-hidden" style={{ minHeight: `${heroSet.height}px` }}>
+          {/* Background image */}
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: 'url(/images/fondo.png)',
+              backgroundImage: `url(${heroImg})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center bottom',
-              imageRendering: 'pixelated',
+              backgroundPosition: settings?.heroImageUrl ? 'center' : 'center bottom',
+              imageRendering: settings?.heroImageUrl ? 'auto' : 'pixelated',
+              transform: settings?.heroImageUrl ? `translate(${heroSet.x}px, ${heroSet.y}px) scale(${heroSet.zoom})` : 'none',
+              transformOrigin: 'center'
             }}
           />
           {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
+            background: settings?.heroImageUrl 
+              ? 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%)'
+              : 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
           }} />
           {/* Scanlines retro */}
           <div className="absolute inset-0 pointer-events-none" style={{

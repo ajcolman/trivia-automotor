@@ -21,11 +21,15 @@ export async function PUT(req: NextRequest) {
     update: {
       platformTerms: body.platformTerms ?? undefined,
       privacyPolicy: body.privacyPolicy ?? undefined,
+      heroImageUrl: body.heroImageUrl ?? undefined,
+      heroImageSettings: body.heroImageSettings ?? undefined,
     },
     create: {
       id: 'singleton',
       platformTerms: body.platformTerms ?? '',
       privacyPolicy: body.privacyPolicy ?? '',
+      heroImageUrl: body.heroImageUrl ?? null,
+      heroImageSettings: body.heroImageSettings ?? null,
     },
   })
 

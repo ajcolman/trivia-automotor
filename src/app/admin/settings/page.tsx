@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MarkdownEditor } from '@/components/admin/MarkdownEditor'
+import { HeroImageEditor } from '@/components/admin/HeroImageEditor'
 
 export default function SettingsPage() {
   const [platformTerms, setPlatformTerms] = useState('')
   const [privacyPolicy, setPrivacyPolicy] = useState('')
+  const [heroImageUrl, setHeroImageUrl] = useState('')
+  const [heroImageSettings, setHeroImageSettings] = useState({ zoom: 1, x: 0, y: 0, height: 600 })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -20,6 +23,8 @@ export default function SettingsPage() {
       .then(d => {
         setPlatformTerms(d.platformTerms ?? '')
         setPrivacyPolicy(d.privacyPolicy ?? '')
+        setHeroImageUrl(d.heroImageUrl ?? '')
+        setHeroImageSettings(d.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 600 })
       })
   }, [])
 
@@ -28,7 +33,12 @@ export default function SettingsPage() {
     const res = await fetch('/api/admin/platform-settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ platformTerms, privacyPolicy }),
+      body: JSON.stringify({ 
+        platformTerms, 
+        privacyPolicy,
+        heroImageUrl,
+        heroImageSettings
+      }),
     })
     if (res.ok) {
       setSaved(true)
@@ -49,9 +59,23 @@ export default function SettingsPage() {
 
       <Tabs defaultValue="terms">
         <TabsList>
+          <TabsTrigger value="design">Diseño Landing</TabsTrigger>
           <TabsTrigger value="terms">Términos de Uso</TabsTrigger>
           <TabsTrigger value="privacy">Política de Privacidad</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="design">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <HeroImageEditor
+                value={heroImageUrl}
+                settings={heroImageSettings}
+                onChange={setHeroImageUrl}
+                onSettingsChange={setHeroImageSettings}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="terms">
           <Card className="border-0 shadow-sm">
