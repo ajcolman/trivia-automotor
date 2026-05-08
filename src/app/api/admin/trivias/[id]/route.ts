@@ -62,7 +62,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     data: {
       ...rest,
       brands: { set: (brandIds ?? []).map((id: string) => ({ id })) },
-    },
+    } as any,
   })
   return NextResponse.json(updated)
 }
