@@ -1,6 +1,6 @@
 // Author: Angel Colman
 import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/admin-auth'
 
 export async function GET(req: NextRequest) {
