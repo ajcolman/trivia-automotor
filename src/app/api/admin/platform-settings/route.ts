@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest) {
       heroImageUrl: body.heroImageUrl ?? null,
       heroImageSettings: body.heroImageSettings ?? null,
     },
-  })
+  } as any)
 
   return NextResponse.json(settings)
 }

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       ...rest,
       createdBy: session.user.id,
       brands: { connect: (brandIds ?? []).map((id: string) => ({ id })) },
-    },
+    } as any,
   })
 
   return NextResponse.json(trivia, { status: 201 })
