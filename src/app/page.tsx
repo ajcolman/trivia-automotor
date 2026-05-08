@@ -74,29 +74,19 @@ export default async function HomePage() {
         {/* ── HERO ────────────────────────────────────────────────────── */}
         <header className="relative overflow-hidden" style={{ minHeight: `${heroSet.height}px`, display: 'flex', alignItems: 'center' }}>
           {/* Background image */}
-          {settings?.heroImageUrl ? (
-            <img 
-              src={heroImg} 
-              alt="Hero" 
-              className="absolute max-w-none pointer-events-none select-none"
-              style={{
-                transform: `translate(${heroSet.x}%, ${heroSet.y}%) scale(${heroSet.zoom})`,
-                transformOrigin: 'center',
-                minWidth: '100%',
-                minHeight: '100%'
-              }}
-            />
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${heroImg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center bottom',
-                imageRendering: 'pixelated',
-              }}
-            />
-          )}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroImg})`,
+              backgroundSize: settings?.heroImageUrl
+                ? (heroSet.zoom <= 1 ? 'cover' : `${heroSet.zoom * 100}%`)
+                : 'cover',
+              backgroundPosition: settings?.heroImageUrl
+                ? `${heroSet.x ?? 50}% ${heroSet.y ?? 50}%`
+                : 'center bottom',
+              backgroundRepeat: 'no-repeat',
+            }}
+          />
           {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
           <div className="absolute inset-0" style={{
             background: settings?.heroImageUrl 
