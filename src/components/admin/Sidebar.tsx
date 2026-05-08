@@ -7,7 +7,8 @@ import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Trophy, Copy, Users, Image as ImageIcon,
-  Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings, Home
+  Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings, Home,
+  Swords, Gamepad2
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn, getInitials } from '@/lib/utils'
@@ -21,6 +22,8 @@ const navItems = [
   { href: '/admin/trivias', label: 'Trivias', icon: Trophy },
   { href: '/admin/templates', label: 'Plantillas', icon: Copy },
   { href: '/admin/assets', label: 'Archivos', icon: ImageIcon },
+  { href: '/admin/tournaments', label: 'Torneos', icon: Swords },
+  { href: '/admin/sprites', label: 'Sprites Vehículos', icon: Gamepad2 },
 ]
 
 const superAdminItems = [

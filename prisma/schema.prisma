@@ -22,6 +22,18 @@ enum FieldType {
   brand_models
 }
 
+enum TournamentStatus {
+  pending
+  active
+  finished
+}
+
+enum MatchStatus {
+  waiting
+  playing
+  finished
+}
+
 model Company {
   id          String   @id @default(cuid())
   name        String   @unique
@@ -48,8 +60,9 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   trivias Trivia[]
+  sprites VehicleSprite[]
 
   @@unique([companyId, name])
 }
@@ -70,6 +83,7 @@ model User {
   assets          Asset[]
   ownedTemplates  TriviaTemplate[] @relation("TemplateOwner")
   sharedTemplates TemplateShare[]  @relation("SharedWith")
+  tournaments     Tournament[]
 }
 
 model Trivia {
@@ -107,6 +121,7 @@ model Trivia {
   prizes       Prize[]
   flyers       TriviaFlyer[]
   pageViews    PageView[]
+  tournaments  Tournament[]
 }
 
 model Question {
@@ -263,7 +278,87 @@ model TemplateShare {
   @@unique([templateId, sharedWithId])
 }
 
-// Global platform settings (singleton pattern - only one record)
+// ─── Football Module ────────────────────────────────────────────────────────
+
+model VehicleSprite {
+  id          String   @id @default(cuid())
+  brandId     String?
+  modelName   String?
+  spriteUrl   String
+  isGeneric   Boolean  @default(false)
+  genericType String?  // "sedan" | "truck" | "suv"
+  createdAt   DateTime @default(now())
+
+  brand        Brand?                @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  participants TournamentParticipant[]
+
+  @@index([brandId])
+}
+
+model Tournament {
+  id           String           @id @default(cuid())
+  name         String
+  triviaId     String?
+  status       TournamentStatus @default(pending)
+  maxPlayers   Int              @default(16)
+  prizeConfig  Json             @default("{}") // { "1": "Premio 1", "2": "Premio 2" }
+  gameConfig   Json             @default("{}") // { duration: 90, ballSpeed: 1, ... }
+  createdBy    String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  creator      User                   @relation(fields: [createdBy], references: [id])
+  trivia       Trivia?                @relation(fields: [triviaId], references: [id], onDelete: SetNull)
+  participants TournamentParticipant[]
+  matches      TournamentMatch[]
+
+  @@index([status])
+}
+
+model TournamentParticipant {
+  id           String   @id @default(cuid())
+  tournamentId String
+  cedula       String
+  playerName   String
+  vehicleId    String?
+  seed         Int?
+  createdAt    DateTime @default(now())
+
+  tournament  Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  vehicle     VehicleSprite?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  matchesAsP1 TournamentMatch[] @relation("MatchPlayer1")
+  matchesAsP2 TournamentMatch[] @relation("MatchPlayer2")
+
+  @@unique([tournamentId, cedula])
+  @@index([tournamentId])
+}
+
+model TournamentMatch {
+  id             String      @id @default(cuid())
+  tournamentId   String
+  player1Id      String
+  player2Id      String
+  round          Int         @default(1)
+  scoreP1        Int         @default(0)
+  scoreP2        Int         @default(0)
+  status         MatchStatus @default(waiting)
+  roomCode       String      @unique @default(cuid())
+  winnerId       String?
+  scheduledAt    DateTime?   // admin programa fecha/hora del partido
+  roomEnabledAt  DateTime?   // admin habilita la sala (jugadores pueden conectar)
+  playedAt       DateTime?
+  createdAt      DateTime    @default(now())
+
+  tournament Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player1    TournamentParticipant @relation("MatchPlayer1", fields: [player1Id], references: [id])
+  player2    TournamentParticipant @relation("MatchPlayer2", fields: [player2Id], references: [id])
+
+  @@index([tournamentId, round])
+  @@index([roomCode])
+}
+
+// ─── Global platform settings (singleton pattern - only one record) ─────────
+
 model PlatformSettings {
   id              String   @id @default("singleton")
   platformTerms   String?  // Terms of use for admin users
