@@ -82,6 +82,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       brandIds: trivia?.brands?.map((b: { id: string }) => b.id) ?? [],
       isActive: trivia?.isActive ?? true,
       isPublic: trivia?.isPublic ?? true,
+      showLeaderboard: trivia?.showLeaderboard ?? true,
       maxPlaysPerUser: trivia?.maxPlaysPerUser ?? 1,
       startDate: trivia?.startDate ? new Date(trivia.startDate).toISOString().slice(0, 16) : '',
       endDate: trivia?.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
@@ -103,6 +104,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         brandIds: trivia.brands?.map((b: { id: string }) => b.id) ?? [],
         isActive: trivia.isActive ?? true,
         isPublic: trivia.isPublic ?? true,
+        showLeaderboard: trivia.showLeaderboard ?? true,
         maxPlaysPerUser: trivia.maxPlaysPerUser ?? 1,
         startDate: trivia.startDate ? new Date(trivia.startDate).toISOString().slice(0, 16) : '',
         endDate: trivia.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
@@ -146,6 +148,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       brandIds: watch('brandIds'),
       isActive: watch('isActive'),
       isPublic: watch('isPublic'),
+      showLeaderboard: watch('showLeaderboard'),
       maxPlaysPerUser: watch('maxPlaysPerUser'),
       startDate: watch('startDate'),
       endDate: watch('endDate'),
@@ -473,6 +476,20 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                     onChange={e => setValue('endDate', e.target.value)}
                     className="mt-1"
                   />
+                  {watch('endDate') && (() => {
+                    const diff = new Date(watch('endDate')).getTime() - Date.now()
+                    if (diff <= 0) {
+                      return <p className="text-xs text-red-500 mt-1 font-medium">✕ Trivia finalizada</p>
+                    }
+                    const days = Math.floor(diff / 86400000)
+                    const hours = Math.floor((diff % 86400000) / 3600000)
+                    const mins = Math.floor((diff % 3600000) / 60000)
+                    const parts = []
+                    if (days > 0) parts.push(`${days}d`)
+                    if (hours > 0) parts.push(`${hours}h`)
+                    if (days === 0 && mins > 0) parts.push(`${mins}m`)
+                    return <p className="text-xs text-green-600 mt-1 font-medium">⏱ Termina en {parts.join(' ')}</p>
+                  })()}
                 </div>
                 <div className="col-span-2">
                   <Label>Instrucciones de juego</Label>
@@ -485,7 +502,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   />
                 </div>
               </div>
-              <div className="flex gap-6">
+              <div className="flex flex-wrap gap-6">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={watch('isActive') ?? true}
@@ -499,6 +516,13 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                     onCheckedChange={v => setValue('isPublic', v)}
                   />
                   <Label>Visible en landing page</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={watch('showLeaderboard') ?? true}
+                    onCheckedChange={v => setValue('showLeaderboard', v)}
+                  />
+                  <Label>Mostrar marcadores</Label>
                 </div>
               </div>
             </CardContent>

@@ -100,6 +100,7 @@ model Trivia {
   textColor       String    @default("#1A1A2E")
   isActive            Boolean   @default(true)
   isPublic            Boolean   @default(true)
+  showLeaderboard     Boolean   @default(true)
   startDate           DateTime?
   endDate             DateTime?
   maxPlaysPerUser     Int       @default(1)

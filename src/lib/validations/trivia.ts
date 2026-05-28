@@ -46,6 +46,7 @@ export const triviaBaseSchema = z.object({
 
   isActive: z.boolean().default(true),
   isPublic: z.boolean().default(true),
+  showLeaderboard: z.boolean().default(true),
 
   startDate: z.coerce.date().optional().nullable(),
   endDate: z.coerce.date().optional().nullable(),

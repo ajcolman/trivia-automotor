@@ -81,12 +81,14 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
 
                   return (
                     <div key={field.id} className={wrapperClass}>
-                      <label
-                        className="block text-xs font-bold uppercase tracking-wider mb-1"
-                        style={{ color: `${trivia.primaryColor}` }}
-                      >
-                        {field.fieldLabel}{field.isRequired && ' *'}
-                      </label>
+                      {field.fieldType !== 'checkbox' && (
+                        <label
+                          className="block text-xs font-bold uppercase tracking-wider mb-1"
+                          style={{ color: `${trivia.primaryColor}` }}
+                        >
+                          {field.fieldLabel}{field.isRequired && ' *'}
+                        </label>
+                      )}
                       {field.fieldType === 'select' && field.options ? (
                         <select
                           {...register(field.fieldName, { required: field.isRequired ? `${field.fieldLabel} es requerido` : false })}
@@ -99,17 +101,28 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                           ))}
                         </select>
                       ) : field.fieldType === 'checkbox' ? (
-                        <div className="flex items-start gap-3 p-3 bg-white/50 rounded-xl border-2 transition-all hover:bg-white" style={{ borderColor: `${trivia.primaryColor}20` }}>
-                          <input 
-                            type="checkbox" 
+                        <label
+                          htmlFor={field.id}
+                          className="flex items-start gap-3 p-3 bg-white rounded-xl border-2 cursor-pointer transition-colors hover:bg-slate-50"
+                          style={{ borderColor: `${trivia.primaryColor}30` }}
+                        >
+                          <input
+                            type="checkbox"
                             id={field.id}
                             {...register(field.fieldName, { required: field.isRequired ? `${field.fieldLabel} es obligatorio` : false })}
-                            className="w-5 h-5 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              marginTop: '2px',
+                              flexShrink: 0,
+                              accentColor: trivia.primaryColor,
+                              cursor: 'pointer',
+                            }}
                           />
-                          <label htmlFor={field.id} className="text-sm cursor-pointer select-none leading-tight" style={{ color: trivia.textColor }}>
+                          <span className="text-sm select-none leading-tight" style={{ color: trivia.textColor }}>
                             {field.fieldLabel}{field.isRequired && ' *'}
-                          </label>
-                        </div>
+                          </span>
+                        </label>
                       ) : field.fieldType === 'textarea' ? (
                         <textarea
                           placeholder={field.placeholder ?? ''}

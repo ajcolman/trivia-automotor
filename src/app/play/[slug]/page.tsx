@@ -103,6 +103,7 @@ export default async function PlayPage({ params }: PageProps) {
     } : null,
     heroImageUrl: trivia.heroImageUrl ?? null,
     heroImageSettings: (trivia.heroImageSettings as any) ?? null,
+    showLeaderboard: trivia.showLeaderboard,
     brand: trivia.brands[0] ? {
       id: trivia.brands[0].id,
       name: trivia.brands[0].name,

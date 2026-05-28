@@ -32,6 +32,7 @@ export interface TriviaData {
   heroImageSettings: { zoom: number, x: number, y: number, height: number } | null
   company: { id: string; name: string; logoUrl: string | null } | null
   brand: { id: string; name: string; logoUrl: string | null; models: string[] } | null
+  showLeaderboard: boolean
 }
 
 export interface QuestionData {
