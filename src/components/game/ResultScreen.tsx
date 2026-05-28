@@ -20,6 +20,7 @@ interface ResultScreenProps {
   trivia: TriviaData
   result: GameResult
   playerAnswers: AnswerRecord[]
+  participantData?: Record<string, string> | null
 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
@@ -78,7 +79,29 @@ interface ScoredAnswer {
   correctAnswer: number
 }
 
-export function ResultScreen({ trivia, result }: ResultScreenProps) {
+const NAME_KEYS = ['nombre', 'name', 'nombres', 'firstname', 'apellido', 'lastname', 'nombre_completo', 'fullname']
+
+function getParticipantName(formData?: Record<string, string> | null): string {
+  if (!formData) return 'Participante'
+  const values = Object.entries(formData)
+    .filter(([, value]) => typeof value === 'string' && value.trim().length > 0)
+    .map(([key, value]) => ({ key: key.toLowerCase(), value: value.trim() }))
+
+  const fullName = values.find(v => v.key.includes('nombre_completo') || v.key.includes('fullname'))
+  if (fullName) return fullName.value
+
+  const first = values.find(v => ['nombre', 'name', 'nombres', 'firstname'].includes(v.key))
+  const last = values.find(v => ['apellido', 'lastname'].includes(v.key))
+  const merged = `${first?.value ?? ''} ${last?.value ?? ''}`.trim()
+  if (merged) return merged
+
+  const firstNameLike = values.find(v => NAME_KEYS.some(key => v.key.includes(key)))
+  if (firstNameLike) return firstNameLike.value
+
+  return values[0]?.value ?? 'Participante'
+}
+
+export function ResultScreen({ trivia, result, participantData }: ResultScreenProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [displayScore, setDisplayScore] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -88,6 +111,7 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
   const pct = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : 0
   const RATINGS = trivia.maxPlaysPerUser === 1 ? RATINGS_SINGLE : RATINGS_MULTI
   const rating = RATINGS.find(r => pct >= r.min) ?? RATINGS[RATINGS.length - 1]
+  const participantName = getParticipantName(participantData)
 
   // Animate score counter
   useEffect(() => {
@@ -124,7 +148,7 @@ export function ResultScreen({ trivia, result }: ResultScreenProps) {
   const handleDownloadCert = async () => {
     const { generateCertificate } = await import('@/lib/certificate-generator')
     await generateCertificate({
-      playerName: 'Participante',
+      playerName: participantName,
       triviaTitle: trivia.title,
       score: result.score,
       maxScore: result.maxScore,

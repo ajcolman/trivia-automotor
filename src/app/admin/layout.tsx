@@ -17,8 +17,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         email: session.user.email ?? '',
         role: (session.user as { role: string }).role,
       }} />
-      <main className="flex-1 overflow-x-hidden">
-        <div className="lg:p-8 p-4 pt-16 lg:pt-8">
+      <main className="flex-1 min-w-0 overflow-x-hidden">
+        <div className="p-4 pt-16 sm:p-5 sm:pt-20 lg:p-8 lg:pt-8">
           {children}
         </div>
       </main>

@@ -39,20 +39,20 @@ export default async function TriviaLeadsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link href={`/admin/trivias/${params.id}`}>
           <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" />Volver</Button>
         </Link>
         <div className="flex-1">
           <h1 className="text-xl font-black text-slate-800">Contactos — {trivia.title}</h1>
         </div>
-        <a href={`/api/admin/trivias/${params.id}/export`}>
-          <Button variant="outline" size="sm">
+        <a href={`/api/admin/trivias/${params.id}/export`} className="w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <FileSpreadsheet className="w-4 h-4 mr-2" /> Exportar Excel
           </Button>
         </a>
-        <a href={`/api/admin/trivias/${params.id}/report`} target="_blank">
-          <Button variant="outline" size="sm">
+        <a href={`/api/admin/trivias/${params.id}/report`} target="_blank" className="w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Download className="w-4 h-4 mr-2" /> Informe PDF
           </Button>
         </a>

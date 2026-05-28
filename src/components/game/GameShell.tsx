@@ -85,6 +85,7 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<AnswerRecord[]>([])
   const [result, setResult] = useState<GameResult | null>(null)
+  const [submittedFormData, setSubmittedFormData] = useState<Record<string, string> | null>(null)
 
   const cssVars = `
     :root {
@@ -134,6 +135,7 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Error al enviar')
     setResult(data)
+    setSubmittedFormData(formData)
     setGameState('result')
   }, [trivia.id, answers])
 
@@ -169,6 +171,7 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
             trivia={trivia}
             result={result}
             playerAnswers={answers}
+            participantData={submittedFormData}
           />
         )}
         {gameState === 'already_played' && (

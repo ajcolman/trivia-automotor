@@ -10,7 +10,7 @@ import {
   Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings, Home,
   Swords, Gamepad2
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn, getInitials } from '@/lib/utils'
 
 interface SidebarProps {
@@ -37,6 +37,23 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const isSuperAdmin = user.role === 'super_admin'
+
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [mobileOpen])
 
   const NavItem = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ElementType }) => {
     const active = pathname === href || pathname.startsWith(href + '/')
@@ -130,7 +147,7 @@ export function Sidebar({ user }: SidebarProps) {
     <>
       {/* Desktop sidebar */}
       <aside
-        className="hidden lg:flex flex-col w-60 flex-shrink-0 min-h-screen"
+        className="hidden lg:flex lg:sticky lg:top-0 flex-col w-60 xl:w-64 flex-shrink-0 h-screen"
         style={{ background: 'linear-gradient(180deg, #0d1b3e 0%, #0a1628 100%)' }}
       >
         <SidebarContent />
@@ -139,23 +156,31 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Mobile toggle button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg"
+        className={cn(
+          'lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg',
+          mobileOpen && 'opacity-0 pointer-events-none'
+        )}
         style={{ background: 'linear-gradient(135deg, #003087, #0052cc)' }}
+        aria-label="Abrir menú de administración"
+        aria-expanded={mobileOpen}
+        aria-controls="admin-mobile-sidebar"
       >
         <Menu className="w-5 h-5" />
       </button>
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
+        <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside
-            className="relative w-60 h-full"
+            id="admin-mobile-sidebar"
+            className="relative h-full w-[82vw] max-w-xs shadow-2xl"
             style={{ background: 'linear-gradient(180deg, #0d1b3e 0%, #0a1628 100%)' }}
           >
             <button
               onClick={() => setMobileOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white p-1"
+              aria-label="Cerrar menú de administración"
             >
               <X className="w-5 h-5" />
             </button>

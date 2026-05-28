@@ -51,15 +51,29 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     : 0
   const maxScore = leads[0]?.maxScore ?? 0
 
-  // Question performance: count correct answers per question
+  type LeadAnswer = {
+    questionId?: string
+    chosen?: number
+    correct?: boolean
+    isCorrect?: boolean
+  }
+
+  // Question performance: count answers and correct answers per question
   const qStats: Record<string, { correct: number; total: number }> = {}
   for (const q of trivia.questions) qStats[q.id] = { correct: 0, total: 0 }
   for (const lead of leads) {
-    const answers = (lead.answers as { questionId: string; chosen: number; isCorrect: boolean }[]) ?? []
+    const answers = (lead.answers as LeadAnswer[]) ?? []
     for (const a of answers) {
-      if (!qStats[a.questionId]) continue
-      qStats[a.questionId].total++
-      if (a.isCorrect) qStats[a.questionId].correct++
+      const questionId = typeof a.questionId === 'string' ? a.questionId : ''
+      if (!questionId || !qStats[questionId]) continue
+      qStats[questionId].total++
+
+      // Backward compatibility:
+      // - current payload stores `correct`
+      // - older payloads may store `isCorrect`
+      if (a.correct === true || a.isCorrect === true) {
+        qStats[questionId].correct++
+      }
     }
   }
 
