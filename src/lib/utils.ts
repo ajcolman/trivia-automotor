@@ -77,6 +77,22 @@ export function getInitials(name: string): string {
  * displayed in the browser without exposing the token.
  * Local /uploads/* URLs and external http URLs pass through unchanged.
  */
+export function stripMarkdown(text: string): string {
+  return text
+    .replace(/#{1,6}\s+/g, '')
+    .replace(/\*\*([\s\S]*?)\*\*/g, '$1')
+    .replace(/\*([\s\S]*?)\*/g, '$1')
+    .replace(/~~([\s\S]*?)~~/g, '$1')
+    .replace(/`{1,3}[^`]*`{1,3}/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/!?\[([^\]]*)\]\([^)]+\)/g, '$1')
+    .replace(/^\s*[-*+>]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
 export function mediaUrl(url: string | null | undefined): string {
   if (!url) return ''
   if (url.includes('vercel-storage.com')) {

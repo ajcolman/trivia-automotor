@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { Trophy, Users, Zap, ChevronRight, Clock, Star, Award, Medal } from 'lucide-react'
-import { formatDateShort, getNowAsuncion, mediaUrl } from '@/lib/utils'
+import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/utils'
 import { PrizesModal } from '@/components/landing/PrizesModal'
 
 export const revalidate = 60
@@ -215,7 +215,7 @@ export default async function HomePage() {
                           {trivia.title}
                         </h3>
                         {trivia.description && (
-                          <p className="text-sm text-slate-500 mb-3 line-clamp-2 leading-relaxed">{trivia.description}</p>
+                          <p className="text-sm text-slate-500 mb-3 line-clamp-2 leading-relaxed">{stripMarkdown(trivia.description)}</p>
                         )}
 
                         {/* Footer */}

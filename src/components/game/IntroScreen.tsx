@@ -124,9 +124,9 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                 {trivia.title}
               </h1>
               {trivia.description && (
-                <p className="text-white/70 text-sm max-w-sm mx-auto leading-relaxed">
-                  {trivia.description}
-                </p>
+                <div className="text-white/70 text-sm max-w-sm mx-auto leading-relaxed prose prose-sm prose-invert prose-p:my-1 prose-headings:text-white prose-headings:font-bold prose-a:text-white/90 max-w-none">
+                  <ReactMarkdown>{trivia.description}</ReactMarkdown>
+                </div>
               )}
             </div>
           </div>

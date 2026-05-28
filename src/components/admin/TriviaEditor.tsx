@@ -373,13 +373,12 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   {errors.title && <p className="text-xs text-red-500 mt-1">{String(errors.title.message)}</p>}
                 </div>
                 <div className="col-span-2">
-                  <Label>Descripción</Label>
-                  <Textarea
+                  <MarkdownEditor
+                    label="Descripción"
                     value={watch('description') ?? ''}
-                    onChange={e => setValue('description', e.target.value)}
-                    placeholder="Descripción opcional..."
-                    rows={2}
-                    className="mt-1"
+                    onChange={v => setValue('description', v)}
+                    placeholder="Descripción de la trivia... soporta **negrita**, *cursiva*, listas, etc."
+                    minHeight={120}
                   />
                 </div>
                 <div>

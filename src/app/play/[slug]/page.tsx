@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { GameShell } from '@/components/game/GameShell'
 import { SESSION_COOKIE_NAME } from '@/lib/session-fingerprint'
-import { getNowAsuncion } from '@/lib/utils'
+import { getNowAsuncion, stripMarkdown } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!trivia) return { title: 'Trivia no encontrada' }
   return {
     title: `${trivia.title} | ${trivia.company?.name ?? 'Automotor Trivia'}`,
-    description: trivia.description ?? `Participa en la trivia: ${trivia.title}`,
+    description: trivia.description ? stripMarkdown(trivia.description) : `Participa en la trivia: ${trivia.title}`,
   }
 }
 
