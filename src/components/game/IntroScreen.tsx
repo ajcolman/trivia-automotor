@@ -6,6 +6,7 @@ import { Play, Trophy, Clock, Zap, Gift, ChevronRight, Star, ArrowLeft, BookOpen
 import type { TriviaData } from './GameShell'
 import Image from 'next/image'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 import { mediaUrl } from '@/lib/utils'
 
 interface IntroScreenProps {
@@ -153,10 +154,38 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                 </button>
                 {instrOpen && (
                   <div
-                    className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap border-t"
+                    className="px-4 py-3 text-sm leading-relaxed border-t"
                     style={{ color: trivia.textColor, borderColor: `${trivia.primaryColor}15`, opacity: 0.85 }}
                   >
-                    {trivia.gameInstructions}
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc pl-5 mb-2 last:mb-0 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 last:mb-0 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li>{children}</li>,
+                        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        h1: ({ children }) => <h3 className="text-base font-bold mb-2">{children}</h3>,
+                        h2: ({ children }) => <h4 className="text-sm font-bold mb-2">{children}</h4>,
+                        h3: ({ children }) => <h5 className="text-sm font-semibold mb-1">{children}</h5>,
+                        code: ({ children }) => (
+                          <code className="px-1 py-0.5 rounded bg-slate-100 text-slate-700 text-[0.9em]">{children}</code>
+                        ),
+                        a: ({ href, children }) => (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline font-medium"
+                            style={{ color: trivia.primaryColor }}
+                          >
+                            {children}
+                          </a>
+                        ),
+                      }}
+                    >
+                      {trivia.gameInstructions}
+                    </ReactMarkdown>
                   </div>
                 )}
               </div>

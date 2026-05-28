@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" shape-rendering="crispEdges">
+  <!-- Wheels -->
+  <rect x="6" y="4" width="8" height="8" fill="#0d0e10"/>
+  <rect x="6" y="28" width="8" height="8" fill="#0d0e10"/>
+  <rect x="50" y="4" width="8" height="8" fill="#0d0e10"/>
+  <rect x="50" y="28" width="8" height="8" fill="#0d0e10"/>
+  <rect x="8" y="6" width="4" height="4" fill="#6d7278"/>
+  <rect x="8" y="30" width="4" height="4" fill="#6d7278"/>
+  <rect x="52" y="6" width="4" height="4" fill="#6d7278"/>
+  <rect x="52" y="30" width="4" height="4" fill="#6d7278"/>
+
+  <!-- Main SUV body (Creta dark green/black) -->
+  <polygon points="3,10 7,6 18,5 47,5 56,8 60,13 60,27 56,32 47,35 18,35 7,34 3,30" fill="#1f2720"/>
+  <polygon points="6,11 18,7 47,7 54,10 56,13 56,27 54,30 47,33 18,33 9,32 6,29" fill="#2f3a2f"/>
+  <polygon points="10,12 18,9 47,9 52,12 53,14 53,26 52,28 47,31 18,31 12,30 10,27" fill="#384338"/>
+
+  <!-- Hood / rear shading -->
+  <rect x="14" y="10" width="9" height="20" fill="#2a342a"/>
+  <rect x="42" y="10" width="9" height="20" fill="#253025"/>
+  <rect x="15" y="11" width="7" height="18" fill="#314031"/>
+  <rect x="43" y="11" width="7" height="18" fill="#1f291f"/>
+
+  <!-- Cabin / roof -->
+  <polygon points="20,10 45,10 49,13 49,27 45,30 20,30 16,27 16,13" fill="#11161d"/>
+  <rect x="24" y="11" width="17" height="18" fill="#202a35"/>
+  <rect x="26" y="12" width="13" height="16" fill="#2b3b4c"/>
+  <rect x="28" y="13" width="9" height="14" fill="#3a4f64"/>
+  <rect x="24" y="10" width="17" height="2" fill="#4a545d"/>
+  <rect x="24" y="28" width="17" height="2" fill="#313a42"/>
+  <rect x="31" y="12" width="2" height="16" fill="#11161d"/>
+
+  <!-- Windshields -->
+  <rect x="17" y="13" width="7" height="14" fill="#93b6cb"/>
+  <rect x="40" y="13" width="8" height="14" fill="#a9c8da"/>
+  <rect x="18" y="14" width="5" height="12" fill="#6f8fa3"/>
+  <rect x="41" y="14" width="6" height="12" fill="#88a8bc"/>
+
+  <!-- Roof rails / highlights -->
+  <rect x="22" y="9" width="2" height="22" fill="#616a72"/>
+  <rect x="40" y="9" width="2" height="22" fill="#616a72"/>
+  <rect x="22" y="10" width="20" height="1" fill="#7b858f"/>
+  <rect x="22" y="29" width="20" height="1" fill="#1a1f24"/>
+
+  <!-- Lights -->
+  <rect x="2" y="14" width="2" height="4" fill="#cf3b36"/>
+  <rect x="2" y="22" width="2" height="4" fill="#cf3b36"/>
+  <rect x="59" y="14" width="2" height="4" fill="#fff4a3"/>
+  <rect x="59" y="22" width="2" height="4" fill="#fff4a3"/>
+
+  <!-- Outline -->
+  <rect x="3" y="10" width="57" height="25" fill="none" stroke="#1b1f23" stroke-width="1.5"/>
+</svg>

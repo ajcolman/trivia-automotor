@@ -19,6 +19,8 @@ import {
   sendMatchEnd,
   type MatchChannelResult,
 } from '@/lib/football/pusher-client'
+import { useInputSources } from '@/lib/football/useInputSources'
+import VirtualDpad from '@/components/football/VirtualDpad'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,14 +33,16 @@ interface GameCanvasProps {
   player2SpriteUrl?: string
   duration: number
   onMatchEnd: (score1: number, score2: number) => void
+  mode?: 'online' | 'local'
+  showTouchControls?: boolean
 }
 
 // ─── Drawing helpers ─────────────────────────────────────────────────────────
 
 const FIELD_COLOR = '#1a5c1a'
-const LINE_COLOR = '#2d8c2d'
-const GOAL_COLOR = '#f0d000'
-const WALL_COLOR = '#0e3d0e'
+const LINE_COLOR = '#dff4d3'
+const GOAL_COLOR = '#e8efe8'
+const WALL_COLOR = '#1a5f1a'
 const BALL_COLOR = '#ffffff'
 const P1_COLOR = '#0052cc'
 const P2_COLOR = '#cc1a00'
@@ -47,66 +51,102 @@ const VEHICLE_W = 36
 const VEHICLE_H = 22
 const BALL_RADIUS = 12
 
-function drawField(ctx: CanvasRenderingContext2D) {
+function drawField(ctx: CanvasRenderingContext2D, grassTexture: HTMLImageElement | null) {
   const { width, height, wallThickness, goalWidth, goalHeight } = FIELD
 
-  // Background field
-  ctx.fillStyle = FIELD_COLOR
-  ctx.fillRect(0, 0, width, height)
+  // Base grass texture (hybrid mode: texture + canvas lines)
+  if (grassTexture && grassTexture.complete && grassTexture.naturalWidth > 0) {
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(grassTexture, 0, 0, width, height)
+  } else {
+    ctx.fillStyle = FIELD_COLOR
+    ctx.fillRect(0, 0, width, height)
+  }
 
   // Walls
   ctx.fillStyle = WALL_COLOR
-  ctx.fillRect(0, 0, width, wallThickness)                           // top
-  ctx.fillRect(0, height - wallThickness, width, wallThickness)       // bottom
-  ctx.fillRect(0, 0, wallThickness, height)                          // left
-  ctx.fillRect(width - wallThickness, 0, wallThickness, height)      // right
+  ctx.globalAlpha = 0.45
+  ctx.fillRect(0, 0, width, wallThickness)                               // top
+  ctx.fillRect(0, height - wallThickness, width, wallThickness)          // bottom
+  ctx.fillRect(0, 0, wallThickness, height)                              // left
+  ctx.fillRect(width - wallThickness, 0, wallThickness, height)          // right
+  ctx.globalAlpha = 1
 
   // Cutout goal openings in walls
   const goalTop = height / 2 - goalHeight / 2
-  ctx.fillStyle = '#000000'
+  ctx.fillStyle = 'rgba(0,0,0,0.22)'
   ctx.fillRect(0, goalTop, wallThickness, goalHeight)                          // left opening
   ctx.fillRect(width - wallThickness, goalTop, wallThickness, goalHeight)      // right opening
 
+  const playLeft = wallThickness
+  const playRight = width - wallThickness
+  const playTop = wallThickness
+  const playBottom = height - wallThickness
+
+  // Main field border
+  ctx.strokeStyle = LINE_COLOR
+  ctx.lineWidth = 3
+  ctx.strokeRect(
+    playLeft + 1.5,
+    playTop + 1.5,
+    playRight - playLeft - 3,
+    playBottom - playTop - 3
+  )
+
   // Center line
   ctx.strokeStyle = LINE_COLOR
-  ctx.lineWidth = 2
-  ctx.setLineDash([8, 6])
-  ctx.beginPath()
-  ctx.moveTo(width / 2, wallThickness)
-  ctx.lineTo(width / 2, height - wallThickness)
-  ctx.stroke()
+  ctx.lineWidth = 3
   ctx.setLineDash([])
+  ctx.beginPath()
+  ctx.moveTo(width / 2, playTop)
+  ctx.lineTo(width / 2, playBottom)
+  ctx.stroke()
 
   // Center circle
   ctx.strokeStyle = LINE_COLOR
-  ctx.lineWidth = 2
+  ctx.lineWidth = 3
   ctx.beginPath()
-  ctx.arc(width / 2, height / 2, 60, 0, Math.PI * 2)
+  ctx.arc(width / 2, height / 2, 68, 0, Math.PI * 2)
   ctx.stroke()
 
   // Center dot
   ctx.fillStyle = LINE_COLOR
   ctx.beginPath()
-  ctx.arc(width / 2, height / 2, 4, 0, Math.PI * 2)
+  ctx.arc(width / 2, height / 2, 5, 0, Math.PI * 2)
   ctx.fill()
+
+  // Penalty areas
+  const penaltyDepth = 120
+  const penaltyWidth = 210
+  const boxTop = height / 2 - penaltyWidth / 2
+  const goalBoxDepth = 60
+  const goalBoxWidth = 120
+  const goalBoxTop = height / 2 - goalBoxWidth / 2
+
+  ctx.strokeStyle = LINE_COLOR
+  ctx.lineWidth = 3
+  ctx.strokeRect(playLeft, boxTop, penaltyDepth, penaltyWidth)
+  ctx.strokeRect(playRight - penaltyDepth, boxTop, penaltyDepth, penaltyWidth)
+  ctx.strokeRect(playLeft, goalBoxTop, goalBoxDepth, goalBoxWidth)
+  ctx.strokeRect(playRight - goalBoxDepth, goalBoxTop, goalBoxDepth, goalBoxWidth)
 
   // Goal posts (left)
   ctx.fillStyle = GOAL_COLOR
-  ctx.fillRect(wallThickness - goalWidth, goalTop, goalWidth, 6)                // top post
-  ctx.fillRect(wallThickness - goalWidth, goalTop + goalHeight - 6, goalWidth, 6) // bottom post
-  ctx.fillStyle = 'rgba(240,208,0,0.18)'
+  ctx.fillRect(wallThickness - goalWidth, goalTop, goalWidth, 6)
+  ctx.fillRect(wallThickness - goalWidth, goalTop + goalHeight - 6, goalWidth, 6)
+  ctx.fillStyle = 'rgba(232,239,232,0.24)'
   ctx.fillRect(wallThickness - goalWidth, goalTop, goalWidth, goalHeight)       // net fill
 
   // Goal posts (right)
   ctx.fillStyle = GOAL_COLOR
   ctx.fillRect(width - wallThickness, goalTop, goalWidth, 6)
   ctx.fillRect(width - wallThickness, goalTop + goalHeight - 6, goalWidth, 6)
-  ctx.fillStyle = 'rgba(240,208,0,0.18)'
+  ctx.fillStyle = 'rgba(232,239,232,0.24)'
   ctx.fillRect(width - wallThickness, goalTop, goalWidth, goalHeight)
 
   // Corner arcs
   ctx.strokeStyle = LINE_COLOR
-  ctx.lineWidth = 2
+  ctx.lineWidth = 3
   const cornerR = 18
   const wt = wallThickness
   const corners: [number, number, number, number][] = [
@@ -267,10 +307,13 @@ export default function GameCanvas({
   player2SpriteUrl,
   duration,
   onMatchEnd,
+  mode: modeProp,
+  showTouchControls = false,
 }: GameCanvasProps) {
+  const mode = modeProp ?? 'online'
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stateRef = useRef<GameState>(createInitialState(duration))
-  const inputRef = useRef<PlayerInput>({ up: false, down: false, left: false, right: false })
   const opponentInputRef = useRef<PlayerInput>({ up: false, down: false, left: false, right: false })
   const isHostRef = useRef(false)
   const channelRef = useRef<MatchChannelResult | null>(null)
@@ -280,10 +323,13 @@ export default function GameCanvas({
   const matchEndedRef = useRef(false)
   const sprite1Ref = useRef<HTMLImageElement | null>(null)
   const sprite2Ref = useRef<HTMLImageElement | null>(null)
+  const grassTextureRef = useRef<HTMLImageElement | null>(null)
 
   // Stable callback ref for onMatchEnd
   const onMatchEndRef = useRef(onMatchEnd)
   onMatchEndRef.current = onMatchEnd
+
+  const { input1Ref, input2Ref, setTouchInput } = useInputSources(mode, playerId)
 
   // ── Sprite preload ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -299,33 +345,10 @@ export default function GameCanvas({
     }
   }, [player1SpriteUrl, player2SpriteUrl])
 
-  // ── Keyboard input ────────────────────────────────────────────────────────
   useEffect(() => {
-    const KEYS: Record<string, keyof PlayerInput> = {
-      ArrowUp: 'up', KeyW: 'up',
-      ArrowDown: 'down', KeyS: 'down',
-      ArrowLeft: 'left', KeyA: 'left',
-      ArrowRight: 'right', KeyD: 'right',
-    }
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      const k = KEYS[e.code]
-      if (k) {
-        e.preventDefault()
-        inputRef.current[k] = true
-      }
-    }
-    const onKeyUp = (e: KeyboardEvent) => {
-      const k = KEYS[e.code]
-      if (k) inputRef.current[k] = false
-    }
-
-    window.addEventListener('keydown', onKeyDown, { passive: false })
-    window.addEventListener('keyup', onKeyUp)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
-    }
+    const grass = new Image()
+    grass.src = '/images/field-grass-pixel.svg'
+    grassTextureRef.current = grass
   }, [])
 
   // ── Game loop ─────────────────────────────────────────────────────────────
@@ -350,43 +373,63 @@ export default function GameCanvas({
 
     // ── Physics (host only) ─────────────────────────────────────────────────
     if (isHostRef.current) {
-      const inputs1: PlayerInput = playerId === 1 ? inputRef.current : opponentInputRef.current
-      const inputs2: PlayerInput = playerId === 2 ? inputRef.current : opponentInputRef.current
+      let inputs1: PlayerInput
+      let inputs2: PlayerInput
+
+      if (mode === 'local') {
+        inputs1 = input1Ref.current
+        inputs2 = input2Ref.current
+      } else {
+        inputs1 = playerId === 1 ? input1Ref.current : opponentInputRef.current
+        inputs2 = playerId === 2 ? input1Ref.current : opponentInputRef.current
+      }
 
       const result = stepPhysics(stateRef.current, inputs1, inputs2, dt)
       stateRef.current = result.state
 
-      const ch = channelRef.current?.channel
-      if (ch) {
-        // Send state ~20fps (every other frame is fine, Pusher client events are rate-limited)
-        sendGameState(ch, stateRef.current)
+      if (mode === 'online') {
+        const ch = channelRef.current?.channel
+        if (ch) {
+          // Send state ~20fps (every other frame is fine, Pusher client events are rate-limited)
+          sendGameState(ch, stateRef.current)
 
-        // Send input to opponent so they know our state
-        sendPlayerInput(ch, playerId, inputRef.current)
+          // Send input to opponent so they know our state
+          sendPlayerInput(ch, playerId, input1Ref.current)
 
+          if (result.goal !== null) {
+            sendGoal(ch, result.goal)
+            golFlashRef.current = { scorer: result.goal, until: ts + 2000 }
+          }
+
+          if (!result.state.running && !matchEndedRef.current) {
+            matchEndedRef.current = true
+            sendMatchEnd(ch, result.state.score1, result.state.score2)
+            onMatchEndRef.current(result.state.score1, result.state.score2)
+          }
+        }
+      } else {
+        // Local mode: no Pusher
         if (result.goal !== null) {
-          sendGoal(ch, result.goal)
           golFlashRef.current = { scorer: result.goal, until: ts + 2000 }
         }
 
         if (!result.state.running && !matchEndedRef.current) {
           matchEndedRef.current = true
-          sendMatchEnd(ch, result.state.score1, result.state.score2)
           onMatchEndRef.current(result.state.score1, result.state.score2)
         }
       }
     } else {
-      // Guest: only send own input
+      // Guest (online only): only send own input
       const ch = channelRef.current?.channel
       if (ch) {
-        sendPlayerInput(ch, playerId, inputRef.current)
+        sendPlayerInput(ch, playerId, input1Ref.current)
       }
     }
 
     // ── Render ──────────────────────────────────────────────────────────────
     const state = stateRef.current
 
-    drawField(ctx)
+    drawField(ctx, grassTextureRef.current)
     drawBall(ctx, state.ball)
     drawVehicle(ctx, state.vehicle1, sprite1Ref.current)
     drawVehicle(ctx, state.vehicle2, sprite2Ref.current)
@@ -412,16 +455,21 @@ export default function GameCanvas({
     }
 
     rafRef.current = requestAnimationFrame(gameLoop)
-  }, [playerId, player1Name, player2Name])
+  }, [playerId, player1Name, player2Name, mode, input1Ref, input2Ref])
 
-  // ── Pusher setup ──────────────────────────────────────────────────────────
+  // ── Game / Pusher setup ───────────────────────────────────────────────────
   useEffect(() => {
-    let subscribeCount = 0
+    if (mode === 'local') {
+      // Local mode: no Pusher, both players driven locally
+      isHostRef.current = true
+      lastTimeRef.current = performance.now()
+      rafRef.current = requestAnimationFrame(gameLoop)
+      return () => cancelAnimationFrame(rafRef.current)
+    }
 
+    // Online mode: existing Pusher setup
     const matchChannel = createMatchChannel(matchCode, {
       onSubscriptionSucceeded: () => {
-        subscribeCount++
-        // First to subscribe is host (player 1), second is guest (player 2)
         // Pusher doesn't expose member count easily on private (non-presence) channels,
         // so we use the playerId prop passed from parent (server-determined)
         isHostRef.current = playerId === 1
@@ -466,7 +514,7 @@ export default function GameCanvas({
       cancelAnimationFrame(rafRef.current)
       matchChannel.cleanup()
     }
-  }, [matchCode, playerId, gameLoop])
+  }, [matchCode, playerId, gameLoop, mode])
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -486,12 +534,35 @@ export default function GameCanvas({
       />
       <div className="flex gap-6 text-xs font-mono text-slate-500 mt-1">
         <span className="text-sky-400">
-          {playerId === 1 ? '⬛ Tú' : `⬛ ${player1Name}`} — WASD / ↑↓←→
+          {mode === 'local'
+            ? `${player1Name.slice(0, 8)} — WASD`
+            : (playerId === 1 ? '⬛ Tú' : `⬛ ${player1Name}`)}
         </span>
-        <span className="text-red-400">
-          {playerId === 2 ? '⬛ Tú' : `⬛ ${player2Name}`} — WASD / ↑↓←→
-        </span>
+        {mode === 'local' && (
+          <span className="text-red-400">{player2Name.slice(0, 8)} — ↑↓←→</span>
+        )}
+        {mode === 'online' && (
+          <span className="text-red-400">
+            {playerId === 2 ? '⬛ Tú' : `⬛ ${player2Name}`} — WASD / ↑↓←→
+          </span>
+        )}
       </div>
+      {showTouchControls && (
+        <>
+          <VirtualDpad
+            playerId={mode === 'local' ? 1 : playerId}
+            side="left"
+            onInput={(partial) => setTouchInput(mode === 'local' ? 1 : playerId, partial)}
+          />
+          {mode === 'local' && (
+            <VirtualDpad
+              playerId={2}
+              side="right"
+              onInput={(partial) => setTouchInput(2, partial)}
+            />
+          )}
+        </>
+      )}
     </div>
   )
 }

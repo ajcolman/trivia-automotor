@@ -7,7 +7,10 @@ import { z } from 'zod'
 const spriteSchema = z.object({
   brandId: z.string().min(1).optional().nullable(),
   modelName: z.string().min(1).max(200).optional().nullable(),
-  spriteUrl: z.string().url(),
+  spriteUrl: z.string().min(1).refine(
+    (val) => val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://'),
+    { message: 'Debe ser una URL completa o una ruta relativa que empiece con /' }
+  ),
   isGeneric: z.boolean().default(false),
   genericType: z.enum(['sedan', 'truck', 'suv']).optional().nullable(),
 })

@@ -77,6 +77,20 @@ export default async function FutbolPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
+        {/* Local mode button */}
+        <div className="text-center">
+          <a
+            href="/futbol/local"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-mono font-bold text-sm text-white transition-all"
+            style={{ background: 'linear-gradient(135deg, #1a3a1a, #2d6e2d)', border: '1px solid rgba(45,142,45,0.5)' }}
+          >
+            🎮 Modo Local — misma pantalla
+          </a>
+          <p className="font-mono text-slate-500 text-xs mt-2">
+            Dos jugadores en la misma máquina · WASD y flechas · Gamepad compatible
+          </p>
+        </div>
+
         {!hasOpen ? (
           /* No open tournaments */
           <div

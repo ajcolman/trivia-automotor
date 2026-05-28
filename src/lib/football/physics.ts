@@ -50,10 +50,10 @@ const VEHICLE_H = 22
 const BALL_RADIUS = 12
 
 // Physics constants
-const VEHICLE_ACCEL = 300     // px/s²
-const VEHICLE_FRICTION = 0.85
-const VEHICLE_ROT_SPEED = 2.094  // ~120 deg/s in radians/s
-const BALL_FRICTION = 0.98
+const VEHICLE_ACCEL = 900     // px/s²
+const VEHICLE_FRICTION = 0.92
+const VEHICLE_ROT_SPEED = 3.0   // ~172 deg/s in radians/s
+const BALL_FRICTION = 0.985
 
 // Starting positions
 function defaultVehicle(playerId: 1 | 2): Vehicle {
@@ -313,7 +313,7 @@ function updateVehicle(v: Vehicle, input: PlayerInput, dt: number): Vehicle {
 
   // Cap speed
   const speed = Math.sqrt(vx * vx + vy * vy)
-  const maxSpeed = 350
+  const maxSpeed = 600
   if (speed > maxSpeed) {
     vx = (vx / speed) * maxSpeed
     vy = (vy / speed) * maxSpeed

@@ -135,6 +135,7 @@ export default function MatchRoom({
 
   const p1SpriteUrl = player1.vehicle?.spriteUrl
   const p2SpriteUrl = player2.vehicle?.spriteUrl
+  const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window
 
   // ── Detect host/guest via Pusher member count ─────────────────────────────
   // We use a simple approach: the first subscription gets playerId=1 (host).
@@ -252,6 +253,8 @@ export default function MatchRoom({
             player2SpriteUrl={p2SpriteUrl}
             duration={duration}
             onMatchEnd={handleMatchEnd}
+            mode="online"
+            showTouchControls={isTouchDevice}
           />
 
           {/* Waiting for opponent indicator (guest only while p2 not yet seen) */}

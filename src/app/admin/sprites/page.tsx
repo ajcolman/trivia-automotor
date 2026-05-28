@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 interface Brand {
   id: string
   name: string
+  models: string[]
 }
 
 interface VehicleSprite {
@@ -233,7 +234,7 @@ export default function SpritesPage() {
                       options={brands.map(b => ({ value: b.id, label: b.name }))}
                       value={form.brandId}
                       onChange={val => {
-                        setForm(f => ({ ...f, brandId: val }))
+                        setForm(f => ({ ...f, brandId: val, modelName: '' }))
                         if (val) setErrors(e => { const { brandId, ...rest } = e; return rest })
                       }}
                       placeholder="Seleccionar marca..."
@@ -244,16 +245,33 @@ export default function SpritesPage() {
 
                 <div>
                   <Label className={errors.modelName ? 'text-red-500' : ''}>Modelo *</Label>
-                  <Input
-                    value={form.modelName}
-                    onChange={e => {
-                      setForm(f => ({ ...f, modelName: e.target.value }))
-                      if (e.target.value.trim()) setErrors(err => { const { modelName, ...rest } = err; return rest })
-                    }}
-                    placeholder="Ej: Corolla"
-                    aria-invalid={!!errors.modelName}
-                    className="mt-1"
-                  />
+                  {(() => {
+                    const selectedBrand = brands.find(b => b.id === form.brandId)
+                    const brandModels = selectedBrand?.models ?? []
+                    return brandModels.length > 0 ? (
+                      <select
+                        value={form.modelName}
+                        onChange={e => setForm(f => ({ ...f, modelName: e.target.value }))}
+                        className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">— Seleccionar modelo —</option>
+                        {brandModels.map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <Input
+                        value={form.modelName}
+                        onChange={e => {
+                          setForm(f => ({ ...f, modelName: e.target.value }))
+                          if (e.target.value.trim()) setErrors(err => { const { modelName, ...rest } = err; return rest })
+                        }}
+                        placeholder="Ej: Corolla"
+                        aria-invalid={!!errors.modelName}
+                        className="mt-1"
+                      />
+                    )
+                  })()}
                   {errors.modelName && <p className="text-xs text-red-500 mt-1">{errors.modelName}</p>}
                 </div>
               </>
