@@ -344,7 +344,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
           )}
 
           {/* ── LEADERBOARD ────────────────────────────────────────── */}
-          {trivia.showLeaderboard && leaderboard.length > 0 && (
+          {trivia.showLeaderboard !== false && leaderboard.length > 0 && (
             <div className="rounded-3xl overflow-hidden shadow-lg" style={{ animation: 'fadeUp 0.5s 0.2s ease both', opacity: 0 }}>
               <div
                 className="px-5 py-3.5 flex items-center gap-2"

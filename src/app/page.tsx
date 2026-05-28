@@ -248,7 +248,7 @@ export default async function HomePage() {
         </main>
 
         {/* ── LEADERBOARD ─────────────────────────────────────────────── */}
-        {activeTrivias.some(t => t.showLeaderboard && t.leads.length > 0) && (
+        {activeTrivias.some(t => t.showLeaderboard !== false && t.leads.length > 0) && (
           <section className="max-w-6xl mx-auto px-4 pb-12">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#003087' }}>
@@ -261,7 +261,7 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeTrivias.filter(t => t.showLeaderboard && t.leads.length > 0).map(trivia => (
+              {activeTrivias.filter(t => t.showLeaderboard !== false && t.leads.length > 0).map(trivia => (
                 <div key={trivia.id} className="bg-white rounded-2xl shadow-md overflow-hidden border border-white">
                   {/* Card header */}
                   <div
