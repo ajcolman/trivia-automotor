@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
+import { logAudit } from '@/lib/audit'
 
 const createTournamentSchema = z.object({
   name: z.string().min(1).max(200),
@@ -68,6 +69,11 @@ export async function POST(req: NextRequest) {
       creator: { select: { id: true, name: true, email: true } },
       trivia: { select: { id: true, title: true, slug: true } },
     },
+  })
+
+  await logAudit({
+    entityType: 'Tournament', entityId: tournament.id, entityName: tournament.name,
+    action: 'CREATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
   })
 
   return NextResponse.json(tournament, { status: 201 })

@@ -95,8 +95,9 @@ export default async function TriviasPage() {
                       <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-500">
                         <span>{trivia._count.questions} preguntas</span>
                         <span>{trivia._count.leads} contactos</span>
-                        {trivia.startDate && <span>Desde: {formatDateShort(trivia.startDate)}</span>}
-                        {trivia.endDate && <span>Hasta: {formatDateShort(trivia.endDate)}</span>}
+                        <span>Creada: {formatDateShort(trivia.createdAt)}</span>
+                        {trivia.startDate && <span>Inicio: {formatDateShort(trivia.startDate)}</span>}
+                        {trivia.endDate && <span>Fin: {formatDateShort(trivia.endDate)}</span>}
                         <span>Máx. participaciones: {trivia.maxPlaysPerUser}</span>
                         {isSuperAdmin && <span>Creada por: {trivia.creator.name}</span>}
                       </div>

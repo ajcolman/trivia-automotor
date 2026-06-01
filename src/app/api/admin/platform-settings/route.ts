@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(_req: NextRequest) {
   const { error } = await requireAuth()
@@ -12,7 +13,7 @@ export async function GET(_req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const { error } = await requireAuth(true) // super_admin only
+  const { session, error } = await requireAuth(true) // super_admin only
   if (error) return error
 
   const body = await req.json().catch(() => ({}))
@@ -32,6 +33,11 @@ export async function PUT(req: NextRequest) {
       heroImageSettings: body.heroImageSettings ?? null,
     },
   } as any)
+
+  await logAudit({
+    entityType: 'PlatformSettings', entityId: 'singleton', entityName: 'Configuración de plataforma',
+    action: 'UPDATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
+  })
 
   return NextResponse.json(settings)
 }

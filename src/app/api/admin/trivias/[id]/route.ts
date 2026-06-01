@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { triviaBaseSchema } from '@/lib/validations/trivia'
+import { logAudit } from '@/lib/audit'
 
 async function checkOwnership(id: string, userId: string, role: string) {
   const trivia = await prisma.trivia.findUnique({ where: { id } })
@@ -64,6 +65,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       brands: { set: (brandIds ?? []).map((id: string) => ({ id })) },
     } as any,
   })
+
+  await logAudit({
+    entityType: 'Trivia', entityId: updated.id, entityName: updated.title,
+    action: 'UPDATE', userId: session.user.id, userName: session.user.name ?? '', userEmail: session.user.email ?? '',
+  })
+
   return NextResponse.json(updated)
 }
 
@@ -74,6 +81,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   const ownership = await checkOwnership(params.id, session.user.id, session.user.role)
   if (ownership === null) return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
   if (ownership === false) return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+
+  await logAudit({
+    entityType: 'Trivia', entityId: params.id, entityName: ownership.title,
+    action: 'DELETE', userId: session.user.id, userName: session.user.name ?? '', userEmail: session.user.email ?? '',
+  })
 
   await prisma.trivia.delete({ where: { id: params.id } })
   return NextResponse.json({ ok: true })

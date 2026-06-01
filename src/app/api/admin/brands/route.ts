@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
+import { logAudit } from '@/lib/audit'
 
 const brandSchema = z.object({
   companyId: z.string().min(1),
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth(true)
+  const { session, error } = await requireAuth(true)
   if (error) return error
 
   const body = await req.json().catch(() => null)
@@ -39,5 +40,11 @@ export async function POST(req: NextRequest) {
   }
 
   const brand = await prisma.brand.create({ data: { ...parsed.data, models: parsed.data.models } })
+
+  await logAudit({
+    entityType: 'Brand', entityId: brand.id, entityName: brand.name,
+    action: 'CREATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
+  })
+
   return NextResponse.json(brand, { status: 201 })
 }

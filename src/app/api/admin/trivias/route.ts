@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { triviaSchema } from '@/lib/validations/trivia'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(_req: NextRequest) {
   const { session, error } = await requireAuth()
@@ -47,6 +48,11 @@ export async function POST(req: NextRequest) {
       createdBy: session.user.id,
       brands: { connect: (brandIds ?? []).map((id: string) => ({ id })) },
     } as any,
+  })
+
+  await logAudit({
+    entityType: 'Trivia', entityId: trivia.id, entityName: trivia.title,
+    action: 'CREATE', userId: session.user.id, userName: session.user.name ?? '', userEmail: session.user.email ?? '',
   })
 
   return NextResponse.json(trivia, { status: 201 })

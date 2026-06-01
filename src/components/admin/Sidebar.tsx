@@ -8,7 +8,7 @@ import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Trophy, Copy, Users, Image as ImageIcon,
   Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings, Home,
-  Swords, Gamepad2
+  Swords, Gamepad2, ShieldCheck
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { cn, getInitials } from '@/lib/utils'
@@ -31,6 +31,7 @@ const superAdminItems = [
   { href: '/admin/brands', label: 'Marcas', icon: Car },
   { href: '/admin/users', label: 'Usuarios', icon: UserCog },
   { href: '/admin/settings', label: 'Configuración', icon: Settings },
+  { href: '/admin/audit', label: 'Auditoría', icon: ShieldCheck },
 ]
 
 export function Sidebar({ user }: SidebarProps) {

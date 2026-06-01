@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
+import { logAudit } from '@/lib/audit'
 
 const updateTournamentSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -51,7 +52,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { error } = await requireAuth()
+  const { session, error } = await requireAuth()
   if (error) return error
 
   const tournament = await prisma.tournament.findUnique({ where: { id: params.id } })
@@ -83,6 +84,11 @@ export async function PATCH(
     },
   })
 
+  await logAudit({
+    entityType: 'Tournament', entityId: updated.id, entityName: updated.name,
+    action: 'UPDATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
+  })
+
   return NextResponse.json(updated)
 }
 
@@ -90,13 +96,18 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { error } = await requireAuth(true)
+  const { session, error } = await requireAuth(true)
   if (error) return error
 
   const tournament = await prisma.tournament.findUnique({ where: { id: params.id } })
   if (!tournament) {
     return NextResponse.json({ error: 'Torneo no encontrado' }, { status: 404 })
   }
+
+  await logAudit({
+    entityType: 'Tournament', entityId: params.id, entityName: tournament.name,
+    action: 'DELETE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
+  })
 
   await prisma.tournament.delete({ where: { id: params.id } })
 

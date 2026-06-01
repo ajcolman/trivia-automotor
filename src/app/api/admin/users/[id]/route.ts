@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { updateUserSchema } from '@/lib/validations/user'
 import bcrypt from 'bcryptjs'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireAuth(true)
@@ -18,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = await requireAuth(true)
+  const { session, error } = await requireAuth(true)
   if (error) return error
 
   const body = await req.json().catch(() => null)
@@ -44,6 +45,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     select: { id: true, email: true, name: true, role: true, isActive: true, companyId: true },
   })
 
+  await logAudit({
+    entityType: 'User', entityId: user.id, entityName: user.email,
+    action: 'UPDATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
+  })
+
   return NextResponse.json(user)
 }
 
@@ -54,6 +60,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (session.user.id === params.id) {
     return NextResponse.json({ error: 'No puedes eliminar tu propia cuenta' }, { status: 400 })
   }
+
+  const user = await prisma.user.findUnique({ where: { id: params.id }, select: { email: true } })
+
+  await logAudit({
+    entityType: 'User', entityId: params.id, entityName: user?.email,
+    action: 'DELETE', userId: session.user.id, userName: session.user.name ?? '', userEmail: session.user.email ?? '',
+  })
 
   await prisma.user.delete({ where: { id: params.id } })
   return NextResponse.json({ ok: true })

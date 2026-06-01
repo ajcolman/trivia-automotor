@@ -13,6 +13,12 @@ enum UserRole {
   admin
 }
 
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
 enum FieldType {
   text
   email
@@ -356,6 +362,24 @@ model TournamentMatch {
 
   @@index([tournamentId, round])
   @@index([roomCode])
+}
+
+// ─── Audit log ─────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  entityType String      // "Trivia" | "Company" | "Brand" | "User" | "Tournament" | "PlatformSettings"
+  entityId   String
+  entityName String?     // Human-readable identifier (title, name, email…)
+  action     AuditAction
+  userId     String
+  userName   String
+  userEmail  String
+  createdAt  DateTime    @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 // ─── Global platform settings (singleton pattern - only one record) ─────────

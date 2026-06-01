@@ -4,9 +4,10 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { createUserSchema } from '@/lib/validations/user'
 import bcrypt from 'bcryptjs'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(_req: NextRequest) {
-  const { session, error } = await requireAuth(true)
+  const { error } = await requireAuth(true)
   if (error) return error
 
   const users = await prisma.user.findMany({
@@ -22,7 +23,7 @@ export async function GET(_req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth(true)
+  const { session, error } = await requireAuth(true)
   if (error) return error
 
   const body = await req.json().catch(() => null)
@@ -45,6 +46,11 @@ export async function POST(req: NextRequest) {
       companyId: parsed.data.companyId || null,
     },
     select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+  })
+
+  await logAudit({
+    entityType: 'User', entityId: user.id, entityName: user.email,
+    action: 'CREATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
   })
 
   return NextResponse.json(user, { status: 201 })
