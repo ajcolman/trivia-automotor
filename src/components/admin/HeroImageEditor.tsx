@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { UploadDropzone } from './UploadDropzone'
 import { Button } from '@/components/ui/button'
-import { Eye, Maximize, Move, MoveHorizontal, MoveVertical, RefreshCcw, Type, ZoomIn } from 'lucide-react'
+import { Eye, EyeOff, Maximize, Move, MoveHorizontal, MoveVertical, RefreshCcw, Type, ZoomIn } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { mediaUrl } from '@/lib/utils'
 import {
   type HeroImageSettings,
@@ -27,9 +28,11 @@ interface HeroImageEditorProps {
 
 export function HeroImageEditor({ value, settings, onChange, onSettingsChange, primaryColor = '#003087' }: HeroImageEditorProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isPreviewRevealActive, setIsPreviewRevealActive] = useState(false)
   const [dragStart, setDragStart] = useState({ mouseX: 0, mouseY: 0, bgX: 50, bgY: 50 })
   const containerRef = useRef<HTMLDivElement>(null)
   const heroSettings = resolveHeroImageSettings(settings, settings?.height ?? 400)
+  const hidePreviewContent = Boolean(heroSettings.hideContentOnFocus && isPreviewRevealActive)
 
   const updateSettings = (patch: Partial<HeroImageSettings>) => {
     onSettingsChange({ ...heroSettings, ...patch })
@@ -168,6 +171,21 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
                 </div>
               </div>
 
+              <div className="flex items-center justify-between gap-4 rounded-xl border bg-white px-3 py-3">
+                <div className="min-w-0">
+                  <Label className="text-xs font-bold flex items-center gap-1">
+                    <EyeOff className="w-3 h-3" /> Ver fondo al enfocar
+                  </Label>
+                  <p className="text-[11px] leading-snug text-slate-500 mt-1">
+                    Oculta textos y overlay al pasar, tocar o enfocar la cabecera.
+                  </p>
+                </div>
+                <Switch
+                  checked={heroSettings.hideContentOnFocus ?? false}
+                  onCheckedChange={v => updateSettings({ hideContentOnFocus: v })}
+                />
+              </div>
+
               <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-xl text-xs">
                 <Move className="w-4 h-4 flex-shrink-0" />
                 <p>Arrastra la imagen o usa los controles horizontal y vertical para ajustar el encuadre.</p>
@@ -193,16 +211,27 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerCancel={handlePointerUp}
+                onPointerEnter={() => setIsPreviewRevealActive(true)}
+                onPointerLeave={() => setIsPreviewRevealActive(false)}
+                onFocus={() => setIsPreviewRevealActive(true)}
+                onBlur={() => setIsPreviewRevealActive(false)}
+                tabIndex={heroSettings.hideContentOnFocus ? 0 : undefined}
               >
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={heroBackgroundImageStyle(heroSettings, mediaUrl(value))}
                 />
                 <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ background: heroOverlayGradient(heroSettings) }}
+                  className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+                  style={{ background: heroOverlayGradient(heroSettings), opacity: hidePreviewContent ? 0 : 1 }}
                 />
-                <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
+                <div
+                  className="absolute bottom-4 left-4 right-4 pointer-events-none transition-all duration-300"
+                  style={{
+                    opacity: hidePreviewContent ? 0 : 1,
+                    transform: hidePreviewContent ? 'translateY(8px)' : 'translateY(0)',
+                  }}
+                >
                   <p className="text-lg font-black text-white leading-tight" style={heroTextOutlineStyle(heroSettings)}>
                     Titulo de la trivia
                   </p>

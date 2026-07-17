@@ -52,6 +52,7 @@ export default async function HomePage() {
   
   const heroImg = settings?.heroImageUrl ? mediaUrl(settings.heroImageUrl) : '/images/fondo.png'
   const heroSet = resolveHeroImageSettings(settings?.heroImageSettings as any, 620)
+  const canRevealLandingHero = Boolean(settings?.heroImageUrl && heroSet.hideContentOnFocus)
 
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex flex-col">
@@ -78,7 +79,12 @@ export default async function HomePage() {
 
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
-        <header className="relative overflow-hidden" style={{ minHeight: `${heroSet.height}px`, display: 'flex', alignItems: 'center' }}>
+        <header
+          className={`relative overflow-hidden ${canRevealLandingHero ? 'group focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-inset' : ''}`}
+          tabIndex={canRevealLandingHero ? 0 : undefined}
+          aria-label={canRevealLandingHero ? 'Ver fondo de cabecera' : undefined}
+          style={{ minHeight: `${heroSet.height}px`, display: 'flex', alignItems: 'center', cursor: canRevealLandingHero ? 'zoom-in' : undefined }}
+        >
           {/* Background image */}
           <div
             className="absolute inset-0"
@@ -92,22 +98,31 @@ export default async function HomePage() {
               }}
           />
           {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
-          <div className="absolute inset-0" style={{
-            background: settings?.heroImageUrl 
-              ? heroOverlayGradient(heroSet, 'landing')
-              : 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
-          }} />
+          <div
+            className={`absolute inset-0 transition-opacity duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
+            style={{
+              background: settings?.heroImageUrl
+                ? heroOverlayGradient(heroSet, 'landing')
+                : 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
+            }}
+          />
           {/* Scanlines retro */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)',
-          }} />
+          <div
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
+            style={{
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)',
+            }}
+          />
           {/* Fade al fondo de la página en la base */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none" style={{
-            background: 'linear-gradient(to bottom, transparent, #f0f4ff)',
-          }} />
+          <div
+            className={`absolute bottom-0 left-0 right-0 h-32 pointer-events-none transition-opacity duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
+            style={{
+              background: 'linear-gradient(to bottom, transparent, #f0f4ff)',
+            }}
+          />
 
           {/* Contenido alineado arriba para dejar los autos visibles abajo */}
-          <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-40 lg:pt-20 lg:pb-52 text-center">
+          <div className={`relative max-w-6xl mx-auto px-4 pt-16 pb-40 lg:pt-20 lg:pb-52 text-center transition-all duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-hover:translate-y-3 group-hover:scale-[0.98] group-focus:opacity-0 group-focus:translate-y-3 group-focus:scale-[0.98]' : ''}`}>
             <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg" style={heroTextOutlineStyle(heroSet)}>
               Trivias &amp; <span style={{ color: '#38BDF8' }}>Premios</span>
             </h1>

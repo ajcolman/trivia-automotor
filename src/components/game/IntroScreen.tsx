@@ -25,10 +25,13 @@ const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
   const [hovered, setHovered] = useState(false)
   const [instrOpen, setInstrOpen] = useState(false)
+  const [heroRevealActive, setHeroRevealActive] = useState(false)
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl)
   const totalPoints = trivia.questions.reduce((s, q) => s + q.points, 0)
   const maxTime = Math.max(...trivia.questions.map(q => q.timeLimit))
   const heroSettings = resolveHeroImageSettings(trivia.heroImageSettings, 400)
+  const canRevealHero = Boolean(trivia.heroImageUrl && heroSettings.hideContentOnFocus)
+  const hideHeroContent = canRevealHero && heroRevealActive
 
   return (
     <div
@@ -53,12 +56,43 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
           {/* Header banner */}
           <div
             className="relative px-8 pt-10 pb-8 text-white text-center overflow-hidden"
+            tabIndex={canRevealHero ? 0 : undefined}
+            role={canRevealHero ? 'button' : undefined}
+            aria-label={canRevealHero ? 'Ver fondo de cabecera' : undefined}
+            aria-pressed={canRevealHero ? hideHeroContent : undefined}
+            onMouseEnter={() => canRevealHero && setHeroRevealActive(true)}
+            onMouseLeave={e => {
+              if (!canRevealHero || document.activeElement === e.currentTarget) return
+              setHeroRevealActive(false)
+            }}
+            onFocus={() => canRevealHero && setHeroRevealActive(true)}
+            onBlur={() => canRevealHero && setHeroRevealActive(false)}
+            onPointerDown={e => {
+              if (!canRevealHero || e.pointerType === 'mouse') return
+              if (hideHeroContent) {
+                e.currentTarget.blur()
+                setHeroRevealActive(false)
+                return
+              }
+              e.currentTarget.focus({ preventScroll: true })
+              setHeroRevealActive(true)
+            }}
+            onKeyDown={e => {
+              if (!canRevealHero) return
+              if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                e.currentTarget.blur()
+                setHeroRevealActive(false)
+              }
+            }}
             style={{ 
               background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)`,
               minHeight: trivia.heroImageUrl ? `${heroSettings.height}px` : 'auto',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              cursor: canRevealHero ? (hideHeroContent ? 'zoom-out' : 'zoom-in') : undefined,
+              outlineColor: canRevealHero ? trivia.accentColor : undefined,
             }}
           >
             {/* Background pattern / Hero Image */}
@@ -69,8 +103,8 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                   style={heroBackgroundImageStyle(heroSettings, mediaUrl(trivia.heroImageUrl))}
                 />
                 <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ background: heroOverlayGradient(heroSettings) }}
+                  className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+                  style={{ background: heroOverlayGradient(heroSettings), opacity: hideHeroContent ? 0 : 1 }}
                 />
               </div>
             ) : (
@@ -90,7 +124,14 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
               </>
             )}
 
-            <div className="relative">
+            <div
+              className="relative transition-all duration-300"
+              style={{
+                opacity: hideHeroContent ? 0 : 1,
+                transform: hideHeroContent ? 'translateY(12px) scale(0.98)' : 'translateY(0) scale(1)',
+                pointerEvents: hideHeroContent ? 'none' : undefined,
+              }}
+            >
               {/* Accent badge */}
               <div
                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold mb-5"

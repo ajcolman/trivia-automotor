@@ -7,6 +7,7 @@ export interface HeroImageSettings {
   height: number
   textStroke?: number
   overlayOpacity?: number
+  hideContentOnFocus?: boolean
 }
 
 export function defaultHeroImageSettings(height = 400): HeroImageSettings {
@@ -17,6 +18,7 @@ export function defaultHeroImageSettings(height = 400): HeroImageSettings {
     height,
     textStroke: 1,
     overlayOpacity: 55,
+    hideContentOnFocus: false,
   }
 }
 
@@ -37,6 +39,7 @@ export function resolveHeroImageSettings(
     height: clamp(settings?.height ?? defaults.height, 160, 1200),
     textStroke: clamp(settings?.textStroke ?? defaults.textStroke ?? 1, 0, 4),
     overlayOpacity: clamp(settings?.overlayOpacity ?? defaults.overlayOpacity ?? 55, 0, 90),
+    hideContentOnFocus: settings?.hideContentOnFocus ?? defaults.hideContentOnFocus ?? false,
   }
 }
 
