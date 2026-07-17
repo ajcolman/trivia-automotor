@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
+import { getNowAsuncion } from '@/lib/utils'
 
 export async function GET(_req: NextRequest) {
   const { session, error } = await requireAuth()
@@ -9,14 +10,22 @@ export async function GET(_req: NextRequest) {
 
   const userId = session.user.id
   const isSuper = isSuperAdmin(session.user.role)
+  const now = getNowAsuncion()
 
-  const triviaFilter = isSuper ? {} : { createdBy: userId }
+  const ownerFilter = isSuper ? {} : { createdBy: userId }
+  const currentTriviaFilter = {
+    ...ownerFilter,
+    isActive: true,
+    AND: [
+      { OR: [{ endDate: null }, { endDate: { gt: now } }] },
+      { OR: [{ startDate: null }, { startDate: { lte: now } }] },
+    ],
+  }
 
-  const [totalTrivias, activeTrivias, trivias] = await Promise.all([
-    prisma.trivia.count({ where: triviaFilter }),
-    prisma.trivia.count({ where: { ...triviaFilter, isActive: true } }),
+  const [totalTrivias, trivias] = await Promise.all([
+    prisma.trivia.count({ where: currentTriviaFilter }),
     prisma.trivia.findMany({
-      where: triviaFilter,
+      where: currentTriviaFilter,
       select: {
         id: true,
         title: true,
@@ -62,7 +71,7 @@ export async function GET(_req: NextRequest) {
 
   return NextResponse.json({
     totalTrivias,
-    activeTrivias,
+    activeTrivias: totalTrivias,
     totalLeads,
     totalPageViews,
     totalStarted,

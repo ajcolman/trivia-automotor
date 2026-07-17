@@ -4,25 +4,36 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Trophy, Users, BarChart3, Eye, TrendingUp, Plus, Zap, Target } from 'lucide-react'
-import { formatPercent } from '@/lib/utils'
+import { getNowAsuncion } from '@/lib/utils'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   const userId = (session!.user as { id: string }).id
   const role = (session!.user as { role: string }).role
   const isSuperAdmin = role === 'super_admin'
+  const now = getNowAsuncion()
 
-  const triviaFilter = isSuperAdmin ? {} : { createdBy: userId }
+  const ownerFilter = isSuperAdmin ? {} : { createdBy: userId }
+  const currentTriviaFilter = {
+    ...ownerFilter,
+    isActive: true,
+    AND: [
+      { OR: [{ endDate: null }, { endDate: { gt: now } }] },
+      { OR: [{ startDate: null }, { startDate: { lte: now } }] },
+    ],
+  }
 
-  const [totalTrivias, activeTrivias, trivias] = await Promise.all([
-    prisma.trivia.count({ where: triviaFilter }),
-    prisma.trivia.count({ where: { ...triviaFilter, isActive: true } }),
+  const [totalTrivias, metricTrivias, trivias] = await Promise.all([
+    prisma.trivia.count({ where: currentTriviaFilter }),
     prisma.trivia.findMany({
-      where: triviaFilter,
+      where: currentTriviaFilter,
+      select: { id: true },
+    }),
+    prisma.trivia.findMany({
+      where: currentTriviaFilter,
       select: {
         id: true, title: true, isActive: true,
         primaryColor: true,
-        _count: { select: { leads: true, gameSessions: true, pageViews: true } },
         gameSessions: { select: { hasCompleted: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -30,10 +41,12 @@ export default async function DashboardPage() {
     }),
   ])
 
-  const triviaIds = trivias.map(t => t.id)
-  const [totalLeads, totalViews, recentLeads] = await Promise.all([
+  const triviaIds = metricTrivias.map(t => t.id)
+  const [totalLeads, totalViews, totalStarted, totalCompleted, recentLeads] = await Promise.all([
     prisma.lead.count({ where: { triviaId: { in: triviaIds } } }),
     prisma.pageView.count({ where: { triviaId: { in: triviaIds } } }),
+    prisma.gameSession.count({ where: { triviaId: { in: triviaIds } } }),
+    prisma.gameSession.count({ where: { triviaId: { in: triviaIds }, hasCompleted: true } }),
     prisma.lead.findMany({
       where: { triviaId: { in: triviaIds } },
       orderBy: { completedAt: 'desc' },
@@ -42,15 +55,13 @@ export default async function DashboardPage() {
     }),
   ])
 
-  const totalStarted = trivias.reduce((s, t) => s + t.gameSessions.length, 0)
-  const totalCompleted = trivias.reduce((s, t) => s + t.gameSessions.filter(gs => gs.hasCompleted).length, 0)
   const completionRate = totalStarted > 0 ? Math.round((totalCompleted / totalStarted) * 100) : 0
 
   const stats = [
     {
-      label: 'Total Trivias',
+      label: 'Trivias Vigentes',
       value: totalTrivias,
-      sub: `${activeTrivias} activa${activeTrivias !== 1 ? 's' : ''}`,
+      sub: 'activas dentro del periodo',
       icon: Trophy,
       gradient: 'linear-gradient(135deg, #003087, #0052cc)',
       glow: 'rgba(0,80,204,0.25)',
@@ -153,13 +164,13 @@ export default async function DashboardPage() {
             <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-blue-600" />
             </div>
-            <h2 className="text-sm font-bold text-slate-700">Rendimiento por Trivia</h2>
+            <h2 className="text-sm font-bold text-slate-700">Rendimiento por Trivia Vigente</h2>
           </div>
           <div className="space-y-4">
             {trivias.length === 0 ? (
               <div className="py-8 text-center">
                 <Trophy className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">No hay trivias aún.</p>
+                <p className="text-sm text-slate-400">No hay trivias vigentes.</p>
               </div>
             ) : trivias.map(t => {
               const started = t.gameSessions.length
@@ -197,13 +208,13 @@ export default async function DashboardPage() {
             <div className="w-7 h-7 bg-green-50 rounded-lg flex items-center justify-center">
               <Users className="w-4 h-4 text-green-600" />
             </div>
-            <h2 className="text-sm font-bold text-slate-700">Últimos Contactos</h2>
+            <h2 className="text-sm font-bold text-slate-700">Últimos Contactos Vigentes</h2>
           </div>
           <div className="space-y-1">
             {recentLeads.length === 0 ? (
               <div className="py-8 text-center">
                 <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">Sin contactos registrados aún.</p>
+                <p className="text-sm text-slate-400">Sin contactos en trivias vigentes.</p>
               </div>
             ) : recentLeads.map(lead => {
               const fd = lead.formData as Record<string, string>
