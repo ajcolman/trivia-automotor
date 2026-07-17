@@ -23,6 +23,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { HeroImageEditor } from './HeroImageEditor'
 import { toast } from 'sonner'
+import { defaultHeroImageSettings } from '@/lib/hero-image'
+
+const DEFAULT_TRIVIA_HERO_SETTINGS = defaultHeroImageSettings(400)
 
 interface TriviaEditorProps {
   trivia: any | null
@@ -89,7 +92,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       gameInstructions: trivia?.gameInstructions ?? '',
       termsAndConditions: trivia?.termsAndConditions ?? '',
       heroImageUrl: trivia?.heroImageUrl ?? '',
-      heroImageSettings: trivia?.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 400 },
+      heroImageSettings: trivia?.heroImageSettings ?? DEFAULT_TRIVIA_HERO_SETTINGS,
     },
   })
 
@@ -111,7 +114,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         gameInstructions: trivia.gameInstructions ?? '',
         termsAndConditions: trivia.termsAndConditions ?? '',
         heroImageUrl: trivia.heroImageUrl ?? '',
-        heroImageSettings: trivia.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 400 },
+        heroImageSettings: trivia.heroImageSettings ?? DEFAULT_TRIVIA_HERO_SETTINGS,
       })
       setLogoUrl(trivia.logoUrl ?? '')
       setQuestions(trivia.questions ?? [])
@@ -548,7 +551,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
               <div className="pt-6 border-t">
                 <HeroImageEditor
                   value={watch('heroImageUrl') ?? ''}
-                  settings={watch('heroImageSettings') ?? { zoom: 1, x: 50, y: 50, height: 400 }}
+                  settings={watch('heroImageSettings') ?? DEFAULT_TRIVIA_HERO_SETTINGS}
                   onChange={val => setValue('heroImageUrl', val)}
                   onSettingsChange={val => setValue('heroImageSettings', val)}
                   primaryColor={colors.primaryColor}

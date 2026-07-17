@@ -29,7 +29,7 @@ export interface TriviaData {
   formFields: FormFieldData[]
   prizes: PrizeData[]
   heroImageUrl: string | null
-  heroImageSettings: { zoom: number, x: number, y: number, height: number } | null
+  heroImageSettings: { zoom: number, x: number, y: number, height: number, textStroke?: number, overlayOpacity?: number } | null
   company: { id: string; name: string; logoUrl: string | null } | null
   brand: { id: string; name: string; logoUrl: string | null; models: string[] } | null
   showLeaderboard: boolean

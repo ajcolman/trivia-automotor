@@ -5,6 +5,12 @@ import { prisma } from '@/lib/prisma'
 import { Trophy, Users, Zap, ChevronRight, Clock, Star, Award, Medal } from 'lucide-react'
 import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/utils'
 import { PrizesModal } from '@/components/landing/PrizesModal'
+import {
+  heroBackgroundImageStyle,
+  heroOverlayGradient,
+  heroTextOutlineStyle,
+  resolveHeroImageSettings,
+} from '@/lib/hero-image'
 
 export const revalidate = 60
 
@@ -45,7 +51,7 @@ export default async function HomePage() {
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
   
   const heroImg = settings?.heroImageUrl ? mediaUrl(settings.heroImageUrl) : '/images/fondo.png'
-  const heroSet: any = settings?.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 620 }
+  const heroSet = resolveHeroImageSettings(settings?.heroImageSettings as any, 620)
 
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex flex-col">
@@ -76,21 +82,19 @@ export default async function HomePage() {
           {/* Background image */}
           <div
             className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${heroImg})`,
-              backgroundSize: settings?.heroImageUrl
-                ? (heroSet.zoom <= 1 ? 'cover' : `${heroSet.zoom * 100}%`)
-                : 'cover',
-              backgroundPosition: settings?.heroImageUrl
-                ? `${heroSet.x ?? 50}% ${heroSet.y ?? 50}%`
-                : 'center bottom',
-              backgroundRepeat: 'no-repeat',
-            }}
+            style={settings?.heroImageUrl
+              ? heroBackgroundImageStyle(heroSet, heroImg)
+              : {
+                backgroundImage: `url(${heroImg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center bottom',
+                backgroundRepeat: 'no-repeat',
+              }}
           />
           {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
           <div className="absolute inset-0" style={{
             background: settings?.heroImageUrl 
-              ? 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%)'
+              ? heroOverlayGradient(heroSet, 'landing')
               : 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
           }} />
           {/* Scanlines retro */}
@@ -104,10 +108,10 @@ export default async function HomePage() {
 
           {/* Contenido alineado arriba para dejar los autos visibles abajo */}
           <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-40 lg:pt-20 lg:pb-52 text-center">
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg">
+            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg" style={heroTextOutlineStyle(heroSet)}>
               Trivias &amp; <span style={{ color: '#38BDF8' }}>Premios</span>
             </h1>
-            <p className="text-lg text-white/75 mb-10 max-w-md mx-auto drop-shadow">
+            <p className="text-lg text-white/75 mb-10 max-w-md mx-auto drop-shadow" style={heroTextOutlineStyle(heroSet, 0.45)}>
               Participá en nuestras trivias interactivas, demostrá tu conocimiento y ganá increíbles premios.
             </p>
 

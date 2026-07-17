@@ -66,6 +66,8 @@ export const triviaBaseSchema = z.object({
     x: z.number().default(50),
     y: z.number().default(50),
     height: z.number().default(400),
+    textStroke: z.number().min(0).max(4).default(1).optional(),
+    overlayOpacity: z.number().min(0).max(90).default(55).optional(),
   }).optional().nullable(),
 })
 

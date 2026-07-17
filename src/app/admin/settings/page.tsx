@@ -8,12 +8,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MarkdownEditor } from '@/components/admin/MarkdownEditor'
 import { HeroImageEditor } from '@/components/admin/HeroImageEditor'
+import { defaultHeroImageSettings } from '@/lib/hero-image'
+
+const DEFAULT_PLATFORM_HERO_SETTINGS = defaultHeroImageSettings(600)
 
 export default function SettingsPage() {
   const [platformTerms, setPlatformTerms] = useState('')
   const [privacyPolicy, setPrivacyPolicy] = useState('')
   const [heroImageUrl, setHeroImageUrl] = useState('')
-  const [heroImageSettings, setHeroImageSettings] = useState({ zoom: 1, x: 50, y: 50, height: 600 })
+  const [heroImageSettings, setHeroImageSettings] = useState(DEFAULT_PLATFORM_HERO_SETTINGS)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -24,7 +27,7 @@ export default function SettingsPage() {
         setPlatformTerms(d.platformTerms ?? '')
         setPrivacyPolicy(d.privacyPolicy ?? '')
         setHeroImageUrl(d.heroImageUrl ?? '')
-        setHeroImageSettings(d.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 600 })
+        setHeroImageSettings(d.heroImageSettings ?? DEFAULT_PLATFORM_HERO_SETTINGS)
       })
   }, [])
 

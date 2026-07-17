@@ -8,6 +8,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import { mediaUrl } from '@/lib/utils'
+import {
+  heroBackgroundImageStyle,
+  heroOverlayGradient,
+  heroTextOutlineStyle,
+  resolveHeroImageSettings,
+} from '@/lib/hero-image'
 
 interface IntroScreenProps {
   trivia: TriviaData
@@ -16,23 +22,13 @@ interface IntroScreenProps {
 
 const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
-function heroBgSize(zoom: number) {
-  if (zoom <= 1) return 'cover'
-  return `${zoom * 100}%`
-}
-
 export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
   const [hovered, setHovered] = useState(false)
   const [instrOpen, setInstrOpen] = useState(false)
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl)
   const totalPoints = trivia.questions.reduce((s, q) => s + q.points, 0)
   const maxTime = Math.max(...trivia.questions.map(q => q.timeLimit))
-  const heroSettings = {
-    zoom: trivia.heroImageSettings?.zoom ?? 1,
-    x: trivia.heroImageSettings?.x ?? 50,
-    y: trivia.heroImageSettings?.y ?? 50,
-    height: trivia.heroImageSettings?.height ?? 400,
-  }
+  const heroSettings = resolveHeroImageSettings(trivia.heroImageSettings, 400)
 
   return (
     <div
@@ -70,14 +66,12 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
               <div className="absolute inset-0 pointer-events-none">
                 <div
                   className="absolute inset-0"
-                  style={{
-                    backgroundImage: `url(${mediaUrl(trivia.heroImageUrl)})`,
-                    backgroundSize: heroBgSize(heroSettings.zoom),
-                    backgroundPosition: `${heroSettings.x}% ${heroSettings.y}%`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
+                  style={heroBackgroundImageStyle(heroSettings, mediaUrl(trivia.heroImageUrl))}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: heroOverlayGradient(heroSettings) }}
+                />
               </div>
             ) : (
               <>
@@ -129,11 +123,14 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                 </div>
               )}
 
-              <h1 className="text-3xl font-black tracking-tight leading-tight mb-2">
+              <h1 className="text-3xl font-black tracking-tight leading-tight mb-2" style={heroTextOutlineStyle(heroSettings)}>
                 {trivia.title}
               </h1>
               {trivia.description && (
-                <div className="text-white/70 text-sm max-w-sm mx-auto leading-relaxed prose prose-sm prose-invert prose-p:my-1 prose-headings:text-white prose-headings:font-bold prose-a:text-white/90 max-w-none">
+                <div
+                  className="text-white/70 text-sm max-w-sm mx-auto leading-relaxed prose prose-sm prose-invert prose-p:my-1 prose-headings:text-white prose-headings:font-bold prose-a:text-white/90 max-w-none"
+                  style={heroTextOutlineStyle(heroSettings, 0.45)}
+                >
                   <ReactMarkdown>{trivia.description}</ReactMarkdown>
                 </div>
               )}

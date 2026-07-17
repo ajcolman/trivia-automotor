@@ -6,62 +6,63 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { UploadDropzone } from './UploadDropzone'
 import { Button } from '@/components/ui/button'
-import { Move, Maximize, ZoomIn, RefreshCcw } from 'lucide-react'
+import { Eye, Maximize, Move, MoveHorizontal, MoveVertical, RefreshCcw, Type, ZoomIn } from 'lucide-react'
 import { mediaUrl } from '@/lib/utils'
+import {
+  type HeroImageSettings,
+  defaultHeroImageSettings,
+  heroBackgroundImageStyle,
+  heroOverlayGradient,
+  heroTextOutlineStyle,
+  resolveHeroImageSettings,
+} from '@/lib/hero-image'
 
 interface HeroImageEditorProps {
   value: string
-  settings: {
-    zoom: number
-    x: number
-    y: number
-    height: number
-  }
+  settings: HeroImageSettings
   onChange: (url: string) => void
-  onSettingsChange: (settings: any) => void
+  onSettingsChange: (settings: HeroImageSettings) => void
   primaryColor?: string
-}
-
-// x and y are background-position percentages (0–100), where 50/50 = center.
-// zoom is a multiplier: 1 = cover, >1 = zoomed in.
-function bgSize(zoom: number) {
-  if (zoom <= 1) return 'cover'
-  return `${zoom * 100}%`
 }
 
 export function HeroImageEditor({ value, settings, onChange, onSettingsChange, primaryColor = '#003087' }: HeroImageEditorProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ mouseX: 0, mouseY: 0, bgX: 50, bgY: 50 })
   const containerRef = useRef<HTMLDivElement>(null)
+  const heroSettings = resolveHeroImageSettings(settings, settings?.height ?? 400)
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!value) return
-    e.preventDefault()
-    setIsDragging(true)
-    setDragStart({ mouseX: e.clientX, mouseY: e.clientY, bgX: settings.x, bgY: settings.y })
+  const updateSettings = (patch: Partial<HeroImageSettings>) => {
+    onSettingsChange({ ...heroSettings, ...patch })
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!value) return
+    e.preventDefault()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    setIsDragging(true)
+    setDragStart({ mouseX: e.clientX, mouseY: e.clientY, bgX: heroSettings.x, bgY: heroSettings.y })
+  }
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || !value || !containerRef.current) return
     const rect = containerRef.current.getBoundingClientRect()
-    // Dragging right pans the view right → shows more of the right side → increase x
     const dx = ((e.clientX - dragStart.mouseX) / rect.width) * 100
     const dy = ((e.clientY - dragStart.mouseY) / rect.height) * 100
     const newX = Math.max(0, Math.min(100, dragStart.bgX + dx))
     const newY = Math.max(0, Math.min(100, dragStart.bgY + dy))
-    onSettingsChange({ ...settings, x: newX, y: newY })
+    updateSettings({ x: newX, y: newY })
   }
 
-  const handleMouseUp = () => setIsDragging(false)
+  const handlePointerUp = () => setIsDragging(false)
 
   useEffect(() => {
     const up = () => setIsDragging(false)
-    window.addEventListener('mouseup', up)
-    return () => window.removeEventListener('mouseup', up)
+    window.addEventListener('pointerup', up)
+    return () => window.removeEventListener('pointerup', up)
   }, [])
 
   const resetSettings = () => {
-    onSettingsChange({ zoom: 1, x: 50, y: 50, height: 640 })
+    onSettingsChange(defaultHeroImageSettings(640))
   }
 
   return (
@@ -83,37 +84,93 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label className="text-xs font-bold flex items-center gap-1">
-                    <ZoomIn className="w-3 h-3" /> Zoom: {Math.round(settings.zoom * 100)}%
+                    <ZoomIn className="w-3 h-3" /> Zoom: {Math.round(heroSettings.zoom * 100)}%
                   </Label>
                   <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={resetSettings}>
                     <RefreshCcw className="w-3 h-3 mr-1" /> Resetear
                   </Button>
                 </div>
                 <Slider
-                  value={[settings.zoom]}
+                  value={[heroSettings.zoom]}
                   min={1}
                   max={3}
                   step={0.01}
-                  onValueChange={([v]) => onSettingsChange({ ...settings, zoom: v })}
+                  onValueChange={([v]) => updateSettings({ zoom: v })}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold flex items-center gap-1">
+                    <MoveHorizontal className="w-3 h-3" /> Horizontal: {Math.round(heroSettings.x)}%
+                  </Label>
+                  <Slider
+                    value={[heroSettings.x]}
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    onValueChange={([v]) => updateSettings({ x: v })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold flex items-center gap-1">
+                    <MoveVertical className="w-3 h-3" /> Vertical: {Math.round(heroSettings.y)}%
+                  </Label>
+                  <Slider
+                    value={[heroSettings.y]}
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    onValueChange={([v]) => updateSettings({ y: v })}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label className="text-xs font-bold flex items-center gap-1">
-                  <Maximize className="w-3 h-3" /> Altura de cabecera: {settings.height}px
+                  <Maximize className="w-3 h-3" /> Altura de cabecera: {heroSettings.height}px
                 </Label>
                 <Slider
-                  value={[settings.height]}
+                  value={[heroSettings.height]}
                   min={200}
                   max={800}
                   step={10}
-                  onValueChange={([v]) => onSettingsChange({ ...settings, height: v })}
+                  onValueChange={([v]) => updateSettings({ height: v })}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold flex items-center gap-1">
+                    <Eye className="w-3 h-3" /> Oscurecer imagen: {Math.round(heroSettings.overlayOpacity ?? 55)}%
+                  </Label>
+                  <Slider
+                    value={[heroSettings.overlayOpacity ?? 55]}
+                    min={0}
+                    max={90}
+                    step={1}
+                    onValueChange={([v]) => updateSettings({ overlayOpacity: v })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold flex items-center gap-1">
+                    <Type className="w-3 h-3" /> Borde del texto: {(heroSettings.textStroke ?? 1).toFixed(1)}px
+                  </Label>
+                  <Slider
+                    value={[heroSettings.textStroke ?? 1]}
+                    min={0}
+                    max={4}
+                    step={0.1}
+                    onValueChange={([v]) => updateSettings({ textStroke: v })}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-xl text-xs">
                 <Move className="w-4 h-4 flex-shrink-0" />
-                <p>Haz clic y arrastra la imagen en la previsualización para posicionarla.</p>
+                <p>Arrastra la imagen o usa los controles horizontal y vertical para ajustar el encuadre.</p>
               </div>
             </div>
           )}
@@ -123,27 +180,35 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
           <Label className="text-sm font-bold">Previsualización en tiempo real</Label>
           <div
             className="relative w-full rounded-3xl overflow-hidden border-4 border-white shadow-2xl bg-slate-200"
-            style={{ height: `${settings.height * 0.6}px` }}
+            style={{ height: `${heroSettings.height * 0.6}px` }}
           >
             {value ? (
               <div
                 ref={containerRef}
-                className="absolute inset-0"
+                className="absolute inset-0 overflow-hidden touch-none"
                 style={{
-                  backgroundImage: `url(${mediaUrl(value)})`,
-                  backgroundSize: bgSize(settings.zoom),
-                  backgroundPosition: `${settings.x}% ${settings.y}%`,
-                  backgroundRepeat: 'no-repeat',
                   cursor: isDragging ? 'grabbing' : 'grab',
                 }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={heroBackgroundImageStyle(heroSettings, mediaUrl(value))}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: heroOverlayGradient(heroSettings) }}
+                />
                 <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-                  <div className="h-4 w-3/4 bg-white/30 rounded mb-2" />
-                  <div className="h-3 w-1/2 bg-white/20 rounded" />
+                  <p className="text-lg font-black text-white leading-tight" style={heroTextOutlineStyle(heroSettings)}>
+                    Titulo de la trivia
+                  </p>
+                  <p className="mt-1 text-xs text-white/80 leading-snug" style={heroTextOutlineStyle(heroSettings, 0.45)}>
+                    Texto de ejemplo sobre la imagen de cabecera
+                  </p>
                 </div>
               </div>
             ) : (
