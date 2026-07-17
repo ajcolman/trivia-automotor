@@ -63,8 +63,8 @@ export const triviaBaseSchema = z.object({
   heroImageUrl: z.string().optional().nullable(),
   heroImageSettings: z.object({
     zoom: z.number().default(1),
-    x: z.number().default(0),
-    y: z.number().default(0),
+    x: z.number().default(50),
+    y: z.number().default(50),
     height: z.number().default(400),
   }).optional().nullable(),
 })

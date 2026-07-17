@@ -89,7 +89,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       gameInstructions: trivia?.gameInstructions ?? '',
       termsAndConditions: trivia?.termsAndConditions ?? '',
       heroImageUrl: trivia?.heroImageUrl ?? '',
-      heroImageSettings: trivia?.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 400 },
+      heroImageSettings: trivia?.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 400 },
     },
   })
 
@@ -111,7 +111,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         gameInstructions: trivia.gameInstructions ?? '',
         termsAndConditions: trivia.termsAndConditions ?? '',
         heroImageUrl: trivia.heroImageUrl ?? '',
-        heroImageSettings: trivia.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 400 },
+        heroImageSettings: trivia.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 400 },
       })
       setLogoUrl(trivia.logoUrl ?? '')
       setQuestions(trivia.questions ?? [])
@@ -548,7 +548,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
               <div className="pt-6 border-t">
                 <HeroImageEditor
                   value={watch('heroImageUrl') ?? ''}
-                  settings={watch('heroImageSettings') ?? { zoom: 1, x: 0, y: 0, height: 400 }}
+                  settings={watch('heroImageSettings') ?? { zoom: 1, x: 50, y: 50, height: 400 }}
                   onChange={val => setValue('heroImageUrl', val)}
                   onSettingsChange={val => setValue('heroImageSettings', val)}
                   primaryColor={colors.primaryColor}

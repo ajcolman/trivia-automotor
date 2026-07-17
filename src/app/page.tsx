@@ -45,7 +45,7 @@ export default async function HomePage() {
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
   
   const heroImg = settings?.heroImageUrl ? mediaUrl(settings.heroImageUrl) : '/images/fondo.png'
-  const heroSet: any = settings?.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 620 }
+  const heroSet: any = settings?.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 620 }
 
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex flex-col">

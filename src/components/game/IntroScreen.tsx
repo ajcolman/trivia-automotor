@@ -16,12 +16,23 @@ interface IntroScreenProps {
 
 const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
+function heroBgSize(zoom: number) {
+  if (zoom <= 1) return 'cover'
+  return `${zoom * 100}%`
+}
+
 export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
   const [hovered, setHovered] = useState(false)
   const [instrOpen, setInstrOpen] = useState(false)
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brand?.logoUrl)
   const totalPoints = trivia.questions.reduce((s, q) => s + q.points, 0)
   const maxTime = Math.max(...trivia.questions.map(q => q.timeLimit))
+  const heroSettings = {
+    zoom: trivia.heroImageSettings?.zoom ?? 1,
+    x: trivia.heroImageSettings?.x ?? 50,
+    y: trivia.heroImageSettings?.y ?? 50,
+    height: trivia.heroImageSettings?.height ?? 400,
+  }
 
   return (
     <div
@@ -48,7 +59,7 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
             className="relative px-8 pt-10 pb-8 text-white text-center overflow-hidden"
             style={{ 
               background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)`,
-              minHeight: trivia.heroImageUrl ? `${trivia.heroImageSettings?.height ?? 400}px` : 'auto',
+              minHeight: trivia.heroImageUrl ? `${heroSettings.height}px` : 'auto',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center'
@@ -57,15 +68,13 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
             {/* Background pattern / Hero Image */}
             {trivia.heroImageUrl ? (
               <div className="absolute inset-0 pointer-events-none">
-                <img 
-                  src={mediaUrl(trivia.heroImageUrl)} 
-                  alt="Hero" 
-                  className="absolute max-w-none pointer-events-none select-none"
+                <div
+                  className="absolute inset-0"
                   style={{
-                    transform: `translate(${trivia.heroImageSettings?.x ?? 0}%, ${trivia.heroImageSettings?.y ?? 0}%) scale(${trivia.heroImageSettings?.zoom ?? 1})`,
-                    transformOrigin: 'center',
-                    minWidth: '100%',
-                    minHeight: '100%'
+                    backgroundImage: `url(${mediaUrl(trivia.heroImageUrl)})`,
+                    backgroundSize: heroBgSize(heroSettings.zoom),
+                    backgroundPosition: `${heroSettings.x}% ${heroSettings.y}%`,
+                    backgroundRepeat: 'no-repeat',
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />

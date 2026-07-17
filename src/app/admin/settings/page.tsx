@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [platformTerms, setPlatformTerms] = useState('')
   const [privacyPolicy, setPrivacyPolicy] = useState('')
   const [heroImageUrl, setHeroImageUrl] = useState('')
-  const [heroImageSettings, setHeroImageSettings] = useState({ zoom: 1, x: 0, y: 0, height: 600 })
+  const [heroImageSettings, setHeroImageSettings] = useState({ zoom: 1, x: 50, y: 50, height: 600 })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -24,7 +24,7 @@ export default function SettingsPage() {
         setPlatformTerms(d.platformTerms ?? '')
         setPrivacyPolicy(d.privacyPolicy ?? '')
         setHeroImageUrl(d.heroImageUrl ?? '')
-        setHeroImageSettings(d.heroImageSettings ?? { zoom: 1, x: 0, y: 0, height: 600 })
+        setHeroImageSettings(d.heroImageSettings ?? { zoom: 1, x: 50, y: 50, height: 600 })
       })
   }, [])
 
