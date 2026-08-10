@@ -39,6 +39,9 @@ export function PrizesModal({ prizes, primaryColor, secondaryColor, triviaTitle 
 
       {/* Modal */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Premios de ${triviaTitle}`}
         className="relative w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up"
         onClick={e => e.stopPropagation()}
       >
@@ -59,7 +62,8 @@ export function PrizesModal({ prizes, primaryColor, secondaryColor, triviaTitle 
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+              aria-label="Cerrar"
+              className="w-11 h-11 -my-1.5 -mr-1.5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors motion-reduce:transition-none"
             >
               <X className="w-4 h-4" />
             </button>
@@ -109,7 +113,8 @@ export function PrizesModal({ prizes, primaryColor, secondaryColor, triviaTitle 
     <>
       <button
         onClick={e => { e.preventDefault(); e.stopPropagation(); setOpen(true) }}
-        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border-2 transition-all hover:opacity-80 active:scale-95"
+        aria-haspopup="dialog"
+        className="inline-flex min-h-[44px] -my-2 items-center gap-1.5 text-xs font-bold px-3 rounded-full border-2 transition-all hover:opacity-80 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100"
         style={{ color: primaryColor, borderColor: `${primaryColor}40`, backgroundColor: `${primaryColor}08` }}
       >
         <Gift className="w-3 h-3" />

@@ -49,11 +49,26 @@ const config: Config = {
           foreground: 'hsl(var(--card-foreground))',
         },
         brand: {
-          primary: '#003087',
-          secondary: '#002060',
+          primary: '#005CA8',
+          secondary: '#004071',
           accent: '#F97316',
-          bg: '#F8FAFC',
+          'accent-light': '#FB923C',
+          bg: '#F2F7FB',
           text: '#1A1A2E',
+        },
+        // Escala completa del azul Automotor (#005CA8 = color exacto del logo)
+        automotor: {
+          50: '#F2F7FB',
+          100: '#E3EEF7',
+          200: '#C2DCEF',
+          300: '#93C2E3',
+          400: '#4E9CD0',
+          500: '#1F79BB',
+          600: '#005CA8',
+          700: '#004E8F',
+          800: '#004071',
+          900: '#033156',
+          950: '#021F39',
         },
         trivia: {
           primary: 'var(--trivia-primary)',
@@ -64,7 +79,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'fade-in': {
@@ -138,7 +153,7 @@ const config: Config = {
         'wrong-flash': 'wrong-flash 0.5s ease-in-out',
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #003087 0%, #002060 100%)',
+        'gradient-brand': 'linear-gradient(135deg, #005CA8 0%, #004071 100%)',
         'gradient-accent': 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
         'shimmer-gradient':
           'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
@@ -149,9 +164,9 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        'brand': '0 4px 14px 0 rgba(0, 48, 135, 0.3)',
+        'brand': '0 4px 14px 0 rgba(0, 92, 168, 0.3)',
         'accent': '0 4px 14px 0 rgba(249, 115, 22, 0.4)',
-        'glow': '0 0 20px rgba(0, 48, 135, 0.5)',
+        'glow': '0 0 20px rgba(0, 92, 168, 0.5)',
         'card': '0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
       },
     },

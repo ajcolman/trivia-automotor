@@ -49,28 +49,30 @@ async function getLandingData() {
 export default async function HomePage() {
   const { activeTrivias, settings } = await getLandingData()
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
-  
+
   const heroImg = settings?.heroImageUrl ? mediaUrl(settings.heroImageUrl) : '/images/fondo.png'
   const heroSet = resolveHeroImageSettings(settings?.heroImageSettings as any, 620)
   const canRevealLandingHero = Boolean(settings?.heroImageUrl && heroSet.hideContentOnFocus)
 
   return (
-    <div className="min-h-screen bg-[#f0f4ff] flex flex-col">
+    <div className="min-h-screen bg-automotor-50 flex flex-col">
 
       {/* ── NAV ─────────────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm">
+      <nav className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-automotor-100 shadow-sm">
+        {/* Filete de marca */}
+        <div className="h-1 bg-gradient-brand" aria-hidden="true" />
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Image
             src="/uploads/logoa.png"
             alt="Automotor"
             width={160}
             height={52}
-            className="h-9 w-auto object-contain"
+            className="h-8 sm:h-9 w-auto object-contain"
             unoptimized
           />
           <Link
             href="/admin/login"
-            className="text-sm font-semibold text-slate-500 hover:text-[#003087] transition-colors flex items-center gap-1"
+            className="inline-flex min-h-[44px] items-center gap-1 px-3 -mr-3 text-sm font-semibold text-slate-500 hover:text-automotor-600 transition-colors motion-reduce:transition-none"
           >
             Panel Admin <ChevronRight className="w-3.5 h-3.5" />
           </Link>
@@ -80,7 +82,7 @@ export default async function HomePage() {
       <div className="flex-grow">
         {/* ── HERO ────────────────────────────────────────────────────── */}
         <header
-          className={`relative overflow-hidden ${canRevealLandingHero ? 'group focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-inset' : ''}`}
+          className={`relative overflow-hidden ${canRevealLandingHero ? 'group focus:outline-none focus:ring-2 focus:ring-automotor-300 focus:ring-inset' : ''}`}
           tabIndex={canRevealLandingHero ? 0 : undefined}
           aria-label={canRevealLandingHero ? 'Ver fondo de cabecera' : undefined}
           style={{ minHeight: `${heroSet.height}px`, display: 'flex', alignItems: 'center', cursor: canRevealLandingHero ? 'zoom-in' : undefined }}
@@ -99,39 +101,39 @@ export default async function HomePage() {
           />
           {/* Overlay: opaco arriba (texto legible) → transparente abajo (autos visibles) */}
           <div
-            className={`absolute inset-0 transition-opacity duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
+            className={`absolute inset-0 transition-opacity duration-300 motion-reduce:transition-none ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
             style={{
               background: settings?.heroImageUrl
                 ? heroOverlayGradient(heroSet, 'landing')
-                : 'linear-gradient(180deg, rgba(0,15,60,0.92) 0%, rgba(0,20,70,0.80) 35%, rgba(0,15,55,0.45) 65%, rgba(0,10,40,0.15) 100%)',
+                : 'linear-gradient(180deg, rgba(2,31,57,0.92) 0%, rgba(0,64,113,0.80) 35%, rgba(3,49,86,0.45) 65%, rgba(2,31,57,0.15) 100%)',
             }}
           />
           {/* Scanlines retro */}
           <div
-            className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-300 motion-reduce:transition-none ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
             style={{
               backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)',
             }}
           />
           {/* Fade al fondo de la página en la base */}
           <div
-            className={`absolute bottom-0 left-0 right-0 h-32 pointer-events-none transition-opacity duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
+            className={`absolute bottom-0 left-0 right-0 h-32 pointer-events-none transition-opacity duration-300 motion-reduce:transition-none ${canRevealLandingHero ? 'group-hover:opacity-0 group-focus:opacity-0' : ''}`}
             style={{
-              background: 'linear-gradient(to bottom, transparent, #f0f4ff)',
+              background: 'linear-gradient(to bottom, transparent, #F2F7FB)',
             }}
           />
 
           {/* Contenido alineado arriba para dejar los autos visibles abajo */}
-          <div className={`relative max-w-6xl mx-auto px-4 pt-16 pb-40 lg:pt-20 lg:pb-52 text-center transition-all duration-300 ${canRevealLandingHero ? 'group-hover:opacity-0 group-hover:translate-y-3 group-hover:scale-[0.98] group-focus:opacity-0 group-focus:translate-y-3 group-focus:scale-[0.98]' : ''}`}>
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg" style={heroTextOutlineStyle(heroSet)}>
-              Trivias &amp; <span style={{ color: '#38BDF8' }}>Premios</span>
+          <div className={`relative w-full max-w-6xl mx-auto px-4 pt-14 pb-28 sm:pt-16 sm:pb-36 lg:pt-20 lg:pb-52 text-center transition-all duration-300 motion-reduce:transition-none ${canRevealLandingHero ? 'group-hover:opacity-0 group-hover:translate-y-3 group-hover:scale-[0.98] group-focus:opacity-0 group-focus:translate-y-3 group-focus:scale-[0.98]' : ''}`}>
+            <h1 className="font-expanded text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-tight drop-shadow-lg text-balance" style={heroTextOutlineStyle(heroSet)}>
+              Trivias &amp; <span className="text-brand-accent-light">Premios</span>
             </h1>
-            <p className="text-lg text-white/75 mb-10 max-w-md mx-auto drop-shadow" style={heroTextOutlineStyle(heroSet, 0.45)}>
+            <p className="text-base sm:text-lg text-white/85 mb-8 sm:mb-10 max-w-md mx-auto drop-shadow text-balance" style={heroTextOutlineStyle(heroSet, 0.45)}>
               Participá en nuestras trivias interactivas, demostrá tu conocimiento y ganá increíbles premios.
             </p>
 
             {/* Stats pills */}
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
               {[
                 { icon: <Users className="w-4 h-4" />, value: `${totalParticipants.toLocaleString()}`, label: 'participantes' },
                 { icon: <Zap className="w-4 h-4" />, value: `${activeTrivias.length}`, label: 'trivias activas' },
@@ -139,11 +141,11 @@ export default async function HomePage() {
               ].map((s, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 bg-black/25 border border-white/15 rounded-full px-5 py-2.5 text-white backdrop-blur-sm shadow-lg hover:bg-black/35 hover:border-white/25 transition-all duration-300 hover:scale-105 group"
+                  className="flex min-h-[44px] items-center gap-2 bg-automotor-950/40 border border-white/15 rounded-full px-4 sm:px-5 py-2.5 text-white backdrop-blur-sm shadow-lg hover:bg-automotor-950/55 hover:border-white/25 transition-all duration-300 hover:scale-105 motion-reduce:transition-none motion-reduce:hover:scale-100 group"
                 >
-                  <span className="text-sky-300 group-hover:scale-110 transition-transform">{s.icon}</span>
-                  <span className="font-black text-lg tracking-tight">{s.value}</span>
-                  <span className="text-white/50 text-xs font-bold uppercase tracking-wider">{s.label}</span>
+                  <span className="text-automotor-300 group-hover:scale-110 motion-reduce:group-hover:scale-100 transition-transform">{s.icon}</span>
+                  <span className="font-black text-lg tracking-tight tabular-nums">{s.value}</span>
+                  <span className="text-white/60 text-xs font-bold uppercase tracking-wider">{s.label}</span>
                 </div>
               ))}
             </div>
@@ -151,25 +153,32 @@ export default async function HomePage() {
         </header>
 
         {/* ── TRIVIA CARDS ────────────────────────────────────────────── */}
-        <main className="max-w-6xl mx-auto px-4 py-12">
+        <main className="max-w-6xl mx-auto px-4 py-10 sm:py-12">
           {activeTrivias.length === 0 ? (
-            <div className="text-center py-24">
+            <div className="text-center py-20 sm:py-24">
               <div className="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-10 h-10 text-slate-300" />
+                <Trophy className="w-10 h-10 text-automotor-200" />
               </div>
-              <h2 className="text-xl font-bold text-slate-500 mb-2">Próximamente</h2>
-              <p className="text-slate-400 text-sm">No hay trivias activas en este momento. ¡Volvé pronto!</p>
+              <h2 className="text-xl font-bold text-slate-600 mb-2">Próximamente</h2>
+              <p className="text-slate-500 text-sm">No hay trivias activas en este momento. ¡Volvé pronto!</p>
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black text-slate-800">
-                  Trivias disponibles
-                </h2>
-                <span className="text-sm text-slate-400">{activeTrivias.length} activa{activeTrivias.length !== 1 ? 's' : ''}</span>
+              <div className="flex items-center justify-between gap-3 mb-7 sm:mb-8">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-automotor-600 shadow-brand flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="font-expanded text-xl sm:text-2xl font-black text-automotor-950 leading-none truncate">
+                    Trivias disponibles
+                  </h2>
+                </div>
+                <span className="flex-shrink-0 text-xs font-bold text-automotor-700 bg-automotor-100 rounded-full px-2.5 py-1 tabular-nums">
+                  {activeTrivias.length} activa{activeTrivias.length !== 1 ? 's' : ''}
+                </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {activeTrivias.map(trivia => {
                   const flyer = trivia.flyers[0]
                   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl)
@@ -179,12 +188,12 @@ export default async function HomePage() {
                     <Link
                       key={trivia.id}
                       href={`/play/${trivia.slug}`}
-                      className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-white hover:-translate-y-1.5 block"
+                      className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-automotor-100/60 hover:border-automotor-200 hover:-translate-y-1.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-automotor-500"
                     >
                       {/* Banner */}
                       {flyer ? (
                         <div className="relative h-44 overflow-hidden">
-                          <Image src={mediaUrl(flyer.imageUrl)} alt={trivia.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+                          <Image src={mediaUrl(flyer.imageUrl)} alt={trivia.title} fill className="object-cover group-hover:scale-105 motion-reduce:group-hover:scale-100 transition-transform duration-500" unoptimized />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                           {trivia.endDate && (
                             <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
@@ -200,7 +209,7 @@ export default async function HomePage() {
                           <div className="absolute inset-0 opacity-10"
                             style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                           {logo ? (
-                            <Image src={logo} alt="Logo" width={140} height={56} className="h-14 w-auto object-contain relative z-10 drop-shadow-lg" unoptimized />
+                            <Image src={logo} alt={`Logo de ${trivia.title}`} width={140} height={56} className="h-14 w-auto object-contain relative z-10 drop-shadow-lg" unoptimized />
                           ) : (
                             <Trophy className="w-14 h-14 text-white/40 relative z-10" />
                           )}
@@ -225,12 +234,12 @@ export default async function HomePage() {
                               {trivia.brands[0].name}
                             </span>
                           )}
-                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                             {trivia._count.questions} preguntas
                           </span>
                         </div>
 
-                        <h3 className="font-black text-slate-900 text-lg mb-1 group-hover:text-[#003087] transition-colors leading-tight">
+                        <h3 className="font-black text-slate-900 text-lg mb-1 group-hover:text-automotor-700 transition-colors motion-reduce:transition-none leading-tight">
                           {trivia.title}
                         </h3>
                         {trivia.description && (
@@ -238,11 +247,11 @@ export default async function HomePage() {
                         )}
 
                         {/* Footer */}
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                        <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
                               <Users className="w-3.5 h-3.5" />
-                              <span>{trivia._count.leads} participante{trivia._count.leads !== 1 ? 's' : ''}</span>
+                              <span className="tabular-nums">{trivia._count.leads} participante{trivia._count.leads !== 1 ? 's' : ''}</span>
                             </div>
                             {trivia.prizes.length > 0 && (
                               <PrizesModal
@@ -253,7 +262,7 @@ export default async function HomePage() {
                               />
                             )}
                           </div>
-                          <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#003087] group-hover:gap-2.5 transition-all">
+                          <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-automotor-600 group-hover:bg-automotor-700 px-4 py-2 text-sm font-bold text-white shadow-brand group-hover:gap-2.5 transition-all motion-reduce:transition-none">
                             Jugar <ChevronRight className="w-4 h-4" />
                           </span>
                         </div>
@@ -270,18 +279,18 @@ export default async function HomePage() {
         {activeTrivias.some(t => t.showLeaderboard !== false && t.leads.length > 0) && (
           <section className="max-w-6xl mx-auto px-4 pb-12">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#003087' }}>
+              <div className="w-9 h-9 rounded-xl bg-automotor-600 shadow-brand flex items-center justify-center flex-shrink-0" aria-hidden="true">
                 <Medal className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-800 leading-none">Tabla de Posiciones</h2>
-                <p className="text-slate-400 text-xs mt-0.5">Top jugadores por trivia</p>
+                <h2 className="font-expanded text-xl sm:text-2xl font-black text-automotor-950 leading-none">Tabla de Posiciones</h2>
+                <p className="text-slate-500 text-xs mt-1">Top jugadores por trivia</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
               {activeTrivias.filter(t => t.showLeaderboard !== false && t.leads.length > 0).map(trivia => (
-                <div key={trivia.id} className="bg-white rounded-2xl shadow-md overflow-hidden border border-white">
+                <div key={trivia.id} className="bg-white rounded-2xl shadow-md overflow-hidden border border-automotor-100/60">
                   {/* Card header */}
                   <div
                     className="px-5 py-3.5 flex items-center gap-2"
@@ -289,7 +298,7 @@ export default async function HomePage() {
                   >
                     <Trophy className="w-4 h-4 text-white opacity-80 flex-shrink-0" />
                     <h3 className="font-black text-white text-sm truncate">{trivia.title}</h3>
-                    <span className="ml-auto text-white/60 text-xs flex-shrink-0">{trivia._count.leads} jugadores</span>
+                    <span className="ml-auto text-white/70 text-xs flex-shrink-0 tabular-nums">{trivia._count.leads} jugadores</span>
                   </div>
                   {/* Entries */}
                   <div className="divide-y divide-slate-50">
@@ -307,14 +316,14 @@ export default async function HomePage() {
                             {trivia.prizes.some(p => p.position === i + 1) && i < 3 ? (
                               MEDALS[i]
                             ) : (
-                              <span className="text-xs font-bold text-slate-400">{i + 1}</span>
+                              <span className="text-xs font-bold text-slate-500 tabular-nums">{i + 1}</span>
                             )}
                           </span>
                           <span className="flex-1 text-sm font-semibold text-slate-700 truncate">{displayName}</span>
                           <span className="font-black text-sm tabular-nums" style={{ color: trivia.primaryColor }}>
                             {lead.score.toLocaleString()}
                           </span>
-                          <span className="text-xs text-slate-400 w-9 text-right tabular-nums">{pct}%</span>
+                          <span className="text-xs text-slate-500 w-9 text-right tabular-nums">{pct}%</span>
                         </div>
                       )
                     })}
@@ -322,7 +331,7 @@ export default async function HomePage() {
                   <div className="px-4 pb-3 pt-1">
                     <Link
                       href={`/play/${trivia.slug}`}
-                      className="text-xs font-bold flex items-center justify-center gap-1 py-2 rounded-xl transition-all hover:opacity-80"
+                      className="min-h-[44px] text-xs font-bold flex items-center justify-center gap-1 py-2 rounded-xl transition-all hover:opacity-80 motion-reduce:transition-none"
                       style={{ color: trivia.primaryColor, backgroundColor: `${trivia.primaryColor}10` }}
                     >
                       ¡Jugá y entrá al ranking! <ChevronRight className="w-3.5 h-3.5" />
@@ -336,12 +345,13 @@ export default async function HomePage() {
       </div>
 
       {/* ── FOOTER ──────────────────────────────────────────────────── */}
-      <footer className="mt-16 border-t border-slate-200 bg-white">
+      <footer className="mt-16 border-t border-automotor-100 bg-white">
+        <div className="h-1 bg-gradient-brand" aria-hidden="true" />
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Image src="/uploads/logoa.png" alt="Automotor" width={120} height={40} className="h-8 w-auto object-contain opacity-60" unoptimized />
-          <p className="text-xs text-slate-400 text-center">
+          <Image src="/uploads/logoa.png" alt="Automotor" width={120} height={40} className="h-8 w-auto object-contain opacity-70" unoptimized />
+          <p className="text-xs text-slate-500 text-center">
             © {new Date().getFullYear()} Automotor S.A. / Carmotor S.A. · Desarrollado por{' '}
-            <strong className="text-slate-500">Business Intelligence & Analytics - Marketing Digital</strong>
+            <strong className="text-slate-600">Business Intelligence & Analytics - Marketing Digital</strong>
           </p>
         </div>
       </footer>

@@ -1,10 +1,17 @@
 // Author: Angel Colman
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Archivo } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+// Archivo variable (wght + wdth): una sola familia self-hosted, sin request
+// externo. El eje de anchura permite headings expandidos (ver .font-expanded).
+const archivo = Archivo({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+  axes: ['wdth'],
+})
 
 export const metadata: Metadata = {
   title: 'Automotor Trivia | Plataforma de Trivias',
@@ -16,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={inter.className}>
+      <body className={`${archivo.variable} font-sans`}>
         {children}
         <Toaster richColors position="top-right" />
       </body>
