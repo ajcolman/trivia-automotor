@@ -5,6 +5,8 @@ import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { createRateLimiter } from '@/lib/rate-limit'
 import { playerRegisterSchema, normalizeCedula } from '@/lib/validations/player'
+import { issueToken, appUrl } from '@/lib/player-tokens'
+import { sendEmail, verificationEmail } from '@/lib/email'
 
 const limiter = createRateLimiter({ limit: 5, windowMs: 60_000 })
 
@@ -50,11 +52,16 @@ export async function POST(req: NextRequest) {
       select: { id: true, email: true, fullName: true },
     })
 
-    // TODO(correo): al quedar provisionado el proveedor de mensajería, emitir
-    // acá el token de verificación (PlayerToken) y enviarlo. La cuenta ya
-    // funciona sin verificar; la verificación se exigirá para cobrar premios.
+    // Verificación de correo. Si el envío falla la cuenta igual queda creada:
+    // el jugador puede pedir el enlace de nuevo y no perdemos el registro por
+    // un problema del proveedor de correo.
+    const token = await issueToken(player.id, 'email_verification')
+    const { sent } = await sendEmail({
+      to: player.email,
+      ...verificationEmail(player.fullName, appUrl(`/cuenta/verificar?token=${token}`)),
+    })
 
-    return NextResponse.json({ ok: true, player }, { status: 201 })
+    return NextResponse.json({ ok: true, player, correoEnviado: sent }, { status: 201 })
   } catch (e) {
     // Choque de únicos: el correo o la cédula ya están registrados. Prisma
     // informa cuál campo en `meta.target`.
