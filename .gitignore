@@ -56,3 +56,4 @@ public/images/*.png
 !public/images/403-restricted.png
 !public/images/fondo.png
 
+.env*
