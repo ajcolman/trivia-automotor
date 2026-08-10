@@ -1,20 +1,19 @@
 // Author: Angel Colman
 /**
- * Envío de correo transaccional por SendGrid.
- *
- * Usa la API HTTP directamente en lugar del SDK: es una sola llamada y evita
- * sumar una dependencia que después hay que mantener.
+ * Envío de correo transaccional por el servidor SMTP de Automotor.
  *
  * Variables de entorno:
- *   SENDGRID_API_KEY  clave de la cuenta de SendGrid
- *   MAIL_FROM         remitente verificado (ej. no-responder@automotor.com.py)
- *   MAIL_FROM_NAME    nombre visible del remitente
+ *   MAIL_SERVER     host SMTP (mail.automotor.com.py)
+ *   MAIL_PORT       puerto (465 con SSL directo, 587 con STARTTLS)
+ *   MAIL_USERNAME   usuario de la casilla
+ *   MAIL_PASSWORD   contraseña de la casilla
+ *   MAIL_FROM       dirección remitente
+ *   MAIL_FROM_NAME  nombre visible del remitente
  *
- * Sin `SENDGRID_API_KEY` no falla: registra el correo en consola y sigue. Así
- * el registro de jugadores funciona en desarrollo sin credenciales.
+ * Sin credenciales no falla: registra el correo en consola y sigue, así el
+ * registro de jugadores funciona en desarrollo sin configurar nada.
  */
-
-const API_URL = 'https://api.sendgrid.com/v3/mail/send'
+import nodemailer, { type Transporter } from 'nodemailer'
 
 export interface EmailMessage {
   to: string
@@ -28,48 +27,60 @@ export interface EmailResult {
   reason?: string
 }
 
+let transporter: Transporter | null = null
+
+/**
+ * Transporte reutilizado entre invocaciones. Con Fluid Compute la instancia
+ * se reaprovecha, así que mantener el pool abierto evita renegociar TLS en
+ * cada correo.
+ */
+function getTransporter(): Transporter | null {
+  const host = process.env.MAIL_SERVER
+  const user = process.env.MAIL_USERNAME
+  const pass = process.env.MAIL_PASSWORD
+  if (!host || !user || !pass) return null
+
+  if (!transporter) {
+    const port = Number(process.env.MAIL_PORT ?? 465)
+    transporter = nodemailer.createTransport({
+      host,
+      port,
+      // 465 abre la conexión ya cifrada; 587 arranca en claro y sube con STARTTLS.
+      secure: port === 465,
+      auth: { user, pass },
+      pool: true,
+      maxConnections: 3,
+    })
+  }
+  return transporter
+}
+
 export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
-  const apiKey = process.env.SENDGRID_API_KEY
-  const from = process.env.MAIL_FROM
+  const t = getTransporter()
+  const from = process.env.MAIL_FROM ?? process.env.MAIL_USERNAME
   const fromName = process.env.MAIL_FROM_NAME ?? 'Automotor Play'
 
-  if (!apiKey || !from) {
+  if (!t || !from) {
     console.warn(
-      `[email] Sin SENDGRID_API_KEY o MAIL_FROM. No se envió a ${msg.to}: "${msg.subject}"`,
+      `[email] Sin credenciales SMTP. No se envió a ${msg.to}: "${msg.subject}"`,
     )
     return { sent: false, reason: 'not_configured' }
   }
 
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: msg.to }] }],
-        from: { email: from, name: fromName },
-        subject: msg.subject,
-        content: [
-          { type: 'text/plain', value: msg.text },
-          { type: 'text/html', value: msg.html },
-        ],
-      }),
+    await t.sendMail({
+      from: { address: from, name: fromName },
+      to: msg.to,
+      subject: msg.subject,
+      text: msg.text,
+      html: msg.html,
     })
-
-    if (!res.ok) {
-      // No propagamos el cuerpo del error al cliente: puede traer detalles de
-      // la cuenta de SendGrid.
-      const detalle = await res.text().catch(() => '')
-      console.error(`[email] SendGrid respondió ${res.status}: ${detalle.slice(0, 300)}`)
-      return { sent: false, reason: `http_${res.status}` }
-    }
-
     return { sent: true }
   } catch (e) {
+    // El detalle queda en el log del servidor, no viaja al cliente: puede
+    // traer información de la casilla.
     console.error('[email] Falló el envío:', e instanceof Error ? e.message : e)
-    return { sent: false, reason: 'network' }
+    return { sent: false, reason: 'smtp_error' }
   }
 }
 
