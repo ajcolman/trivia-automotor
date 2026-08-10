@@ -50,6 +50,9 @@ function getTransporter(): Transporter | null {
       auth: { user, pass },
       pool: true,
       maxConnections: 3,
+      connectionTimeout: 8_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 15_000,
     })
   }
   return transporter
@@ -68,13 +71,21 @@ export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
   }
 
   try {
-    await t.sendMail({
-      from: { address: from, name: fromName },
-      to: msg.to,
-      subject: msg.subject,
-      text: msg.text,
-      html: msg.html,
-    })
+    // Tope duro al tiempo que el correo puede retener un request. Un buzón
+    // destino lento no debe hacer esperar a alguien que se está registrando:
+    // el envío sigue su curso, pero dejamos de aguardarlo.
+    await Promise.race([
+      t.sendMail({
+        from: { address: from, name: fromName },
+        to: msg.to,
+        subject: msg.subject,
+        text: msg.text,
+        html: msg.html,
+      }),
+      new Promise((_, rechazar) =>
+        setTimeout(() => rechazar(new Error('timeout')), 10_000),
+      ),
+    ])
     return { sent: true }
   } catch (e) {
     // El detalle queda en el log del servidor, no viaja al cliente: puede

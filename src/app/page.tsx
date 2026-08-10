@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import { Trophy, Users, Zap, ChevronRight, Clock, Award, Medal, Gift } from 'lucide-react'
+import { Trophy, Users, Zap, ChevronRight, Clock, Award, Medal, Gift, UserRound } from 'lucide-react'
 import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/utils'
 import { PrizesModal } from '@/components/landing/PrizesModal'
 import {
@@ -72,14 +72,25 @@ async function getLandingData() {
       },
     },
   })
+  // Juegos de predicción abiertos. Los que están en borrador no se muestran.
+  const predictionEvents = await prisma.predictionEvent.findMany({
+    where: { status: { in: ['open', 'live'] } },
+    orderBy: { closesAt: 'asc' },
+    select: {
+      id: true, slug: true, title: true, description: true, status: true,
+      primaryColor: true, secondaryColor: true, heroImageUrl: true,
+      _count: { select: { markets: true, contenders: true } },
+    },
+  })
+
   const settings = await prisma.platformSettings.findUnique({
     where: { id: 'singleton' },
   })
-  return { activeTrivias, settings }
+  return { activeTrivias, predictionEvents, settings }
 }
 
 export default async function HomePage() {
-  const { activeTrivias, settings } = await getLandingData()
+  const { activeTrivias, predictionEvents, settings } = await getLandingData()
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
   const totalPrizes = activeTrivias.reduce((s, t) => s + t.prizes.length, 0)
 
@@ -113,12 +124,23 @@ export default async function HomePage() {
               </span>
             </span>
           </Link>
-          <Link
-            href="/admin/login"
-            className="inline-flex min-h-[44px] items-center gap-1 px-3 -mr-3 text-xs font-semibold text-slate-400 hover:text-automotor-600 transition-colors motion-reduce:transition-none"
-          >
-            Admin <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-1">
+            {/* `/cuenta` redirige a iniciar sesión si no hay jugador, así el
+                nav no depende de la sesión y la landing sigue siendo estática. */}
+            <Link
+              href="/cuenta"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-automotor-600 px-4 text-sm font-bold text-white transition-colors hover:bg-automotor-700 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
+            >
+              <UserRound className="h-4 w-4" aria-hidden="true" />
+              Mi cuenta
+            </Link>
+            <Link
+              href="/admin/login"
+              className="inline-flex min-h-[44px] items-center gap-1 px-3 -mr-3 text-xs font-semibold text-slate-400 hover:text-automotor-600 transition-colors motion-reduce:transition-none"
+            >
+              Admin <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -229,7 +251,7 @@ export default async function HomePage() {
 
         {/* ── TRIVIA CARDS ────────────────────────────────────────────── */}
         <main id="trivias" className="max-w-6xl mx-auto px-4 py-10 sm:py-12 scroll-mt-20">
-          {activeTrivias.length === 0 ? (
+          {activeTrivias.length === 0 && predictionEvents.length === 0 ? (
             <div className="text-center py-20 sm:py-24 rounded-3xl bg-white/5 border border-white/10">
               <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Trophy className="w-10 h-10 text-automotor-300" />
@@ -249,9 +271,70 @@ export default async function HomePage() {
                   </h2>
                 </div>
                 <span className="flex-shrink-0 text-xs font-bold text-automotor-200 bg-white/10 border border-white/10 rounded-full px-2.5 py-1 tabular-nums">
-                  {activeTrivias.length} activo{activeTrivias.length !== 1 ? 's' : ''}
+                  {activeTrivias.length + predictionEvents.length} activo
+                  {activeTrivias.length + predictionEvents.length !== 1 ? 's' : ''}
                 </span>
               </div>
+
+              {/* ── JUEGOS DE PREDICCIÓN ──────────────────────────────── */}
+              {predictionEvents.length > 0 && (
+                <div className="mb-6 sm:mb-8 grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+                  {predictionEvents.map(evento => (
+                    <Link
+                      key={evento.id}
+                      href={`/predicciones/${evento.slug}`}
+                      className="group relative flex flex-col overflow-hidden rounded-2xl shadow-xl shadow-automotor-950/60 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-automotor-300"
+                      style={{
+                        background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})`,
+                      }}
+                    >
+                      {/* El i20 N como ícono de marca Automotor, no como una
+                          inscripción concreta del rally. */}
+                      <Image
+                        src="/sprites/i20n-rally-8bit.png"
+                        alt=""
+                        aria-hidden="true"
+                        width={348}
+                        height={126}
+                        className="pointer-events-none absolute -bottom-2 -right-4 w-52 sm:w-64 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none"
+                        style={{ imageRendering: 'pixelated' }}
+                        unoptimized
+                      />
+
+                      <div className="relative p-5 sm:p-6">
+                        <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                          <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-white backdrop-blur-sm">
+                            Predicciones
+                          </span>
+                          {evento.status === 'live' && (
+                            <span className="rounded-full bg-brand-accent px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-automotor-950">
+                              En vivo
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="font-expanded text-xl sm:text-2xl font-black leading-tight text-white text-balance">
+                          {evento.title}
+                        </h3>
+                        {evento.description && (
+                          <p className="mt-1.5 max-w-[22rem] text-sm leading-relaxed text-white/80 line-clamp-2">
+                            {evento.description}
+                          </p>
+                        )}
+
+                        <div className="mt-4 flex items-center gap-4 text-xs font-bold text-white/70">
+                          <span className="tabular-nums">{evento._count.markets} predicciones</span>
+                          <span className="tabular-nums">{evento._count.contenders} equipos</span>
+                        </div>
+
+                        <span className="mt-5 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-white px-6 text-sm font-black tracking-tight text-automotor-950 transition-transform group-hover:gap-2.5 motion-reduce:transition-none">
+                          Jugar ahora <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {activeTrivias.map(trivia => {

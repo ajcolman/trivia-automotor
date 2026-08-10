@@ -2,7 +2,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { MailWarning, ChevronRight } from 'lucide-react'
+import { MailWarning, ChevronRight, Pencil } from 'lucide-react'
+import { LogoutButton } from '@/components/cuenta/LogoutButton'
 import type { Metadata } from 'next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -68,6 +69,17 @@ export default async function CuentaPage() {
         >
           Ir a jugar <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </Link>
+
+        <Link
+          href="/cuenta/editar"
+          className="mt-2 w-full min-h-[48px] rounded-full border-2 border-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1.5 transition-colors hover:border-automotor-400 hover:text-automotor-700 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
+        >
+          <Pencil className="w-4 h-4" aria-hidden="true" /> Editar mis datos
+        </Link>
+      </div>
+
+      <div className="mt-4">
+        <LogoutButton />
       </div>
     </>
   )

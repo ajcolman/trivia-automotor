@@ -57,3 +57,4 @@ public/images/*.png
 !public/images/fondo.png
 
 .env*
+board-mobile.png

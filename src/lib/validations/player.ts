@@ -38,6 +38,25 @@ export const playerRegisterSchema = z.object({
     .refine(v => v === true, 'Tenés que aceptar los términos para participar'),
 })
 
+/** Datos que el jugador puede editar desde su cuenta. */
+export const playerProfileSchema = playerRegisterSchema
+  .pick({ fullName: true, email: true, phone: true, cedula: true })
+
+/**
+ * Cambio de contraseña. Pide la actual aunque haya sesión abierta: evita que
+ * alguien que agarre el teléfono desbloqueado se quede con la cuenta.
+ */
+export const playerPasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Ingresá tu contraseña actual'),
+  newPassword: z
+    .string()
+    .min(8, 'La nueva contraseña necesita al menos 8 caracteres')
+    .max(72, 'La contraseña es demasiado larga'),
+})
+
+export type PlayerProfileInput = z.infer<typeof playerProfileSchema>
+export type PlayerPasswordInput = z.infer<typeof playerPasswordSchema>
+
 export const playerLoginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1),

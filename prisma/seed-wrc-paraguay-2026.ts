@@ -34,7 +34,14 @@ interface Tripulacion {
   car: string
   class: string
   group: string
-  destacado?: string
+}
+
+/**
+ * Destacamos a quienes corren en Hyundai: es la marca que vende Automotor.
+ * Se deriva del auto y no de una lista fija, así sigue al entry list si cambia.
+ */
+function esHyundai(c: Tripulacion): boolean {
+  return c.car.toLowerCase().includes('hyundai')
 }
 
 async function main() {
@@ -100,7 +107,7 @@ async function main() {
         subtitle: c.coDriver,
         teamName: c.team,
         category: `${c.class} · ${c.car}`,
-        isFeatured: Boolean(c.destacado),
+        isFeatured: esHyundai(c),
         orderIndex: i,
       },
       create: {
@@ -110,7 +117,7 @@ async function main() {
         subtitle: c.coDriver,
         teamName: c.team,
         category: `${c.class} · ${c.car}`,
-        isFeatured: Boolean(c.destacado),
+        isFeatured: esHyundai(c),
         orderIndex: i,
       },
     })
