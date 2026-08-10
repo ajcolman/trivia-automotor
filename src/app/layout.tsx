@@ -14,8 +14,8 @@ const archivo = Archivo({
 })
 
 export const metadata: Metadata = {
-  title: 'Automotor Trivia | Plataforma de Trivias',
-  description: 'Plataforma de trivias interactivas para Automotor S.A. y Carmotor S.A.',
+  title: 'Automotor Play | Jugá y ganá premios',
+  description: 'Automotor Play: juegos interactivos con premios y merch oficial de Automotor S.A. y Carmotor S.A.',
   authors: [{ name: 'Angel Colman' }],
   icons: { icon: '/favicon.png', shortcut: '/favicon.png' },
 }

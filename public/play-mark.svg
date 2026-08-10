@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Marca "Play" de Automotor Play (Author: Angel Colman).
+       Anillo abierto + triangulo redondeado, en el lenguaje del monograma "Am". -->
+  <path d="M 85.96 67.53 A 40 40 0 1 1 85.96 32.47" fill="none" stroke="#005CA8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 42 35 L 70 50 L 42 65 Z" fill="#005CA8" stroke="#005CA8" stroke-width="10" stroke-linejoin="round"/>
+</svg>
