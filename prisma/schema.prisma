@@ -84,7 +84,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  company         Company?       @relation(fields: [companyId], references: [id])
+  company         Company?         @relation(fields: [companyId], references: [id])
   trivias         Trivia[]
   assets          Asset[]
   ownedTemplates  TriviaTemplate[] @relation("TemplateOwner")
@@ -93,30 +93,30 @@ model User {
 }
 
 model Trivia {
-  id              String    @id @default(cuid())
-  title           String
-  description     String?
-  slug            String    @unique
-  logoUrl         String?
-  companyId       String?
-  primaryColor    String    @default("#003087")
-  secondaryColor  String    @default("#002060")
-  accentColor     String    @default("#FFD700")
-  backgroundColor String    @default("#F8FAFC")
-  textColor       String    @default("#1A1A2E")
-  isActive            Boolean   @default(true)
-  isPublic            Boolean   @default(true)
-  showLeaderboard     Boolean   @default(true)
-  startDate           DateTime?
-  endDate             DateTime?
-  maxPlaysPerUser     Int       @default(1)
-  gameInstructions    String?
-  termsAndConditions  String?
-  heroImageUrl        String?
-  heroImageSettings   Json?     // { x: number, y: number, zoom: number, height: number }
-  createdBy           String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  title              String
+  description        String?
+  slug               String    @unique
+  logoUrl            String?
+  companyId          String?
+  primaryColor       String    @default("#003087")
+  secondaryColor     String    @default("#002060")
+  accentColor        String    @default("#FFD700")
+  backgroundColor    String    @default("#F8FAFC")
+  textColor          String    @default("#1A1A2E")
+  isActive           Boolean   @default(true)
+  isPublic           Boolean   @default(true)
+  showLeaderboard    Boolean   @default(true)
+  startDate          DateTime?
+  endDate            DateTime?
+  maxPlaysPerUser    Int       @default(1)
+  gameInstructions   String?
+  termsAndConditions String?
+  heroImageUrl       String?
+  heroImageSettings  Json? // { x: number, y: number, zoom: number, height: number }
+  createdBy          String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   creator      User          @relation(fields: [createdBy], references: [id])
   company      Company?      @relation(fields: [companyId], references: [id])
@@ -215,7 +215,7 @@ model Prize {
   name        String
   description String?
   imageUrl    String?
-  position    Int      // 1=primero, 2=segundo, etc.
+  position    Int // 1=primero, 2=segundo, etc.
   createdAt   DateTime @default(now())
 
   trivia Trivia @relation(fields: [triviaId], references: [id], onDelete: Cascade)
@@ -237,14 +237,14 @@ model TriviaFlyer {
 
 // Analytics - tracks page visits and session events
 model PageView {
-  id           String   @id @default(cuid())
-  triviaId     String?
-  path         String
-  sessionId    String?
-  ipAddress    String?
-  userAgent    String?
-  referrer     String?
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid())
+  triviaId  String?
+  path      String
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  referrer  String?
+  createdAt DateTime @default(now())
 
   trivia Trivia? @relation(fields: [triviaId], references: [id])
 
@@ -293,29 +293,29 @@ model VehicleSprite {
   modelName   String?
   spriteUrl   String
   isGeneric   Boolean  @default(false)
-  genericType String?  // "sedan" | "truck" | "suv"
+  genericType String? // "sedan" | "truck" | "suv"
   createdAt   DateTime @default(now())
 
-  brand        Brand?                @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  brand        Brand?                  @relation(fields: [brandId], references: [id], onDelete: SetNull)
   participants TournamentParticipant[]
 
   @@index([brandId])
 }
 
 model Tournament {
-  id           String           @id @default(cuid())
-  name         String
-  triviaId     String?
-  status       TournamentStatus @default(pending)
-  maxPlayers   Int              @default(16)
-  prizeConfig  Json             @default("{}") // { "1": "Premio 1", "2": "Premio 2" }
-  gameConfig   Json             @default("{}") // { duration: 90, ballSpeed: 1, ... }
-  createdBy    String
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id          String           @id @default(cuid())
+  name        String
+  triviaId    String?
+  status      TournamentStatus @default(pending)
+  maxPlayers  Int              @default(16)
+  prizeConfig Json             @default("{}") // { "1": "Premio 1", "2": "Premio 2" }
+  gameConfig  Json             @default("{}") // { duration: 90, ballSpeed: 1, ... }
+  createdBy   String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
-  creator      User                   @relation(fields: [createdBy], references: [id])
-  trivia       Trivia?                @relation(fields: [triviaId], references: [id], onDelete: SetNull)
+  creator      User                    @relation(fields: [createdBy], references: [id])
+  trivia       Trivia?                 @relation(fields: [triviaId], references: [id], onDelete: SetNull)
   participants TournamentParticipant[]
   matches      TournamentMatch[]
 
@@ -331,8 +331,8 @@ model TournamentParticipant {
   seed         Int?
   createdAt    DateTime @default(now())
 
-  tournament  Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  vehicle     VehicleSprite?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  tournament  Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  vehicle     VehicleSprite?    @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
   matchesAsP1 TournamentMatch[] @relation("MatchPlayer1")
   matchesAsP2 TournamentMatch[] @relation("MatchPlayer2")
 
@@ -341,20 +341,20 @@ model TournamentParticipant {
 }
 
 model TournamentMatch {
-  id             String      @id @default(cuid())
-  tournamentId   String
-  player1Id      String
-  player2Id      String
-  round          Int         @default(1)
-  scoreP1        Int         @default(0)
-  scoreP2        Int         @default(0)
-  status         MatchStatus @default(waiting)
-  roomCode       String      @unique @default(cuid())
-  winnerId       String?
-  scheduledAt    DateTime?   // admin programa fecha/hora del partido
-  roomEnabledAt  DateTime?   // admin habilita la sala (jugadores pueden conectar)
-  playedAt       DateTime?
-  createdAt      DateTime    @default(now())
+  id            String      @id @default(cuid())
+  tournamentId  String
+  player1Id     String
+  player2Id     String
+  round         Int         @default(1)
+  scoreP1       Int         @default(0)
+  scoreP2       Int         @default(0)
+  status        MatchStatus @default(waiting)
+  roomCode      String      @unique @default(cuid())
+  winnerId      String?
+  scheduledAt   DateTime? // admin programa fecha/hora del partido
+  roomEnabledAt DateTime? // admin habilita la sala (jugadores pueden conectar)
+  playedAt      DateTime?
+  createdAt     DateTime    @default(now())
 
   tournament Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   player1    TournamentParticipant @relation("MatchPlayer1", fields: [player1Id], references: [id])
@@ -368,9 +368,9 @@ model TournamentMatch {
 
 model AuditLog {
   id         String      @id @default(cuid())
-  entityType String      // "Trivia" | "Company" | "Brand" | "User" | "Tournament" | "PlatformSettings"
+  entityType String // "Trivia" | "Company" | "Brand" | "User" | "Tournament" | "PlatformSettings"
   entityId   String
-  entityName String?     // Human-readable identifier (title, name, email…)
+  entityName String? // Human-readable identifier (title, name, email…)
   action     AuditAction
   userId     String
   userName   String
@@ -385,10 +385,199 @@ model AuditLog {
 // ─── Global platform settings (singleton pattern - only one record) ─────────
 
 model PlatformSettings {
-  id              String   @id @default("singleton")
-  platformTerms   String?  // Terms of use for admin users
-  privacyPolicy   String?
-  heroImageUrl    String?
-  heroImageSettings Json?  // { zoom: number, x: number, y: number, height: number }
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default("singleton")
+  platformTerms     String? // Terms of use for admin users
+  privacyPolicy     String?
+  heroImageUrl      String?
+  heroImageSettings Json? // { zoom: number, x: number, y: number, height: number }
+  updatedAt         DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Módulo de predicciones
+//
+// Motor genérico de mercados: no menciona rally en ninguna parte. Un tramo es un
+// Segment, un piloto un Contender y lo que se predice un Market. El mismo motor
+// corre otros eventos cambiando datos, no código.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum EventStatus {
+  draft
+  open
+  live
+  closed
+  settled
+}
+
+enum MarketType {
+  single_pick
+  ordered_pick
+  multi_pick
+  numeric
+}
+
+enum PlayerTokenType {
+  email_verification
+  password_reset
+}
+
+/// Cuenta de cliente. Tabla separada de `User` a propósito: los administradores
+/// nunca deben compartir tabla con los jugadores.
+model Player {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  fullName        String
+  phone           String
+  cedula          String?   @unique
+  emailVerifiedAt DateTime?
+  acceptedTermsAt DateTime?
+  termsVersion    String?
+  isActive        Boolean   @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  predictions Prediction[]
+  tokens      PlayerToken[]
+
+  @@index([createdAt])
+}
+
+/// Tokens de verificación de correo y recuperación de contraseña.
+/// Se guarda el hash, nunca el token en claro.
+model PlayerToken {
+  id        String          @id @default(cuid())
+  playerId  String
+  tokenHash String          @unique
+  type      PlayerTokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime        @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, type])
+}
+
+model PredictionEvent {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  title          String
+  description    String?
+  status         EventStatus @default(draft)
+  externalRef    String?
+  opensAt        DateTime?
+  closesAt       DateTime?
+  companyId      String?
+  brandId        String?
+  heroImageUrl   String?
+  primaryColor   String      @default("#005CA8")
+  secondaryColor String      @default("#004071")
+  rules          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  segments   Segment[]
+  contenders Contender[]
+  markets    Market[]
+
+  @@index([status])
+}
+
+/// Subunidad con cierre propio: un tramo, una fecha, una carrera.
+model Segment {
+  id          String    @id @default(cuid())
+  eventId     String
+  code        String
+  name        String
+  orderIndex  Int
+  distanceKm  Float?
+  startsAt    DateTime?
+  /// Editable: en rally se reprograman y cancelan tramos con frecuencia.
+  locksAt     DateTime
+  isCancelled Boolean   @default(false)
+
+  event   PredictionEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  markets Market[]
+
+  @@unique([eventId, code])
+  @@index([eventId, orderIndex])
+}
+
+/// El roster elegible. Provee el espacio de respuestas de los mercados.
+model Contender {
+  id          String  @id @default(cuid())
+  eventId     String
+  externalRef String?
+  number      String?
+  name        String
+  subtitle    String?
+  teamName    String?
+  category    String?
+  imageUrl    String?
+  isFeatured  Boolean @default(false)
+  isActive    Boolean @default(true)
+  orderIndex  Int     @default(0)
+
+  event PredictionEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, number])
+  @@index([eventId, orderIndex])
+}
+
+/// La pregunta a predecir. `segmentId` nulo = mercado de evento (podio final).
+model Market {
+  id         String     @id @default(cuid())
+  eventId    String
+  segmentId  String?
+  type       MarketType
+  title      String
+  orderIndex Int        @default(0)
+  /// Parámetros del evaluador: points, exactAllPoints, misplacedPoints, positions.
+  config     Json       @default("{}")
+  /// Momento de cierre. Se hereda del segmento y se puede pisar.
+  locksAt    DateTime
+
+  event       PredictionEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  segment     Segment?        @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  predictions Prediction[]
+  resolution  Resolution?
+
+  @@index([eventId, locksAt])
+  @@index([segmentId])
+}
+
+model Prediction {
+  id            String    @id @default(cuid())
+  marketId      String
+  playerId      String
+  /// Forma según MarketType: string, string[] o number.
+  value         Json
+  /// Null mientras el mercado no esté resuelto.
+  pointsAwarded Int?
+  scoredAt      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([marketId, playerId])
+  @@index([playerId])
+}
+
+/// El resultado real. Editable: los tiempos de rally se revisan por
+/// penalizaciones y al cambiar hay que repuntuar el mercado entero desde cero.
+model Resolution {
+  id        String    @id @default(cuid())
+  marketId  String    @unique
+  value     Json
+  source    String    @default("manual")
+  enteredBy String?
+  revisedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
 }

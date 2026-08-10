@@ -31,9 +31,13 @@ export default withAuth(
        * Return `true` to allow the middleware function to run.
        * If the token is missing the middleware redirects to the sign-in page
        * automatically (handled by NextAuth's withAuth).
+       *
+       * Requires an administrative role explicitly — being signed in is NOT
+       * enough. Player accounts will also hold a NextAuth token, and a bare
+       * `token !== null` check would hand them the whole admin panel.
        */
       authorized({ token }) {
-        return token !== null
+        return token?.role === 'admin' || token?.role === 'super_admin'
       },
     },
     pages: {
