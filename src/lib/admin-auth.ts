@@ -7,6 +7,8 @@ export type AuthResult =
   | { session: { user: { id: string; role: string; email: string; name: string } }; error: null }
   | { session: null; error: NextResponse }
 
+const ADMIN_ROLES = ['admin', 'super_admin']
+
 export async function requireAuth(superAdminOnly = false): Promise<AuthResult> {
   const session = await getServerSession(authOptions)
 
@@ -14,6 +16,16 @@ export async function requireAuth(superAdminOnly = false): Promise<AuthResult> {
     return {
       session: null,
       error: NextResponse.json({ error: 'No autorizado' }, { status: 401 }),
+    }
+  }
+
+  // Tener sesión no alcanza: los jugadores también tienen una. El middleware
+  // cubre las páginas /admin, pero no las rutas /api/admin, así que el rol se
+  // exige acá o cualquier cliente registrado entraría a la API del panel.
+  if (!ADMIN_ROLES.includes(session.user.role)) {
+    return {
+      session: null,
+      error: NextResponse.json({ error: 'No autorizado' }, { status: 403 }),
     }
   }
 
