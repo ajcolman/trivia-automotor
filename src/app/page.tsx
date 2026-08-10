@@ -23,17 +23,19 @@ const MEDALS = ['🥇', '🥈', '🥉']
  * La abertura del anillo queda a la derecha, hacia donde apunta el play.
  * Hereda `currentColor` para adaptarse al contexto (nav claro / footer oscuro).
  */
-function PlayMark({ className }: { className?: string }) {
+function PlayMark({ className, ring = true }: { className?: string; ring?: boolean }) {
   return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox={ring ? '0 0 100 100' : '32 26 48 48'} className={className} aria-hidden="true" focusable="false">
       {/* Anillo abierto (gap de ~52° hacia el este) */}
-      <path
-        d="M 85.96 67.53 A 40 40 0 1 1 85.96 32.47"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
+      {ring && (
+        <path
+          d="M 85.96 67.53 A 40 40 0 1 1 85.96 32.47"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="12"
+          strokeLinecap="round"
+        />
+      )}
       {/* Triángulo de play con vértices redondeados, apuntando a la abertura */}
       <path
         d="M 42 35 L 70 50 L 42 65 Z"
@@ -104,9 +106,9 @@ export default async function HomePage() {
               className="h-7 sm:h-8 w-auto object-contain"
               unoptimized
             />
-            <span aria-hidden="true" className="flex items-center gap-1.5 text-automotor-600">
-              <PlayMark className="h-7 w-7 sm:h-8 sm:w-8" />
-              <span className="font-expanded font-black text-xl sm:text-2xl tracking-tight leading-none">
+            <span aria-hidden="true" className="-ml-1 flex items-center gap-1.5 text-automotor-600">
+              <PlayMark className="h-6 w-6 sm:h-7 sm:w-7" />
+              <span className="font-expanded font-black text-lg sm:text-xl tracking-tight leading-none">
                 Play
               </span>
             </span>
@@ -459,9 +461,9 @@ export default async function HomePage() {
           {/* Lockup sobre chip blanco para conservar el logo original */}
           <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2" role="img" aria-label="Automotor Play">
             <Image src="/uploads/logoa.png" alt="" aria-hidden="true" width={120} height={40} className="h-6 w-auto object-contain" unoptimized />
-            <span aria-hidden="true" className="flex items-center gap-1 text-automotor-600">
-              <PlayMark className="h-6 w-6" />
-              <span className="font-expanded font-black text-lg tracking-tight leading-none">Play</span>
+            <span aria-hidden="true" className="-ml-0.5 flex items-center gap-1 text-automotor-600">
+              <PlayMark className="h-5 w-5" />
+              <span className="font-expanded font-black text-base tracking-tight leading-none">Play</span>
             </span>
           </div>
           <p className="text-xs text-automotor-200 text-center">
