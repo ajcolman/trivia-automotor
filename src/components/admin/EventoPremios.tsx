@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { Gift, Plus, Trash2, Loader2, ImageOff } from 'lucide-react'
+import { UploadDropzone } from './UploadDropzone'
 
 export interface PremioFila {
   id: string
@@ -116,38 +117,64 @@ export function EventoPremios({
         </ul>
       )}
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[80px_1fr_1fr_auto]">
-        <label className="sm:col-span-1">
-          <span className="mb-1 block text-xs font-bold text-slate-500">Puesto</span>
-          <input
-            type="number" min={1} className={campo} value={nuevo.position}
-            onChange={e => setNuevo(n => ({ ...n, position: e.target.value }))}
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-xs font-bold text-slate-500">Premio</span>
-          <input
-            type="text" className={campo} placeholder="Casco de rally firmado"
-            value={nuevo.name}
-            onChange={e => setNuevo(n => ({ ...n, name: e.target.value }))}
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-xs font-bold text-slate-500">Detalle o imagen (URL)</span>
-          <input
-            type="text" className={campo} placeholder="https://…"
-            value={nuevo.imageUrl}
-            onChange={e => setNuevo(n => ({ ...n, imageUrl: e.target.value }))}
-          />
-        </label>
+      <div className="rounded-xl border border-dashed border-slate-200 p-3">
+        <p className="mb-2.5 text-xs font-black uppercase tracking-wider text-slate-400">
+          Agregar premio
+        </p>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[90px_1fr] lg:grid-cols-[90px_1fr_260px]">
+          <label>
+            <span className="mb-1 block text-xs font-bold text-slate-500">Puesto</span>
+            <input
+              type="number" min={1} className={campo} value={nuevo.position}
+              onChange={e => setNuevo(n => ({ ...n, position: e.target.value }))}
+            />
+          </label>
+
+          <div className="space-y-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-bold text-slate-500">Premio</span>
+              <input
+                type="text" className={campo} placeholder="Casco de rally firmado"
+                value={nuevo.name}
+                onChange={e => setNuevo(n => ({ ...n, name: e.target.value }))}
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-bold text-slate-500">Detalle</span>
+              <input
+                type="text" className={campo} placeholder="Autografiado por la tripulación"
+                value={nuevo.description}
+                onChange={e => setNuevo(n => ({ ...n, description: e.target.value }))}
+              />
+            </label>
+          </div>
+
+          {/* Misma subida que el resto del panel: archivo a Vercel Blob, y el
+              campo de URL queda por si el premio ya tiene una imagen publicada. */}
+          <div>
+            <span className="mb-1 block text-xs font-bold text-slate-500">Foto</span>
+            <UploadDropzone
+              value={nuevo.imageUrl || null}
+              onUpload={url => setNuevo(n => ({ ...n, imageUrl: url }))}
+              label="Arrastrá una foto o hacé clic"
+            />
+            <input
+              type="text" className={`${campo} mt-2`} placeholder="…o pegá una URL"
+              value={nuevo.imageUrl}
+              onChange={e => setNuevo(n => ({ ...n, imageUrl: e.target.value }))}
+            />
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={agregar}
           disabled={guardando}
-          className="mt-auto inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#005CA8] px-4 text-sm font-bold text-white transition-colors hover:bg-[#004E8F] disabled:opacity-60"
+          className="mt-3 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#005CA8] px-5 text-sm font-bold text-white transition-colors hover:bg-[#004E8F] disabled:opacity-60"
         >
           {guardando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-          Agregar
+          Agregar premio
         </button>
       </div>
     </section>

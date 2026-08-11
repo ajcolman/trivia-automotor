@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { FilaRanking } from '@/lib/predictions/resolver'
+import { EventoPremios, type PremioFila } from './EventoPremios'
 
 interface ContenderOpcion { id: string; etiqueta: string }
 
@@ -43,6 +44,7 @@ interface Props {
   markets: MarketFila[]
   ranking: FilaRanking[]
   estadisticas: EstadisticasEvento
+  premios: PremioFila[]
 }
 
 const ESTADOS: { valor: string; texto: string; ayuda: string }[] = [
@@ -59,7 +61,7 @@ const fFecha = new Intl.DateTimeFormat('es-PY', {
 })
 
 export function EventoResultados({
-  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas,
+  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas, premios,
 }: Props) {
   const router = useRouter()
   const [guardando, setGuardando] = useState<string | null>(null)
@@ -206,6 +208,8 @@ export function EventoResultados({
         </div>
         {ayudaEstado && <p className="mt-2.5 text-xs text-slate-500">{ayudaEstado}</p>}
       </section>
+
+      <EventoPremios eventoId={eventoId} premios={premios} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         {/* ── Resultados ─────────────────────────────────────── */}
