@@ -21,6 +21,7 @@ const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/trivias', label: 'Trivias', icon: Trophy },
   { href: '/admin/eventos', label: 'Predicciones', icon: Flag },
+  { href: '/admin/jugadores', label: 'Jugadores', icon: Users },
   { href: '/admin/templates', label: 'Plantillas', icon: Copy },
   { href: '/admin/assets', label: 'Archivos', icon: ImageIcon },
   { href: '/admin/tournaments', label: 'Torneos', icon: Swords },
