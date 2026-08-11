@@ -19,7 +19,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     where: { id: params.id },
     include: { trivia: { select: { createdBy: true } } },
   })
-  if (!prize) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
+  // Los premios de eventos de predicción no se tocan por acá: tienen su propia
+  // ruta, y este control de dueño solo aplica a las trivias.
+  if (!prize?.trivia) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   if (!isSuperAdmin(session.user.role) && prize.trivia.createdBy !== session.user.id) {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
   }
@@ -40,7 +42,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     where: { id: params.id },
     include: { trivia: { select: { createdBy: true } } },
   })
-  if (!prize) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
+  // Los premios de eventos de predicción no se tocan por acá: tienen su propia
+  // ruta, y este control de dueño solo aplica a las trivias.
+  if (!prize?.trivia) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   if (!isSuperAdmin(session.user.role) && prize.trivia.createdBy !== session.user.id) {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
   }

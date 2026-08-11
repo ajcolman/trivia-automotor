@@ -42,6 +42,10 @@ export default async function PrediccionesPage({ params }: PageProps) {
       rules: true,
       primaryColor: true,
       secondaryColor: true,
+      prizes: {
+        orderBy: { position: 'asc' },
+        select: { id: true, name: true, description: true, imageUrl: true, position: true },
+      },
       contenders: {
         where: { isActive: true },
         orderBy: [{ isFeatured: 'desc' }, { orderIndex: 'asc' }],
@@ -113,6 +117,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
       colorSecundario={evento.secondaryColor}
       markets={markets}
       contenders={contenders}
+      premios={evento.prizes}
     />
   )
 }

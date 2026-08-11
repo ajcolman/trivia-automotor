@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { eventLeaderboard } from '@/lib/predictions/resolver'
 import { EventoResultados } from '@/components/admin/EventoResultados'
+import { EventoPremios } from '@/components/admin/EventoPremios'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     where: { id: params.id },
     select: {
       id: true, slug: true, title: true, status: true,
+      prizes: { orderBy: { position: 'asc' }, select: { id: true, name: true, description: true, imageUrl: true, position: true } },
       contenders: {
         where: { isActive: true },
         orderBy: [{ isFeatured: 'desc' }, { orderIndex: 'asc' }],
@@ -79,6 +81,8 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
       >
         <ChevronLeft className="h-4 w-4" /> Juegos de predicción
       </Link>
+
+      <EventoPremios eventoId={evento.id} premios={evento.prizes} />
 
       <EventoResultados
         eventoId={evento.id}

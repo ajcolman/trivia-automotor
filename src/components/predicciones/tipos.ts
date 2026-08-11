@@ -30,3 +30,11 @@ export interface MarketDTO {
   pick: string | string[] | number | null
   pointsAwarded: number | null
 }
+
+export interface PremioDTO {
+  id: string
+  name: string
+  description: string | null
+  imageUrl: string | null
+  position: number
+}

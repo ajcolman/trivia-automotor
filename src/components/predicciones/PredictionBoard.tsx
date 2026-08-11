@@ -3,10 +3,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
+import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
 import { CarLoop } from './CarLoop'
-import type { ContenderDTO, MarketDTO } from './tipos'
+import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
 
 const TZ = 'America/Asuncion'
 
@@ -35,12 +36,15 @@ interface Props {
   colorSecundario: string
   markets: MarketDTO[]
   contenders: ContenderDTO[]
+  premios: PremioDTO[]
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
 
+const MEDALLAS = ['🥇', '🥈', '🥉']
+
 export function PredictionBoard({
-  titulo, reglas, colorPrimario, colorSecundario, markets, contenders,
+  titulo, reglas, colorPrimario, colorSecundario, markets, contenders, premios,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -167,6 +171,43 @@ export function PredictionBoard({
           <p className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed text-automotor-200">
             {reglas}
           </p>
+        )}
+
+        {/* ── Premios ────────────────────────────────────────────── */}
+        {premios.length > 0 && (
+          <section className="mt-5 overflow-hidden rounded-2xl border border-amber-200/30 bg-amber-50/95">
+            <h2 className="flex items-center gap-2 border-b border-amber-200/60 px-4 py-2.5 text-sm font-black uppercase tracking-wider text-amber-800">
+              <Gift className="h-4 w-4" aria-hidden="true" /> Ganate esto
+            </h2>
+            <ul className="divide-y divide-amber-200/50">
+              {premios.map((pr, i) => (
+                <li key={pr.id} className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="w-7 flex-shrink-0 text-center text-lg leading-none">
+                    {i < 3 ? MEDALLAS[i] : (
+                      <span className="text-xs font-bold text-amber-700 tabular-nums">{pr.position}</span>
+                    )}
+                  </span>
+                  {pr.imageUrl && (
+                    <Image
+                      src={pr.imageUrl}
+                      alt=""
+                      aria-hidden="true"
+                      width={44}
+                      height={44}
+                      className="h-11 w-11 flex-shrink-0 rounded-lg object-cover"
+                      unoptimized
+                    />
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-bold text-slate-800">{pr.name}</span>
+                    {pr.description && (
+                      <span className="block truncate text-xs text-slate-600">{pr.description}</span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {/* ── Podio ──────────────────────────────────────────────── */}

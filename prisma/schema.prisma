@@ -209,18 +209,23 @@ model Asset {
   uploader User @relation(fields: [uploadedBy], references: [id])
 }
 
+/// Premio de un juego. Cuelga de una trivia o de un evento de predicción:
+/// exactamente uno de los dos, nunca los dos ni ninguno.
 model Prize {
-  id          String   @id @default(cuid())
-  triviaId    String
-  name        String
-  description String?
-  imageUrl    String?
-  position    Int // 1=primero, 2=segundo, etc.
-  createdAt   DateTime @default(now())
+  id                String   @id @default(cuid())
+  triviaId          String?
+  predictionEventId String?
+  name              String
+  description       String?
+  imageUrl          String?
+  position          Int // 1=primero, 2=segundo, etc.
+  createdAt         DateTime @default(now())
 
-  trivia Trivia @relation(fields: [triviaId], references: [id], onDelete: Cascade)
+  trivia          Trivia?          @relation(fields: [triviaId], references: [id], onDelete: Cascade)
+  predictionEvent PredictionEvent? @relation(fields: [predictionEventId], references: [id], onDelete: Cascade)
 
   @@index([triviaId])
+  @@index([predictionEventId])
 }
 
 model TriviaFlyer {
@@ -481,6 +486,7 @@ model PredictionEvent {
   segments   Segment[]
   contenders Contender[]
   markets    Market[]
+  prizes     Prize[]
 
   @@index([status])
 }
