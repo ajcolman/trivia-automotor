@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift } from 'lucide-react'
+import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift, Ban } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
 import { CarLoop } from './CarLoop'
 import { PhotoZoom } from '@/components/ui/photo-zoom'
@@ -126,7 +126,8 @@ export function PredictionBoard({
     return Array.from(mapa.entries())
   }, [tramos])
 
-  const elegidos = markets.filter(m => {
+  const jugables = markets.filter(m => !m.segment?.isCancelled)
+  const elegidos = jugables.filter(m => {
     const p = picks[m.id]
     return Array.isArray(p) ? p.length > 0 && p.every(Boolean) : p != null
   }).length
@@ -161,7 +162,7 @@ export function PredictionBoard({
           <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 text-sm font-bold text-white backdrop-blur-sm">
             <Check className="h-4 w-4" aria-hidden="true" />
             <span className="tabular-nums">{elegidos}</span> de{' '}
-            <span className="tabular-nums">{markets.length}</span> cargadas
+            <span className="tabular-nums">{jugables.length}</span> cargadas
           </p>
         </div>
       </header>
@@ -261,7 +262,8 @@ export function PredictionBoard({
             <h2 className="font-expanded mb-3 text-lg font-black capitalize text-white">{jornada}</h2>
             <ul className="space-y-2.5">
               {lista.map((m: MarketDTO) => {
-                const cerrado = new Date(m.locksAt).getTime() <= ahora
+                const cancelado = m.segment?.isCancelled ?? false
+                const cerrado = cancelado || new Date(m.locksAt).getTime() <= ahora
                 const elegido = typeof picks[m.id] === 'string' ? porId.get(picks[m.id] as string) : null
                 return (
                   <li key={m.id}>
@@ -284,7 +286,9 @@ export function PredictionBoard({
                           </>
                         ) : (
                           <span className="flex-1 text-sm text-slate-400">
-                            {cerrado ? 'No cargaste predicción' : 'Elegir ganador'}
+                            {cancelado
+                              ? 'Tramo cancelado'
+                              : cerrado ? 'No cargaste predicción' : 'Elegir ganador'}
                           </span>
                         )}
                         {!cerrado && <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400" aria-hidden="true" />}
@@ -325,7 +329,8 @@ function Card({
   error?: string
   children: React.ReactNode
 }) {
-  const cerrado = new Date(market.locksAt).getTime() <= ahora
+  const cancelado = market.segment?.isCancelled ?? false
+  const cerrado = cancelado || new Date(market.locksAt).getTime() <= ahora
   const restante = faltan(market.locksAt, ahora)
   const puntos =
     market.type === 'ordered_pick'
@@ -355,7 +360,11 @@ function Card({
           </p>
         </div>
 
-        {cerrado ? (
+        {cancelado ? (
+          <span className="flex flex-shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-800">
+            <Ban className="h-3 w-3" aria-hidden="true" /> Cancelado
+          </span>
+        ) : cerrado ? (
           <span className="flex flex-shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">
             <Lock className="h-3 w-3" aria-hidden="true" /> Cerrado
           </span>

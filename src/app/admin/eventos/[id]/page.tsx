@@ -13,6 +13,10 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     where: { id: params.id },
     select: {
       id: true, slug: true, title: true, status: true,
+      segments: {
+        orderBy: { orderIndex: 'asc' },
+        select: { id: true, code: true, name: true, distanceKm: true, locksAt: true, isCancelled: true },
+      },
       prizes: { orderBy: { position: 'asc' }, select: { id: true, name: true, description: true, imageUrl: true, position: true } },
       contenders: {
         where: { isActive: true },
@@ -103,6 +107,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         ranking={ranking}
         estadisticas={estadisticas}
         premios={evento.prizes}
+        tramos={evento.segments.map(t => ({ ...t, locksAt: t.locksAt.toISOString() }))}
       />
     </div>
   )

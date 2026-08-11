@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       type: true,
       config: true,
       locksAt: true,
+      segment: { select: { isCancelled: true, code: true } },
       event: { select: { status: true } },
     },
   })
@@ -47,6 +48,13 @@ export async function POST(req: NextRequest) {
   if (market.event.status !== 'open' && market.event.status !== 'live') {
     return NextResponse.json(
       { error: 'El juego todavía no está abierto.' },
+      { status: 409 },
+    )
+  }
+
+  if (market.segment?.isCancelled) {
+    return NextResponse.json(
+      { error: `El ${market.segment.code} fue cancelado por la organización.`, cerrado: true },
       { status: 409 },
     )
   }

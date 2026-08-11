@@ -59,7 +59,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
         select: {
           id: true, type: true, title: true, config: true, locksAt: true,
           segment: {
-            select: { code: true, name: true, distanceKm: true, startsAt: true },
+            select: { code: true, name: true, distanceKm: true, startsAt: true, isCancelled: true },
           },
         },
       },
@@ -92,6 +92,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
             name: m.segment.name,
             distanceKm: m.segment.distanceKm,
             startsAt: m.segment.startsAt?.toISOString() ?? null,
+            isCancelled: m.segment.isCancelled,
           }
         : null,
       pick: (previa?.value as MarketDTO['pick']) ?? null,

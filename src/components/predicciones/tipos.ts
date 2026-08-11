@@ -17,6 +17,7 @@ export interface SegmentDTO {
   distanceKm: number | null
   /** ISO. La hora de largada del primer auto. */
   startsAt: string | null
+  isCancelled: boolean
 }
 
 export interface MarketDTO {

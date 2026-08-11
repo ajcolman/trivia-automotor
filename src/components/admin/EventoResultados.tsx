@@ -11,6 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import type { FilaRanking } from '@/lib/predictions/resolver'
 import { EventoPremios, type PremioFila } from './EventoPremios'
+import { EventoTramos, type TramoFila } from './EventoTramos'
 
 interface ContenderOpcion { id: string; etiqueta: string }
 
@@ -45,6 +46,7 @@ interface Props {
   ranking: FilaRanking[]
   estadisticas: EstadisticasEvento
   premios: PremioFila[]
+  tramos: TramoFila[]
 }
 
 const ESTADOS: { valor: string; texto: string; ayuda: string }[] = [
@@ -61,7 +63,7 @@ const fFecha = new Intl.DateTimeFormat('es-PY', {
 })
 
 export function EventoResultados({
-  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas, premios,
+  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas, premios, tramos,
 }: Props) {
   const router = useRouter()
   const [guardando, setGuardando] = useState<string | null>(null)
@@ -210,6 +212,8 @@ export function EventoResultados({
       </section>
 
       <EventoPremios eventoId={eventoId} premios={premios} />
+
+      <EventoTramos tramos={tramos} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         {/* ── Resultados ─────────────────────────────────────── */}
