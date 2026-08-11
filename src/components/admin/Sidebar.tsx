@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
-  LayoutDashboard, Trophy, Copy, Users, Image as ImageIcon,
+  LayoutDashboard, Trophy, Copy, Users, Image as ImageIcon, Flag,
   Building2, Car, UserCog, LogOut, ChevronRight, X, Menu, Settings, Home,
   Swords, Gamepad2, ShieldCheck
 } from 'lucide-react'
@@ -20,6 +20,7 @@ interface SidebarProps {
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/trivias', label: 'Trivias', icon: Trophy },
+  { href: '/admin/eventos', label: 'Predicciones', icon: Flag },
   { href: '/admin/templates', label: 'Plantillas', icon: Copy },
   { href: '/admin/assets', label: 'Archivos', icon: ImageIcon },
   { href: '/admin/tournaments', label: 'Torneos', icon: Swords },
