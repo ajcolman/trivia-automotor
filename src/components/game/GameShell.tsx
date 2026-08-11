@@ -1,13 +1,15 @@
 // Author: Angel Colman
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { Clock } from 'lucide-react'
 import { IntroScreen } from './IntroScreen'
 import { QuestionCard } from './QuestionCard'
 import { LeadForm } from './LeadForm'
 import { ResultScreen } from './ResultScreen'
 import { AlreadyPlayed } from './AlreadyPlayed'
+import { readableTextColor, readableOnGradient } from '@/lib/contrast'
 
 export type GameState = 'intro' | 'playing' | 'form' | 'result' | 'already_played' | 'expired' | 'not_started'
 
@@ -96,13 +98,37 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
   const [result, setResult] = useState<GameResult | null>(null)
   const [submittedFormData, setSubmittedFormData] = useState<Record<string, string> | null>(null)
 
+  // Salvaguarda de contraste: si quien creó la trivia eligió un textColor que
+  // no se lee sobre su backgroundColor (p. ej. fondo claro con texto claro),
+  // esto cae a negro o blanco -- sin tocar lo que quedó guardado en la base.
+  // El resto de la app sigue viendo el trivia.textColor original tal cual.
+  const safeTextColor = useMemo(
+    () => readableTextColor(trivia.textColor, trivia.backgroundColor),
+    [trivia.textColor, trivia.backgroundColor],
+  )
+  const themedTrivia = useMemo(
+    () => (safeTextColor === trivia.textColor ? trivia : { ...trivia, textColor: safeTextColor }),
+    [trivia, safeTextColor],
+  )
+
+  // Los encabezados van sobre el degradado primary→secondary con texto encima.
+  // Dar por sentado que ese texto es blanco asume que ambos colores son
+  // oscuros; con un primario claro el título se vuelve ilegible. Se evalúa
+  // contra el extremo más exigente del degradado.
+  const onGradient = useMemo(
+    () => readableOnGradient(trivia.primaryColor, trivia.secondaryColor),
+    [trivia.primaryColor, trivia.secondaryColor],
+  )
+
   const cssVars = `
     :root {
       --trivia-primary: ${trivia.primaryColor};
       --trivia-secondary: ${trivia.secondaryColor};
       --trivia-accent: ${trivia.accentColor};
       --trivia-bg: ${trivia.backgroundColor};
-      --trivia-text: ${trivia.textColor};
+      --trivia-text: ${safeTextColor};
+      --trivia-on-gradient: ${onGradient};
+      --trivia-on-gradient-soft: ${onGradient === '#ffffff' ? 'rgba(255,255,255,0.72)' : 'rgba(0,0,0,0.68)'};
     }
   `
 
@@ -148,15 +174,16 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
     setGameState('result')
   }, [trivia.id, answers])
 
+  // El escenario de la plataforma es siempre el azul Automotor -- el color
+  // que elige cada trivia (el "actor") vive en las tarjetas de contenido,
+  // nunca en el lienzo de fondo. Así una trivia y una predicción se sienten
+  // parte de la misma plataforma aunque tengan paletas distintas.
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: cssVars }} />
-      <div
-        className="min-h-screen transition-colors duration-300"
-        style={{ backgroundColor: trivia.backgroundColor, color: trivia.textColor }}
-      >
+      <div className="min-h-screen bg-automotor-950">
         {gameState === 'intro' && (
-          <IntroScreen trivia={trivia} onStart={handleStart} />
+          <IntroScreen trivia={themedTrivia} onStart={handleStart} />
         )}
         {gameState === 'playing' && trivia.questions[currentIndex] && (
           <QuestionCard
@@ -164,56 +191,64 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
             questionNumber={currentIndex + 1}
             totalQuestions={trivia.questions.length}
             currentScore={answers.reduce((s, _) => s, 0)}
-            trivia={trivia}
+            trivia={themedTrivia}
             onAnswer={handleAnswer}
           />
         )}
         {gameState === 'form' && (
           <LeadForm
-            trivia={trivia}
+            trivia={themedTrivia}
             answers={answers}
             onSubmit={handleFormSubmit}
           />
         )}
         {gameState === 'result' && result && (
           <ResultScreen
-            trivia={trivia}
+            trivia={themedTrivia}
             result={result}
             playerAnswers={answers}
             participantData={submittedFormData}
           />
         )}
         {gameState === 'already_played' && (
-          <AlreadyPlayed trivia={trivia} />
+          <AlreadyPlayed trivia={themedTrivia} />
         )}
-        {gameState === 'expired' && (
-          <div className="flex items-center justify-center min-h-screen p-4">
-            <div className="text-center bg-white p-10 rounded-3xl shadow-xl max-w-sm w-full">
-              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400">
-                <Clock className="w-10 h-10" />
+        {(gameState === 'expired' || gameState === 'not_started') && (
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="w-full max-w-sm animate-fade-in-up">
+              <Link
+                href="/"
+                className="mb-3 inline-flex min-h-[44px] items-center text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 rounded-lg"
+              >
+                ← Automotor Play
+              </Link>
+              <div
+                className="rounded-3xl p-8 text-center shadow-2xl ring-1 ring-white/10"
+                style={{ backgroundColor: themedTrivia.backgroundColor }}
+              >
+                <div
+                  className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full"
+                  style={{ backgroundColor: `${themedTrivia.primaryColor}12`, color: themedTrivia.primaryColor }}
+                >
+                  <Clock className="h-8 w-8" />
+                </div>
+                <h1
+                  className="font-expanded mb-3 text-2xl font-black tracking-tight"
+                  style={{ color: themedTrivia.primaryColor }}
+                >
+                  {gameState === 'expired' ? 'Trivia finalizada' : 'Próximamente'}
+                </h1>
+                <p className="leading-relaxed opacity-70" style={{ color: themedTrivia.textColor }}>
+                  {gameState === 'expired' ? (
+                    'El periodo de participación para esta trivia ha concluido. ¡Te esperamos en la próxima!'
+                  ) : (
+                    <>
+                      Esta trivia aún no ha comenzado.<br />
+                      Vuelve el <strong>{trivia.startDate && new Date(trivia.startDate).toLocaleDateString('es-PY')}</strong>.
+                    </>
+                  )}
+                </p>
               </div>
-              <h1 className="text-3xl font-black mb-3" style={{ color: trivia.primaryColor }}>
-                Trivia Finalizada
-              </h1>
-              <p className="text-slate-500 leading-relaxed">
-                El periodo de participación para esta trivia ha concluido. ¡Te esperamos en la próxima!
-              </p>
-            </div>
-          </div>
-        )}
-        {gameState === 'not_started' && (
-          <div className="flex items-center justify-center min-h-screen p-4">
-            <div className="text-center bg-white p-10 rounded-3xl shadow-xl max-w-sm w-full">
-              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500">
-                <Clock className="w-10 h-10" />
-              </div>
-              <h1 className="text-3xl font-black mb-3" style={{ color: trivia.primaryColor }}>
-                Próximamente
-              </h1>
-              <p className="text-slate-500 leading-relaxed">
-                Esta trivia aún no ha comenzado.<br/>
-                Vuelve el <strong>{new Date(trivia.startDate!).toLocaleDateString('es-PY')}</strong>.
-              </p>
             </div>
           </div>
         )}

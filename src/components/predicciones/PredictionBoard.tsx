@@ -8,6 +8,7 @@ import { ContenderPicker } from './ContenderPicker'
 import { CarLoop } from './CarLoop'
 import { PhotoZoom } from '@/components/ui/photo-zoom'
 import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
+import { readableTextColor, readableOnGradient } from '@/lib/contrast'
 
 const TZ = 'America/Asuncion'
 
@@ -34,6 +35,9 @@ interface Props {
   reglas: string | null
   colorPrimario: string
   colorSecundario: string
+  colorAcento: string
+  colorFondo: string
+  colorTexto: string
   markets: MarketDTO[]
   contenders: ContenderDTO[]
   premios: PremioDTO[]
@@ -44,7 +48,8 @@ type EstadoGuardado = 'guardado' | 'guardando' | 'error'
 const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export function PredictionBoard({
-  titulo, reglas, colorPrimario, colorSecundario, markets, contenders, premios,
+  titulo, reglas, colorPrimario, colorSecundario, colorAcento, colorFondo, colorTexto,
+  markets, contenders, premios,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -52,6 +57,22 @@ export function PredictionBoard({
   const [estados, setEstados] = useState<Record<string, EstadoGuardado>>({})
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [picker, setPicker] = useState<{ marketId: string; slot: number } | null>(null)
+
+  // Misma salvaguarda que en las trivias: si quien configuró el evento eligió
+  // una combinación ilegible, se corrige al pintar sin tocar lo guardado.
+  const textoSeguro = useMemo(
+    () => readableTextColor(colorTexto, colorFondo),
+    [colorTexto, colorFondo],
+  )
+  const sobreDegradado = useMemo(
+    () => readableOnGradient(colorPrimario, colorSecundario),
+    [colorPrimario, colorSecundario],
+  )
+
+  const paleta = useMemo(
+    () => ({ fondo: colorFondo, texto: textoSeguro, primario: colorPrimario, acento: colorAcento }),
+    [colorFondo, textoSeguro, colorPrimario, colorAcento],
+  )
 
   // Se refresca solo para que los mercados se cierren en pantalla sin recargar.
   const [ahora, setAhora] = useState(() => Date.now())
@@ -144,7 +165,10 @@ export function PredictionBoard({
       {/* ── Cabecera ─────────────────────────────────────────────── */}
       <header
         className="relative overflow-hidden px-4 pb-8 pt-6"
-        style={{ background: `linear-gradient(135deg, ${colorPrimario}, ${colorSecundario})` }}
+        style={{
+          background: `linear-gradient(135deg, ${colorPrimario}, ${colorSecundario})`,
+          color: sobreDegradado,
+        }}
       >
         {/* El clip conserva todo el desplazamiento del auto, así que se ancla
             al borde derecho sin desbordar por abajo: las ruedas deben verse. */}
@@ -152,11 +176,11 @@ export function PredictionBoard({
         <div className="relative mx-auto max-w-3xl">
           <Link
             href="/"
-            className="mb-3 inline-flex min-h-[44px] items-center text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white"
+            className="mb-3 inline-flex min-h-[44px] items-center text-xs font-bold uppercase tracking-wider opacity-70 transition-opacity hover:opacity-100"
           >
             ← Automotor Play
           </Link>
-          <h1 className="font-expanded max-w-[16ch] text-2xl font-black leading-tight text-white text-balance sm:text-3xl">
+          <h1 className="font-expanded max-w-[16ch] text-2xl font-black leading-tight text-balance sm:text-3xl">
             {titulo}
           </h1>
           <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 text-sm font-bold text-white backdrop-blur-sm">
@@ -219,6 +243,7 @@ export function PredictionBoard({
               ahora={ahora}
               estado={estados[podio.id]}
               error={errores[podio.id]}
+              paleta={paleta}
             >
               <ol className="space-y-2">
                 {Array.from({ length: podio.config.positions ?? 3 }).map((_, i) => {
@@ -267,7 +292,7 @@ export function PredictionBoard({
                 const elegido = typeof picks[m.id] === 'string' ? porId.get(picks[m.id] as string) : null
                 return (
                   <li key={m.id}>
-                    <Card market={m} ahora={ahora} estado={estados[m.id]} error={errores[m.id]}>
+                    <Card market={m} ahora={ahora} estado={estados[m.id]} error={errores[m.id]} paleta={paleta}>
                       <button
                         type="button"
                         disabled={cerrado}
@@ -321,12 +346,14 @@ export function PredictionBoard({
 
 /** Envoltura de un mercado: cabecera con estado de cierre y aviso de guardado. */
 function Card({
-  market, ahora, estado, error, children,
+  market, ahora, estado, error, paleta, children,
 }: {
   market: MarketDTO
   ahora: number
   estado?: EstadoGuardado
   error?: string
+  /** Colores configurados del evento, ya pasados por la salvaguarda. */
+  paleta: { fondo: string; texto: string; primario: string; acento: string }
   children: React.ReactNode
 }) {
   const cancelado = market.segment?.isCancelled ?? false
@@ -338,16 +365,19 @@ function Card({
       : market.config.points
 
   return (
-    <div className="rounded-2xl bg-white p-3.5 shadow-lg shadow-automotor-950/40">
+    <div
+      className="rounded-2xl p-3.5 shadow-lg shadow-automotor-950/40 ring-1 ring-white/10"
+      style={{ backgroundColor: paleta.fondo, color: paleta.texto }}
+    >
       <div className="mb-2.5 flex items-start justify-between gap-2">
         <div className="min-w-0">
           {market.segment ? (
-            <p className="truncate text-sm font-bold text-slate-900">
-              <span className="text-automotor-600">{market.segment.code}</span>{' '}
+            <p className="truncate text-sm font-bold">
+              <span style={{ color: paleta.primario }}>{market.segment.code}</span>{' '}
               {market.segment.name}
             </p>
           ) : (
-            <p className="truncate text-sm font-bold text-slate-900">{market.title}</p>
+            <p className="truncate text-sm font-bold">{market.title}</p>
           )}
           <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
             {market.segment?.distanceKm != null && (
@@ -355,7 +385,7 @@ function Card({
             )}
             <span className="tabular-nums">{fHora.format(new Date(market.locksAt))}</span>
             {puntos != null && (
-              <span className="font-bold text-brand-accent tabular-nums">{puntos} pts</span>
+              <span className="font-bold tabular-nums" style={{ color: paleta.acento }}>{puntos} pts</span>
             )}
           </p>
         </div>

@@ -99,9 +99,12 @@ export function QuestionCard({
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-2xl animate-fade-in-up">
-        {/* Top bar */}
+        {/* Top bar -- flota directo sobre el escenario azul Automotor, así
+            que usa chrome de plataforma (blanco), no trivia.textColor: ese
+            color está calculado para leerse sobre trivia.backgroundColor,
+            no sobre el fondo navy fijo. */}
         <div className="flex items-center justify-between mb-4 px-1">
-          <span className="text-sm font-semibold opacity-60" style={{ color: trivia.textColor }}>
+          <span className="text-sm font-semibold text-white/60">
             {questionNumber} / {totalQuestions}
           </span>
           <div
@@ -114,7 +117,7 @@ export function QuestionCard({
         </div>
 
         {/* Timer bar */}
-        <div className="h-1.5 rounded-full mb-6 overflow-hidden" style={{ backgroundColor: `${trivia.primaryColor}20` }}>
+        <div className="h-1.5 rounded-full mb-6 overflow-hidden bg-white/10">
           <div
             className="h-full rounded-full transition-all duration-1000 ease-linear"
             style={{ width: `${pct}%`, backgroundColor: timerColor }}
@@ -123,8 +126,8 @@ export function QuestionCard({
 
         {/* Question */}
         <div
-          className="rounded-3xl p-6 mb-4 shadow-lg relative"
-          style={{ backgroundColor: 'white' }}
+          className="rounded-3xl p-6 mb-4 shadow-lg ring-1 ring-white/10 relative"
+          style={{ backgroundColor: trivia.backgroundColor }}
         >
           <p className="text-xl font-bold leading-relaxed" style={{ color: trivia.textColor }}>
             {question.question}
@@ -142,7 +145,7 @@ export function QuestionCard({
         {/* Options */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(question.options as string[]).map((option, idx) => {
-            let bg = 'white'
+            let bg = trivia.backgroundColor
             let border = `${trivia.primaryColor}30`
             let textColor = trivia.textColor
             let icon = null
@@ -178,7 +181,7 @@ export function QuestionCard({
                 key={idx}
                 disabled={isAnswered}
                 onClick={() => doAnswer(idx)}
-                className="flex items-center gap-3 p-4 rounded-2xl text-left transition-all duration-200 border-2 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-default font-medium"
+                className="flex items-center gap-3 p-4 rounded-2xl text-left transition-all duration-200 border-2 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-default font-medium min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                 style={{ backgroundColor: bg, borderColor: border, color: textColor }}
               >
                 <span

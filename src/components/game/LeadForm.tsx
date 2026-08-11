@@ -52,11 +52,11 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-lg animate-fade-in-up">
-        <div className="rounded-3xl shadow-2xl overflow-hidden">
+        <div className="rounded-3xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
           {/* Header */}
           <div
-            className="p-8 text-white text-center"
-            style={{ background: `linear-gradient(135deg, var(--trivia-primary), var(--trivia-secondary))` }}
+            className="p-8 text-center"
+            style={{ background: `linear-gradient(135deg, var(--trivia-primary), var(--trivia-secondary))`, color: 'var(--trivia-on-gradient)', }}
           >
             {logo ? (
               <div className="flex justify-center mb-3">
@@ -65,8 +65,8 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
             ) : (
               <Trophy className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--trivia-accent)' }} />
             )}
-            <h2 className="text-2xl font-black mb-1">¡Trivia Completada!</h2>
-            <p className="text-white/75 text-sm">
+            <h2 className="font-expanded text-2xl font-black mb-1">¡Trivia Completada!</h2>
+            <p className="text-sm" style={{ color: 'var(--trivia-on-gradient-soft)' }}>
               Completa tus datos para guardar tu puntaje oficial.
             </p>
           </div>
@@ -92,7 +92,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                       {field.fieldType === 'select' && field.options ? (
                         <select
                           {...register(field.fieldName, { required: field.isRequired ? `${field.fieldLabel} es requerido` : false })}
-                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus:border-blue-500"
+                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                           style={{ borderColor: `${trivia.primaryColor}30`, color: trivia.textColor }}
                         >
                           <option value="">Seleccionar...</option>
@@ -103,7 +103,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                       ) : field.fieldType === 'checkbox' ? (
                         <label
                           htmlFor={field.id}
-                          className="flex items-start gap-3 p-3 bg-white rounded-xl border-2 cursor-pointer transition-colors hover:bg-slate-50"
+                          className="flex items-start gap-3 p-3 bg-white rounded-xl border-2 cursor-pointer transition-colors hover:bg-slate-50 min-h-[44px] focus-within:ring-2 focus-within:ring-automotor-300"
                           style={{ borderColor: `${trivia.primaryColor}30` }}
                         >
                           <input
@@ -128,7 +128,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                           placeholder={field.placeholder ?? ''}
                           {...register(field.fieldName, { required: field.isRequired ? `${field.fieldLabel} es requerido` : false })}
                           rows={3}
-                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus:border-blue-500"
+                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                           style={{ borderColor: errors[field.fieldName] ? '#ef4444' : `${trivia.primaryColor}30`, color: trivia.textColor }}
                         />
                       ) : (
@@ -139,7 +139,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
                             required: field.isRequired ? `${field.fieldLabel} es requerido` : false,
                             ...(field.fieldType === 'email' ? { pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Email inválido' } } : {}),
                           })}
-                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus:border-blue-500"
+                          className="w-full px-3 py-2 border-2 rounded-xl outline-none transition-all text-sm bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                           style={{ borderColor: errors[field.fieldName] ? '#ef4444' : `${trivia.primaryColor}30`, color: trivia.textColor }}
                         />
                       )}
@@ -160,7 +160,7 @@ export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 shadow-lg"
+                className="w-full py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 shadow-lg min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2"
                 style={{ background: `linear-gradient(135deg, var(--trivia-primary), var(--trivia-secondary))` }}
               >
                 {isSubmitting ? (

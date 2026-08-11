@@ -34,28 +34,25 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
   const hideHeroContent = canRevealHero && heroRevealActive
 
   return (
-    <div
-      className="flex items-center justify-center min-h-screen p-4"
-      style={{ backgroundColor: `${trivia.primaryColor}08` }}
-    >
-      {/* Back to home */}
+    <div className="flex items-center justify-center min-h-screen p-4">
+      {/* Back to home -- mismo lenguaje que la cabecera de predicciones: la
+          plataforma es el escenario, así que su chrome no toma color de la trivia. */}
       <Link
         href="/"
-        className="fixed top-4 left-4 z-50 flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm border border-white/60 transition-all hover:-translate-x-0.5 hover:shadow-md"
-        style={{ color: trivia.primaryColor }}
+        className="fixed top-4 left-4 z-50 inline-flex min-h-[44px] items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 rounded-lg px-2"
       >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Volver al inicio
+        <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+        Automotor Play
       </Link>
 
       <div className="w-full max-w-lg animate-fade-in-up">
 
         {/* ── HERO CARD ──────────────────────────────────────────── */}
-        <div className="rounded-3xl shadow-2xl overflow-hidden">
+        <div className="rounded-3xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
 
           {/* Header banner */}
           <div
-            className="relative px-8 pt-10 pb-8 text-white text-center overflow-hidden"
+            className="relative px-8 pt-10 pb-8 text-center overflow-hidden"
             tabIndex={canRevealHero ? 0 : undefined}
             role={canRevealHero ? 'button' : undefined}
             aria-label={canRevealHero ? 'Ver fondo de cabecera' : undefined}
@@ -85,8 +82,9 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                 setHeroRevealActive(false)
               }
             }}
-            style={{ 
+            style={{
               background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)`,
+              color: 'var(--trivia-on-gradient)',
               minHeight: trivia.heroImageUrl ? `${heroSettings.height}px` : 'auto',
               display: 'flex',
               flexDirection: 'column',
@@ -164,7 +162,7 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                 </div>
               )}
 
-              <h1 className="text-3xl font-black tracking-tight leading-tight mb-2" style={heroTextOutlineStyle(heroSettings)}>
+              <h1 className="font-expanded text-3xl font-black tracking-tight leading-tight mb-2" style={heroTextOutlineStyle(heroSettings)}>
                 {trivia.title}
               </h1>
               {trivia.description && (
@@ -178,8 +176,8 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
             </div>
           </div>
 
-          {/* Body */}
-          <div className="bg-white p-6 space-y-5">
+          {/* Body -- superficie de contenido: el color lo elige la trivia */}
+          <div className="p-6 space-y-5" style={{ backgroundColor: trivia.backgroundColor }}>
 
             {/* Game instructions (collapsible) */}
             {trivia.gameInstructions && (
@@ -187,8 +185,10 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
                 <button
                   type="button"
                   onClick={() => setInstrOpen(o => !o)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                   style={{ backgroundColor: `${trivia.primaryColor}08` }}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = `${trivia.primaryColor}12` }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = `${trivia.primaryColor}08` }}
                 >
                   <span className="flex items-center gap-2 text-sm font-bold" style={{ color: trivia.primaryColor }}>
                     <BookOpen className="w-4 h-4" />
@@ -318,7 +318,7 @@ export function IntroScreen({ trivia, onStart }: IntroScreenProps) {
               onClick={onStart}
               onMouseEnter={() => setHovered(true)}
               onMouseLeave={() => setHovered(false)}
-              className="w-full py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-lg"
+              className="w-full py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-lg min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2"
               style={{
                 background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})`,
                 boxShadow: hovered

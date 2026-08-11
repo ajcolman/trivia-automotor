@@ -5,13 +5,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
-  Loader2, Trophy, Trash2, Lock, ExternalLink, Download, Users,
+  Loader2, Trophy, Trash2, Lock, ExternalLink, Download, Users, RotateCcw,
   ListChecks, Percent, MailCheck, CheckCircle2,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { FilaRanking } from '@/lib/predictions/resolver'
 import { EventoPremios, type PremioFila } from './EventoPremios'
 import { EventoTramos, type TramoFila } from './EventoTramos'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface ContenderOpcion { id: string; etiqueta: string }
 
@@ -68,6 +69,8 @@ export function EventoResultados({
   const router = useRouter()
   const [guardando, setGuardando] = useState<string | null>(null)
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
+  const [reinicio, setReinicio] = useState<'resultados' | 'todo' | null>(null)
+  const [reiniciando, setReiniciando] = useState(false)
   const [borrador, setBorrador] = useState<Record<string, string[]>>(() =>
     Object.fromEntries(
       markets.map(m => [
@@ -87,6 +90,26 @@ export function EventoResultados({
     setCambiandoEstado(false)
     if (res.ok) { toast.success('Estado actualizado'); router.refresh() }
     else toast.error((await res.json().catch(() => ({})))?.error ?? 'No se pudo cambiar el estado')
+  }
+
+  async function ejecutarReinicio(alcance: 'resultados' | 'todo') {
+    setReiniciando(true)
+    const res = await fetch(`/api/admin/prediction-events/${eventoId}/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alcance }),
+    })
+    const cuerpo = await res.json().catch(() => ({}))
+    setReiniciando(false)
+    setReinicio(null)
+
+    if (!res.ok) { toast.error(cuerpo?.error ?? 'No se pudo reiniciar'); return }
+    toast.success(
+      alcance === 'todo'
+        ? `Se borraron ${cuerpo.resultados} resultados y ${cuerpo.predicciones} predicciones.`
+        : `Se borraron ${cuerpo.resultados} resultados. Las predicciones quedaron sin puntuar.`,
+    )
+    router.refresh()
   }
 
   async function guardarResultado(m: MarketFila) {
@@ -156,6 +179,13 @@ export function EventoResultados({
           >
             <Download className="h-3.5 w-3.5" /> Exportar participantes
           </a>
+          <button
+            type="button"
+            onClick={() => setReinicio('resultados')}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:border-amber-400 hover:text-amber-700"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Reiniciar
+          </button>
           <a
             href={`/predicciones/${slug}`}
             target="_blank"
@@ -340,6 +370,21 @@ export function EventoResultados({
           </div>
         </section>
       </div>
+
+      <ConfirmDialog
+        open={reinicio !== null}
+        title={reinicio === 'todo' ? 'Borrar todo el juego' : 'Reiniciar los resultados'}
+        description={
+          reinicio === 'todo'
+            ? 'Se borran los resultados y también las predicciones que cargaron los jugadores. Las cuentas no se tocan. No se puede deshacer.'
+            : 'Se borran los resultados cargados y las predicciones quedan sin puntuar, pero se conserva lo que eligió cada jugador. Sirve para rehacer una carga mal hecha.'
+        }
+        confirmLabel={reiniciando ? 'Reiniciando…' : reinicio === 'todo' ? 'Borrar todo' : 'Reiniciar resultados'}
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={() => ejecutarReinicio(reinicio ?? 'resultados')}
+        onCancel={() => setReinicio(null)}
+      />
     </>
   )
 }

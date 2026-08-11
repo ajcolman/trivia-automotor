@@ -188,19 +188,16 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
         }
       `}</style>
 
-      <div
-        className="flex items-center justify-center min-h-screen p-4"
-        style={{ backgroundColor: `${trivia.primaryColor}08` }}
-      >
+      <div className="flex items-center justify-center min-h-screen p-4">
         <div className="w-full max-w-lg space-y-4" style={{ animation: 'fadeUp 0.5s ease both' }}>
 
           {/* ── SCORE CARD ─────────────────────────────────────────── */}
-          <div className="rounded-3xl shadow-2xl overflow-hidden">
+          <div className="rounded-3xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
 
             {/* Hero banner */}
             <div
-              className="relative px-8 pt-8 pb-6 text-white text-center overflow-hidden"
-              style={{ background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)` }}
+              className="relative px-8 pt-8 pb-6 text-center overflow-hidden"
+              style={{ background: `linear-gradient(150deg, ${trivia.primaryColor} 0%, ${trivia.secondaryColor} 100%)`, color: 'var(--trivia-on-gradient)', }}
             >
               {showConfetti && <Confetti color={trivia.primaryColor} />}
 
@@ -224,7 +221,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
                 <div className="text-5xl mb-2" style={{ animation: showConfetti ? 'scorePop 0.6s 0.3s ease both' : undefined }}>
                   {rating.emoji}
                 </div>
-                <h2 className="text-2xl font-black mb-1">{rating.label}</h2>
+                <h2 className="font-expanded text-2xl font-black mb-1">{rating.label}</h2>
 
                 {/* Stars */}
                 <div className="flex justify-center gap-1 mt-2">
@@ -243,23 +240,23 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
               </div>
             </div>
 
-            {/* Score body */}
-            <div className="bg-white px-8 py-6 text-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+            {/* Score body -- superficie de contenido: el color lo elige la trivia */}
+            <div className="px-8 py-6 text-center" style={{ backgroundColor: trivia.backgroundColor }}>
+              <p className="text-xs font-bold uppercase tracking-widest opacity-50 mb-2" style={{ color: trivia.textColor }}>
                 Puntaje Final
               </p>
               <div
-                className="text-7xl font-black mb-1 tabular-nums"
+                className="font-expanded text-7xl font-black mb-1 tabular-nums"
                 style={{ color: trivia.primaryColor, fontVariantNumeric: 'tabular-nums' }}
               >
                 {displayScore.toLocaleString()}
               </div>
-              <p className="text-sm text-slate-400">
-                de {result.maxScore.toLocaleString()} posibles — <strong className="text-slate-600">{pct}%</strong>
+              <p className="text-sm opacity-50" style={{ color: trivia.textColor }}>
+                de {result.maxScore.toLocaleString()} posibles — <strong className="opacity-80">{pct}%</strong>
               </p>
 
               {/* Progress bar */}
-              <div className="mt-4 h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="mt-4 h-3 rounded-full overflow-hidden" style={{ backgroundColor: `${trivia.primaryColor}15` }}>
                 <div
                   className="h-full rounded-full transition-all duration-1000 delay-500"
                   style={{
@@ -273,7 +270,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleDownloadCert}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border-2 transition-all hover:shadow-md active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border-2 transition-all hover:shadow-md active:scale-95 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                   style={{ borderColor: trivia.primaryColor, color: trivia.primaryColor }}
                 >
                   <Download className="w-4 h-4" />
@@ -281,7 +278,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white transition-all hover:shadow-md active:scale-95 hover:opacity-90"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white transition-all hover:shadow-md active:scale-95 hover:opacity-90 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
                   style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
                 >
                   <Share2 className="w-4 h-4" />
@@ -293,7 +290,8 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
                 {trivia.maxPlaysPerUser > 1 && (
                   <button
                     onClick={() => window.location.reload()}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold opacity-50 hover:opacity-90 transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
+                    style={{ color: trivia.textColor }}
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     Intentar de nuevo
@@ -301,7 +299,8 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
                 )}
                 <Link
                   href="/"
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold opacity-50 hover:opacity-90 transition-all min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
+                  style={{ color: trivia.textColor }}
                 >
                   <Home className="w-3.5 h-3.5" />
                   Inicio
@@ -312,18 +311,18 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
 
           {/* ── INCORRECT ANSWERS SUMMARY ────────────────────────── */}
           {incorrectAnswers.length > 0 && (
-            <div className="rounded-3xl overflow-hidden shadow-lg border border-red-100" style={{ animation: 'fadeUp 0.5s 0.1s ease both', opacity: 0 }}>
+            <div className="rounded-3xl overflow-hidden shadow-lg ring-1 ring-white/10 border border-red-100" style={{ animation: 'fadeUp 0.5s 0.1s ease both', opacity: 0 }}>
               <div className="px-5 py-3.5 bg-red-50 flex items-center gap-2">
                 <RotateCcw className="w-4 h-4 text-red-500" />
                 <h3 className="font-black text-red-700 text-sm">Resumen de errores ({incorrectAnswers.length})</h3>
               </div>
-              <div className="bg-white p-4 space-y-4">
+              <div className="p-4 space-y-4" style={{ backgroundColor: trivia.backgroundColor }}>
                 {incorrectAnswers.map((ans, i) => {
                   const q = trivia.questions.find(x => x.id === ans.questionId)
                   if (!q) return null
                   return (
-                    <div key={ans.questionId} className="space-y-2 pb-3 border-b border-slate-50 last:border-0 last:pb-0">
-                      <p className="text-sm font-bold text-slate-800 leading-tight">
+                    <div key={ans.questionId} className="space-y-2 pb-3 border-b border-black/5 last:border-0 last:pb-0">
+                      <p className="text-sm font-bold leading-tight" style={{ color: trivia.textColor }}>
                         {i + 1}. {q.question}
                       </p>
                       <div className="grid grid-cols-1 gap-1.5">
@@ -345,15 +344,15 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
 
           {/* ── LEADERBOARD ────────────────────────────────────────── */}
           {trivia.showLeaderboard !== false && leaderboard.length > 0 && (
-            <div className="rounded-3xl overflow-hidden shadow-lg" style={{ animation: 'fadeUp 0.5s 0.2s ease both', opacity: 0 }}>
+            <div className="rounded-3xl overflow-hidden shadow-lg ring-1 ring-white/10" style={{ animation: 'fadeUp 0.5s 0.2s ease both', opacity: 0 }}>
               <div
                 className="px-5 py-3.5 flex items-center gap-2"
                 style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
               >
                 <Medal className="w-4 h-4 text-white" />
-                <h3 className="font-black text-white text-sm">Tabla de Líderes</h3>
+                <h3 className="font-expanded font-black text-white text-sm">Tabla de Líderes</h3>
               </div>
-              <div className="bg-white divide-y divide-slate-50">
+              <div className="divide-y divide-black/5" style={{ backgroundColor: trivia.backgroundColor }}>
                 {leaderboard.map((entry, i) => {
                   const isMe = entry.score === result.score
                   return (
@@ -363,7 +362,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
                       style={{ backgroundColor: isMe ? `${trivia.primaryColor}08` : 'transparent' }}
                     >
                       <span className="text-lg w-8 text-center flex-shrink-0">
-                        {i < 3 ? MEDALS[i] : <span className="text-sm font-bold text-slate-400">{i + 1}</span>}
+                        {i < 3 ? MEDALS[i] : <span className="text-sm font-bold opacity-50" style={{ color: trivia.textColor }}>{i + 1}</span>}
                       </span>
                       <span className="flex-1 text-sm truncate" style={{ color: trivia.textColor }}>
                         {entry.displayName}
@@ -372,7 +371,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
                       <span className="font-black text-sm tabular-nums" style={{ color: trivia.primaryColor }}>
                         {entry.score.toLocaleString()}
                       </span>
-                      <span className="text-xs text-slate-400 w-10 text-right tabular-nums">
+                      <span className="text-xs w-10 text-right tabular-nums opacity-40" style={{ color: trivia.textColor }}>
                         {entry.maxScore > 0 ? `${Math.round((entry.score / entry.maxScore) * 100)}%` : ''}
                       </span>
                     </div>
@@ -382,7 +381,7 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
             </div>
           )}
 
-          <p className="text-center text-xs text-slate-400 opacity-60">
+          <p className="text-center text-xs text-white/40">
             {trivia.company?.name ?? 'Automotor S.A.'} · Desarrollado por Angel Colman
           </p>
         </div>
