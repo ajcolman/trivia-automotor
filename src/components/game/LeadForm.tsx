@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Trophy, Loader2 } from 'lucide-react'
 import type { TriviaData, AnswerRecord, FormFieldData, CuentaJugador } from './GameShell'
+import { loCubreLaCuenta } from '@/lib/lead-fields'
 import Image from 'next/image'
 import { mediaUrl } from '@/lib/utils'
 
@@ -14,25 +15,6 @@ interface LeadFormProps {
   /** Datos de la cuenta, si el jugador tiene sesión. */
   cuenta?: CuentaJugador | null
   onSubmit: (formData: Record<string, string>) => Promise<void>
-}
-
-/**
- * Qué campo del formulario corresponde a qué dato de la cuenta.
- *
- * Se compara contra el nombre y la etiqueta del campo, porque cada trivia
- * define los suyos con la nomenclatura que quiere.
- */
-function valorDeCuenta(
-  campo: { fieldName: string; fieldLabel: string; fieldType: string },
-  cuenta: CuentaJugador,
-): string | null {
-  const clave = `${campo.fieldName} ${campo.fieldLabel}`.toLowerCase()
-  if (campo.fieldType === 'email' || clave.includes('mail') || clave.includes('correo')) return cuenta.email
-  if (campo.fieldType === 'phone' || clave.includes('telefono') || clave.includes('teléfono') || clave.includes('celular') || clave.includes('whatsapp')) return cuenta.phone
-  if (clave.includes('cedula') || clave.includes('cédula') || clave.includes('documento') || clave.includes('\bci\b')) return cuenta.cedula
-  if (clave.includes('apellido')) return cuenta.fullName.split(' ').slice(1).join(' ') || cuenta.fullName
-  if (clave.includes('nombre') || clave.includes('name')) return cuenta.fullName.split(' ')[0]
-  return null
 }
 
 function getInputType(fieldType: string): string {
@@ -47,22 +29,15 @@ function getInputType(fieldType: string): string {
 export function LeadForm({ trivia, answers, cuenta = null, onSubmit }: LeadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  // Lo que ya sabemos por la cuenta llega precargado: pedirle de nuevo el
-  // nombre y el correo a alguien que acaba de iniciar sesión es fricción sin
-  // ninguna contrapartida.
-  const precargados = useMemo(() => {
-    if (!cuenta) return {}
-    const valores: Record<string, string> = {}
-    for (const f of trivia.formFields) {
-      const v = valorDeCuenta(f, cuenta)
-      if (v) valores[f.fieldName] = v
-    }
-    return valores
-  }, [cuenta, trivia.formFields])
+  // Con cuenta, los datos personales no se preguntan: los completa el servidor
+  // desde la cuenta, que es la fuente de verdad para entregar un premio. Acá
+  // solo quedan los campos que la cuenta no sabe.
+  const camposAPreguntar = useMemo(
+    () => (cuenta ? trivia.formFields.filter(f => !loCubreLaCuenta(f, cuenta)) : trivia.formFields),
+    [cuenta, trivia.formFields],
+  )
 
-  const { register, handleSubmit, formState: { errors } } = useForm<Record<string, string>>({
-    defaultValues: precargados,
-  })
+  const { register, handleSubmit, formState: { errors } } = useForm<Record<string, string>>()
 
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl)
 
@@ -78,12 +53,17 @@ export function LeadForm({ trivia, answers, cuenta = null, onSubmit }: LeadFormP
     }
   }
 
-  const fields: FormFieldData[] = trivia.formFields.length > 0 ? trivia.formFields : [
+  const porDefecto: FormFieldData[] = [
     { id: 'default_nombre', fieldName: 'nombre', fieldLabel: 'Nombre', fieldType: 'text', isRequired: true, options: null, placeholder: 'Ej. Juan', orderIndex: 0 },
     { id: 'default_apellido', fieldName: 'apellido', fieldLabel: 'Apellido', fieldType: 'text', isRequired: true, options: null, placeholder: 'Ej. Pérez', orderIndex: 1 },
     { id: 'default_telefono', fieldName: 'telefono', fieldLabel: 'Teléfono', fieldType: 'phone', isRequired: true, options: null, placeholder: '09XX XXX XXX', orderIndex: 2 },
     { id: 'default_correo', fieldName: 'correo', fieldLabel: 'Correo electrónico', fieldType: 'email', isRequired: false, options: null, placeholder: 'tu@email.com', orderIndex: 3 },
   ]
+
+  const configurados = trivia.formFields.length > 0 ? camposAPreguntar : porDefecto
+  const fields: FormFieldData[] = cuenta
+    ? configurados.filter(f => !loCubreLaCuenta(f, cuenta))
+    : configurados
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
@@ -103,13 +83,26 @@ export function LeadForm({ trivia, answers, cuenta = null, onSubmit }: LeadFormP
             )}
             <h2 className="font-expanded text-2xl font-black mb-1">¡Trivia Completada!</h2>
             <p className="text-sm" style={{ color: 'var(--trivia-on-gradient-soft)' }}>
-              Completa tus datos para guardar tu puntaje oficial.
+              {cuenta && fields.length === 0
+                ? 'Confirmá para guardar tu puntaje oficial.'
+                : cuenta
+                  ? 'Una cosa más y guardamos tu puntaje oficial.'
+                  : 'Completa tus datos para guardar tu puntaje oficial.'}
             </p>
           </div>
 
           {/* Form */}
           <div className="p-6" style={{ backgroundColor: 'var(--trivia-bg)' }}>
             <form onSubmit={handleSubmit(doSubmit)} className="space-y-4">
+              {cuenta && (
+                <p
+                  className="rounded-xl px-3 py-2 text-xs"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: 'var(--trivia-text)' }}
+                >
+                  Participás como <strong>{cuenta.fullName}</strong>. Tus datos de contacto salen
+                  de tu cuenta.
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 {fields.map((field, i) => {
                   const isHalf = i < 2 && fields.length >= 2

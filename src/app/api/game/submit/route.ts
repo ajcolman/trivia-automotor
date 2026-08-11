@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
+import { combinarConCuenta } from '@/lib/lead-fields'
 import { createRateLimiter } from '@/lib/rate-limit'
 import { calculateScore } from '@/lib/score-calculator'
 import { getSessionId } from '@/lib/session-fingerprint'
@@ -83,6 +84,24 @@ export async function POST(req: NextRequest) {
         if (jugadas >= t.maxPlaysPerUser) throw new Error('LIMIT_REACHED')
       }
 
+      // Los datos personales se toman de la cuenta, no de lo que llegó del
+      // cliente: son con los que se entrega el premio, y el formulario ya no
+      // los pregunta cuando hay sesión.
+      let datosFinales: Record<string, unknown> = formData as Record<string, unknown>
+      if (playerId) {
+        const [cuenta, campos] = await Promise.all([
+          tx.player.findUnique({
+            where: { id: playerId },
+            select: { fullName: true, email: true, phone: true, cedula: true },
+          }),
+          tx.formField.findMany({
+            where: { triviaId },
+            select: { fieldName: true, fieldLabel: true, fieldType: true },
+          }),
+        ])
+        if (cuenta) datosFinales = combinarConCuenta(campos, datosFinales, cuenta)
+      }
+
       // Server-side scoring
       const questions = await tx.question.findMany({
         where: { triviaId },
@@ -97,7 +116,7 @@ export async function POST(req: NextRequest) {
           triviaId,
           playerId,
           sessionId,
-          formData: formData as object,
+          formData: datosFinales as object,
           score,
           maxScore,
           answers: scoredAnswers as object,
