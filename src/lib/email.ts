@@ -95,6 +95,35 @@ export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
   }
 }
 
+/** Plantilla del correo de recuperación de contraseña. */
+export function passwordResetEmail(fullName: string, url: string): Omit<EmailMessage, 'to'> {
+  const nombre = fullName.split(' ')[0]
+  return {
+    subject: 'Restablecer tu contraseña de Automotor Play',
+    text: `Hola ${nombre},\n\nPediste restablecer tu contraseña. Entrá acá para elegir una nueva:\n${url}\n\nEl enlace vence en 1 hora y sirve una sola vez.\n\nSi no lo pediste, ignorá este mensaje: tu contraseña sigue siendo la misma.`,
+    html: `
+<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#021F39">
+  <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#005CA8;margin:0 0 16px">Automotor Play</p>
+  <h1 style="font-size:24px;line-height:1.2;margin:0 0 16px">Restablecer tu contraseña</h1>
+  <p style="font-size:16px;line-height:1.6;margin:0 0 24px">
+    Hola ${nombre}, pediste elegir una contraseña nueva.
+  </p>
+  <p style="margin:0 0 24px">
+    <a href="${url}" style="display:inline-block;background:#005CA8;color:#fff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:999px">
+      Elegir contraseña nueva
+    </a>
+  </p>
+  <p style="font-size:14px;color:#4A5E70;line-height:1.6;margin:0 0 8px">
+    El enlace vence en 1 hora y sirve una sola vez. Si el botón no funciona, copiá esta dirección:
+  </p>
+  <p style="font-size:13px;color:#4A5E70;word-break:break-all;margin:0 0 24px">${url}</p>
+  <p style="font-size:13px;color:#7C8FA0;border-top:1px solid #D8E3EC;padding-top:16px;margin:0">
+    Si no lo pediste, ignorá este mensaje: tu contraseña sigue siendo la misma.
+  </p>
+</div>`.trim(),
+  }
+}
+
 /** Plantilla del correo de verificación de cuenta. */
 export function verificationEmail(fullName: string, url: string): Omit<EmailMessage, 'to'> {
   const nombre = fullName.split(' ')[0]

@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -98,6 +99,15 @@ export function LoginForm() {
           {errorGeneral}
         </p>
       )}
+
+      <p className="text-right">
+        <Link
+          href="/cuenta/recuperar"
+          className="inline-flex min-h-[44px] items-center text-sm font-semibold text-automotor-600 hover:text-automotor-700 hover:underline underline-offset-2"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </p>
 
       <button
         type="submit"
