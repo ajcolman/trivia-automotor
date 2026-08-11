@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { eventLeaderboard } from '@/lib/predictions/resolver'
 import { EventoResultados } from '@/components/admin/EventoResultados'
+import { EventoDiseno } from '@/components/admin/EventoDiseno'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     where: { id: params.id },
     select: {
       id: true, slug: true, title: true, status: true,
+      primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
       segments: {
         orderBy: { orderIndex: 'asc' },
         select: { id: true, code: true, name: true, distanceKm: true, locksAt: true, isCancelled: true },
@@ -84,6 +86,17 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
       >
         <ChevronLeft className="h-4 w-4" /> Juegos de predicción
       </Link>
+
+      <EventoDiseno
+        eventoId={evento.id}
+        colores={{
+          primaryColor: evento.primaryColor,
+          secondaryColor: evento.secondaryColor,
+          accentColor: evento.accentColor,
+          backgroundColor: evento.backgroundColor,
+          textColor: evento.textColor,
+        }}
+      />
 
       <EventoResultados
         eventoId={evento.id}

@@ -466,22 +466,28 @@ model PlayerToken {
 }
 
 model PredictionEvent {
-  id             String      @id @default(cuid())
-  slug           String      @unique
-  title          String
-  description    String?
-  status         EventStatus @default(draft)
-  externalRef    String?
-  opensAt        DateTime?
-  closesAt       DateTime?
-  companyId      String?
-  brandId        String?
-  heroImageUrl   String?
-  primaryColor   String      @default("#005CA8")
-  secondaryColor String      @default("#004071")
-  rules          String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  title           String
+  description     String?
+  status          EventStatus @default(draft)
+  externalRef     String?
+  opensAt         DateTime?
+  closesAt        DateTime?
+  companyId       String?
+  brandId         String?
+  heroImageUrl    String?
+  primaryColor    String      @default("#005CA8")
+  secondaryColor  String      @default("#004071")
+  /// Alineado con Trivia.accentColor: mismo campo, mismo default, misma paleta de referencia.
+  accentColor     String      @default("#FFD700")
+  /// Alineado con Trivia.backgroundColor.
+  backgroundColor String      @default("#F8FAFC")
+  /// Alineado con Trivia.textColor.
+  textColor       String      @default("#1A1A2E")
+  rules           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   segments   Segment[]
   contenders Contender[]
