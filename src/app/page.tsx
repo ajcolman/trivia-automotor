@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Trophy, Users, Zap, ChevronRight, Clock, Award, Medal, Gift, UserRound } from 'lucide-react'
 import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/utils'
 import { PrizesModal } from '@/components/landing/PrizesModal'
+import { CarLoop } from '@/components/predicciones/CarLoop'
 import {
   heroBackgroundImageStyle,
   heroOverlayGradient,
@@ -300,17 +301,13 @@ export default async function HomePage() {
                       }}
                     >
                       {/* El i20 N como ícono de marca Automotor, no como una
-                          inscripción concreta del rally. */}
-                      <Image
-                        src="/sprites/i20n-rally-8bit.png"
-                        alt=""
-                        aria-hidden="true"
-                        width={348}
-                        height={126}
-                        className="pointer-events-none absolute -bottom-2 -right-4 w-52 sm:w-64 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none"
-                        style={{ imageRendering: 'pixelated' }}
-                        unoptimized
-                      />
+                          inscripción concreta del rally. CarLoop trae el loop
+                          en video (372 KB) con `mix-blend-mode: screen`, que
+                          mezcla directo contra el degradado oscuro de la card
+                          -- sin envoltorio con fondo propio, ver CarLoop.tsx.
+                          Con reduced-motion, ahorro de datos o conexión lenta
+                          cae solo a este mismo sprite fijo. */}
+                      <CarLoop className="pointer-events-none absolute -bottom-2 -right-4 w-52 sm:w-64 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none" />
 
                       <div className="relative p-5 sm:p-6">
                         <div className="mb-2 flex flex-wrap items-center gap-1.5">
