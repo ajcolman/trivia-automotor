@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { Trophy, Users, BarChart3, Eye, TrendingUp, Plus, Zap, Target } from 'lucide-react'
+import { Trophy, Users, BarChart3, Eye, TrendingUp, Plus, Zap, Target, Flag } from 'lucide-react'
 import { getNowAsuncion } from '@/lib/utils'
 
 export default async function DashboardPage() {
@@ -57,6 +57,15 @@ export default async function DashboardPage() {
 
   const completionRate = totalStarted > 0 ? Math.round((totalCompleted / totalStarted) * 100) : 0
 
+  // Juegos de predicción. Van aparte de las trivias porque no comparten
+  // ninguna métrica: acá no hay sesiones ni tasa de completación, sino
+  // jugadores con cuenta y predicciones cargadas.
+  const [eventosAbiertos, jugadoresPrediccion, prediccionesCargadas] = await Promise.all([
+    prisma.predictionEvent.count({ where: { status: { in: ['open', 'live'] } } }),
+    prisma.player.count({ where: { predictions: { some: {} } } }),
+    prisma.prediction.count(),
+  ])
+
   const stats = [
     {
       label: 'Trivias Vigentes',
@@ -89,6 +98,14 @@ export default async function DashboardPage() {
       icon: TrendingUp,
       gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
       glow: 'rgba(245,158,11,0.25)',
+    },
+    {
+      label: 'Predicciones',
+      value: prediccionesCargadas,
+      sub: `${jugadoresPrediccion} jugadores · ${eventosAbiertos} juego${eventosAbiertos !== 1 ? 's' : ''} abierto${eventosAbiertos !== 1 ? 's' : ''}`,
+      icon: Flag,
+      gradient: 'linear-gradient(135deg, #005CA8, #38bdf8)',
+      glow: 'rgba(56,189,248,0.25)',
     },
   ]
 

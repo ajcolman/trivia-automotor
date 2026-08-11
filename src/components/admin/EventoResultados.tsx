@@ -4,7 +4,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Loader2, Trophy, Trash2, Lock, ExternalLink } from 'lucide-react'
+import {
+  Loader2, Trophy, Trash2, Lock, ExternalLink, Download, Users,
+  ListChecks, Percent, MailCheck, CheckCircle2,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { FilaRanking } from '@/lib/predictions/resolver'
 
@@ -21,6 +24,16 @@ interface MarketFila {
   predicciones: number
 }
 
+export interface EstadisticasEvento {
+  jugadores: number
+  totalPredicciones: number
+  verificados: number
+  mercados: number
+  conResultado: number
+  cobertura: number
+  puntosRepartidos: number
+}
+
 interface Props {
   eventoId: string
   titulo: string
@@ -29,6 +42,7 @@ interface Props {
   contenders: ContenderOpcion[]
   markets: MarketFila[]
   ranking: FilaRanking[]
+  estadisticas: EstadisticasEvento
 }
 
 const ESTADOS: { valor: string; texto: string; ayuda: string }[] = [
@@ -45,7 +59,7 @@ const fFecha = new Intl.DateTimeFormat('es-PY', {
 })
 
 export function EventoResultados({
-  eventoId, titulo, slug, estado, contenders, markets, ranking,
+  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas,
 }: Props) {
   const router = useRouter()
   const [guardando, setGuardando] = useState<string | null>(null)
@@ -131,15 +145,43 @@ export function EventoResultados({
             <span className="tabular-nums">{markets.length}</span> con resultado cargado
           </p>
         </div>
-        <a
-          href={`/predicciones/${slug}`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:border-[#005CA8] hover:text-[#005CA8]"
-        >
-          Ver como jugador <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/api/admin/prediction-events/${eventoId}/export`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:border-[#005CA8] hover:text-[#005CA8]"
+          >
+            <Download className="h-3.5 w-3.5" /> Exportar participantes
+          </a>
+          <a
+            href={`/predicciones/${slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:border-[#005CA8] hover:text-[#005CA8]"
+          >
+            Ver como jugador <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        </div>
       </div>
+
+      {/* ── Estadísticas ──────────────────────────────────────── */}
+      <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {[
+          { label: 'Jugadores', valor: estadisticas.jugadores, icono: Users },
+          { label: 'Predicciones', valor: estadisticas.totalPredicciones, icono: ListChecks },
+          { label: 'Grillas completas', valor: `${estadisticas.cobertura}%`, icono: Percent,
+            ayuda: 'Del total posible si todos cargaran todas' },
+          { label: 'Correos verificados', valor: estadisticas.verificados, icono: MailCheck },
+          { label: 'Con resultado', valor: `${estadisticas.conResultado}/${estadisticas.mercados}`, icono: CheckCircle2 },
+          { label: 'Puntos repartidos', valor: estadisticas.puntosRepartidos, icono: Trophy },
+        ].map(m => (
+          <div key={m.label} className="rounded-2xl border border-slate-200 bg-white p-3.5">
+            <m.icono className="mb-2 h-4 w-4 text-[#005CA8]" />
+            <p className="text-xl font-black tabular-nums text-slate-900">{m.valor}</p>
+            <p className="text-xs font-semibold text-slate-500">{m.label}</p>
+            {m.ayuda && <p className="mt-0.5 text-[11px] leading-tight text-slate-400">{m.ayuda}</p>}
+          </div>
+        ))}
+      </section>
 
       {/* ── Estado ────────────────────────────────────────────── */}
       <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4">

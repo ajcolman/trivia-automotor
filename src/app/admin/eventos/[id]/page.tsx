@@ -34,6 +34,43 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
 
   const ranking = await eventLeaderboard(evento.id, 20)
 
+  // Métricas del evento. `distinct` cuenta jugadores únicos, no predicciones.
+  const [jugadores, totalPredicciones, verificados, puntajes] = await Promise.all([
+    prisma.prediction.findMany({
+      where: { market: { eventId: evento.id } },
+      select: { playerId: true },
+      distinct: ['playerId'],
+    }),
+    prisma.prediction.count({ where: { market: { eventId: evento.id } } }),
+    prisma.player.count({
+      where: {
+        emailVerifiedAt: { not: null },
+        predictions: { some: { market: { eventId: evento.id } } },
+      },
+    }),
+    prisma.prediction.aggregate({
+      where: { market: { eventId: evento.id }, pointsAwarded: { not: null } },
+      _sum: { pointsAwarded: true },
+      _count: true,
+    }),
+  ])
+
+  const conResultado = evento.markets.filter(m => m.resolution != null).length
+
+  const estadisticas = {
+    jugadores: jugadores.length,
+    totalPredicciones,
+    verificados,
+    mercados: evento.markets.length,
+    conResultado,
+    // Cuán completas están las grillas: si todos cargaran todo, daría 100%.
+    cobertura:
+      jugadores.length > 0 && evento.markets.length > 0
+        ? Math.round((totalPredicciones / (jugadores.length * evento.markets.length)) * 100)
+        : 0,
+    puntosRepartidos: puntajes._sum.pointsAwarded ?? 0,
+  }
+
   return (
     <div className="p-6">
       <Link
@@ -63,6 +100,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
           predicciones: m._count.predictions,
         }))}
         ranking={ranking}
+        estadisticas={estadisticas}
       />
     </div>
   )
