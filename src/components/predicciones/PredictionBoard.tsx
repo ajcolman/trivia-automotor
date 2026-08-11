@@ -141,7 +141,9 @@ export function PredictionBoard({
         className="relative overflow-hidden px-4 pb-8 pt-6"
         style={{ background: `linear-gradient(135deg, ${colorPrimario}, ${colorSecundario})` }}
       >
-        <CarLoop className="pointer-events-none absolute -bottom-4 -right-8 w-56 opacity-90 sm:w-72" />
+        {/* El clip conserva todo el desplazamiento del auto, así que se ancla
+            al borde derecho sin desbordar por abajo: las ruedas deben verse. */}
+        <CarLoop className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80" />
         <div className="relative mx-auto max-w-3xl">
           <Link
             href="/"

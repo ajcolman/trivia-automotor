@@ -55,7 +55,7 @@ export function CarLoop({ className = '' }: { className?: string }) {
   return (
     <video
       src="/sprites/i20n-rally-loop.mp4"
-      poster="/sprites/i20n-rally-8bit.png"
+      poster="/sprites/i20n-rally-poster.png"
       autoPlay
       muted
       loop
