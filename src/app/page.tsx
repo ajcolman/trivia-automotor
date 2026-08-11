@@ -549,6 +549,14 @@ export default async function HomePage() {
               <span className="font-expanded font-black text-base tracking-tight leading-none">Play</span>
             </span>
           </div>
+          <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-automotor-200">
+            <Link href="/terminos" className="underline-offset-2 hover:text-white hover:underline">
+              Bases y condiciones
+            </Link>
+            <Link href="/privacidad" className="underline-offset-2 hover:text-white hover:underline">
+              Política de privacidad
+            </Link>
+          </nav>
           <p className="text-xs text-automotor-200 text-center">
             © {new Date().getFullYear()} Automotor S.A. / Carmotor S.A. · Desarrollado por{' '}
             <strong className="text-white/90">Business Intelligence & Analytics - Marketing Digital</strong>

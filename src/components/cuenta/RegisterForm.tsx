@@ -178,7 +178,27 @@ export function RegisterForm() {
             {...register('acceptedTerms')}
           />
           <span className="text-sm text-slate-600 leading-snug">
-            Acepto los términos y el uso de mis datos para participar y recibir el premio si gano.
+            Acepto las{' '}
+            <a
+              href="/terminos"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-automotor-600 underline underline-offset-2"
+              onClick={e => e.stopPropagation()}
+            >
+              bases y condiciones
+            </a>{' '}
+            y el uso de mis datos según la{' '}
+            <a
+              href="/privacidad"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-automotor-600 underline underline-offset-2"
+              onClick={e => e.stopPropagation()}
+            >
+              política de privacidad
+            </a>
+            , para participar y recibir el premio si gano.
           </span>
         </label>
         {errors.acceptedTerms && (

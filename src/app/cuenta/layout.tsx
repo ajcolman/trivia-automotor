@@ -18,14 +18,17 @@ export default function CuentaLayout({ children }: { children: React.ReactNode }
       </main>
 
       <footer className="px-4 py-6 text-center">
-        <p className="text-xs text-automotor-300">
-          <Link
-            href="/"
-            className="underline underline-offset-2 hover:text-white transition-colors"
-          >
+        <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-automotor-300">
+          <Link href="/" className="underline-offset-2 transition-colors hover:text-white hover:underline">
             Volver a Automotor Play
           </Link>
-        </p>
+          <Link href="/terminos" className="underline-offset-2 transition-colors hover:text-white hover:underline">
+            Bases y condiciones
+          </Link>
+          <Link href="/privacidad" className="underline-offset-2 transition-colors hover:text-white hover:underline">
+            Política de privacidad
+          </Link>
+        </nav>
       </footer>
     </div>
   )
