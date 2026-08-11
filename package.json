@@ -73,5 +73,10 @@
   "devDependencies": {
     "shadcn": "^4.16.2",
     "tsx": "^4.21.0"
+  },
+  "overrides": {
+    "next-auth": {
+      "nodemailer": "$nodemailer"
+    }
   }
 }
