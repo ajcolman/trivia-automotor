@@ -3,10 +3,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
 import { CarLoop } from './CarLoop'
+import { PhotoZoom } from '@/components/ui/photo-zoom'
 import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
 
 const TZ = 'America/Asuncion'
@@ -188,14 +188,10 @@ export function PredictionBoard({
                     )}
                   </span>
                   {pr.imageUrl && (
-                    <Image
+                    <PhotoZoom
                       src={pr.imageUrl}
-                      alt=""
-                      aria-hidden="true"
-                      width={44}
-                      height={44}
-                      className="h-11 w-11 flex-shrink-0 rounded-lg object-cover"
-                      unoptimized
+                      alt={pr.name}
+                      className="h-11 w-11 flex-shrink-0"
                     />
                   )}
                   <span className="min-w-0 flex-1">

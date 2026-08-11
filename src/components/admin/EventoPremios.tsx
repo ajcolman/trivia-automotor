@@ -3,10 +3,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { toast } from 'sonner'
 import { Gift, Plus, Trash2, Loader2, ImageOff } from 'lucide-react'
 import { UploadDropzone } from './UploadDropzone'
+import { PhotoZoom } from '@/components/ui/photo-zoom'
 
 export interface PremioFila {
   id: string
@@ -82,13 +82,10 @@ export function EventoPremios({
                 {i < 3 ? MEDALLAS[i] : <span className="text-xs font-bold text-slate-400">{p.position}</span>}
               </span>
               {p.imageUrl ? (
-                <Image
+                <PhotoZoom
                   src={p.imageUrl}
-                  alt=""
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
-                  unoptimized
+                  alt={p.name}
+                  className="h-12 w-12 flex-shrink-0"
                 />
               ) : (
                 <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100">

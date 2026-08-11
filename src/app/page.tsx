@@ -105,40 +105,51 @@ export default async function HomePage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-automotor-100 shadow-sm">
         {/* Filete de marca */}
         <div className="h-1 bg-gradient-brand" aria-hidden="true" />
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Lockup Automotor Play: un solo link, un solo nombre accesible */}
-          <Link href="/" aria-label="Automotor Play — inicio" className="flex min-h-[44px] items-center gap-2">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4">
+          {/* Lockup Automotor Play: un solo link, un solo nombre accesible.
+              `min-w-0` deja que se encoja antes de empujar al botón de cuenta. */}
+          <Link
+            href="/"
+            aria-label="Automotor Play — inicio"
+            className="flex min-h-[44px] min-w-0 items-center gap-2"
+          >
             <Image
               src="/uploads/logoa.png"
               alt=""
               aria-hidden="true"
               width={160}
               height={52}
-              className="h-7 sm:h-8 w-auto object-contain"
+              className="h-7 w-auto flex-shrink object-contain sm:h-8"
               unoptimized
             />
             <span aria-hidden="true" className="-ml-1 flex items-center gap-1.5 text-automotor-600">
-              <PlayMark className="h-6 w-6 sm:h-7 sm:w-7" />
-              <span className="font-expanded font-black text-lg sm:text-xl tracking-tight leading-none">
+              <PlayMark className="h-6 w-6 flex-shrink-0 sm:h-7 sm:w-7" />
+              <span className="font-expanded text-lg font-black leading-none tracking-tight sm:text-xl">
                 Play
               </span>
             </span>
           </Link>
-          <div className="flex items-center gap-1">
+
+          <div className="flex flex-shrink-0 items-center gap-1">
             {/* `/cuenta` redirige a iniciar sesión si no hay jugador, así el
-                nav no depende de la sesión y la landing sigue siendo estática. */}
+                nav no depende de la sesión y la landing sigue siendo estática.
+                En pantallas chicas queda solo el ícono: el texto competía con
+                el lockup y terminaba partido en dos líneas. */}
             <Link
               href="/cuenta"
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-automotor-600 px-4 text-sm font-bold text-white transition-colors hover:bg-automotor-700 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
+              aria-label="Mi cuenta"
+              className="inline-flex h-11 min-w-[44px] items-center justify-center gap-1.5 rounded-full bg-automotor-600 px-3 text-sm font-bold text-white transition-colors hover:bg-automotor-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 motion-reduce:transition-none sm:px-4"
             >
-              <UserRound className="h-4 w-4" aria-hidden="true" />
-              Mi cuenta
+              <UserRound className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+              <span className="hidden whitespace-nowrap sm:inline">Mi cuenta</span>
             </Link>
+            {/* El acceso al panel es para el equipo, no para el cliente: en
+                mobile vive en el pie y libera el poco ancho que hay arriba. */}
             <Link
               href="/admin/login"
-              className="inline-flex min-h-[44px] items-center gap-1 px-3 -mr-3 text-xs font-semibold text-slate-400 hover:text-automotor-600 transition-colors motion-reduce:transition-none"
+              className="-mr-3 hidden min-h-[44px] items-center gap-1 px-3 text-xs font-semibold text-slate-400 transition-colors hover:text-automotor-600 motion-reduce:transition-none sm:inline-flex"
             >
-              Admin <ChevronRight className="w-3.5 h-3.5" />
+              Admin <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
@@ -555,6 +566,10 @@ export default async function HomePage() {
             </Link>
             <Link href="/privacidad" className="underline-offset-2 hover:text-white hover:underline">
               Política de privacidad
+            </Link>
+            {/* En mobile el nav no lo muestra: acá queda accesible para el equipo. */}
+            <Link href="/admin/login" className="underline-offset-2 hover:text-white hover:underline sm:hidden">
+              Panel admin
             </Link>
           </nav>
           <p className="text-xs text-automotor-200 text-center">
