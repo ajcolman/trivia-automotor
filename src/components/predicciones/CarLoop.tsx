@@ -48,6 +48,10 @@ export function CarLoop({ className = '' }: { className?: string }) {
     )
   }
 
+  // Nada de envolverlo en un contenedor con fondo propio: `mix-blend-mode`
+  // mezcla contra su contexto de apilamiento, así que el envoltorio se vería
+  // como una caja oscura recortada sobre la cabecera. El video mezcla directo
+  // contra el degradado.
   return (
     <video
       src="/sprites/i20n-rally-loop.mp4"
