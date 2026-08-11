@@ -110,6 +110,10 @@ model Trivia {
   startDate          DateTime?
   endDate            DateTime?
   maxPlaysPerUser    Int       @default(1)
+  /// Exige cuenta de jugador para participar. Se justifica por el premio:
+  /// no se le puede entregar un premio a una cookie, y el límite de jugadas
+  /// solo es real si hay una cuenta detrás.
+  requiresAccount    Boolean   @default(false)
   gameInstructions   String?
   termsAndConditions String?
   heroImageUrl       String?
@@ -167,6 +171,9 @@ model FormField {
 model Lead {
   id          String   @id @default(cuid())
   triviaId    String
+  /// Presente cuando la trivia exigió cuenta, o cuando quien jugó tenía
+  /// sesión iniciada. Nulo en las partidas anónimas históricas.
+  playerId    String?
   sessionId   String
   formData    Json
   score       Int
@@ -176,9 +183,11 @@ model Lead {
   userAgent   String?
   completedAt DateTime @default(now())
 
-  trivia Trivia @relation(fields: [triviaId], references: [id])
+  trivia Trivia  @relation(fields: [triviaId], references: [id])
+  player Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
 
   @@index([triviaId, completedAt])
+  @@index([playerId])
 }
 
 model GameSession {
@@ -445,6 +454,7 @@ model Player {
 
   predictions Prediction[]
   tokens      PlayerToken[]
+  leads       Lead[]
 
   @@index([createdAt])
 }

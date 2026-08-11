@@ -1,17 +1,38 @@
 // Author: Angel Colman
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Trophy, Loader2 } from 'lucide-react'
-import type { TriviaData, AnswerRecord, FormFieldData } from './GameShell'
+import type { TriviaData, AnswerRecord, FormFieldData, CuentaJugador } from './GameShell'
 import Image from 'next/image'
 import { mediaUrl } from '@/lib/utils'
 
 interface LeadFormProps {
   trivia: TriviaData
   answers: AnswerRecord[]
+  /** Datos de la cuenta, si el jugador tiene sesión. */
+  cuenta?: CuentaJugador | null
   onSubmit: (formData: Record<string, string>) => Promise<void>
+}
+
+/**
+ * Qué campo del formulario corresponde a qué dato de la cuenta.
+ *
+ * Se compara contra el nombre y la etiqueta del campo, porque cada trivia
+ * define los suyos con la nomenclatura que quiere.
+ */
+function valorDeCuenta(
+  campo: { fieldName: string; fieldLabel: string; fieldType: string },
+  cuenta: CuentaJugador,
+): string | null {
+  const clave = `${campo.fieldName} ${campo.fieldLabel}`.toLowerCase()
+  if (campo.fieldType === 'email' || clave.includes('mail') || clave.includes('correo')) return cuenta.email
+  if (campo.fieldType === 'phone' || clave.includes('telefono') || clave.includes('teléfono') || clave.includes('celular') || clave.includes('whatsapp')) return cuenta.phone
+  if (clave.includes('cedula') || clave.includes('cédula') || clave.includes('documento') || clave.includes('\bci\b')) return cuenta.cedula
+  if (clave.includes('apellido')) return cuenta.fullName.split(' ').slice(1).join(' ') || cuenta.fullName
+  if (clave.includes('nombre') || clave.includes('name')) return cuenta.fullName.split(' ')[0]
+  return null
 }
 
 function getInputType(fieldType: string): string {
@@ -23,10 +44,25 @@ function getInputType(fieldType: string): string {
   }
 }
 
-export function LeadForm({ trivia, answers, onSubmit }: LeadFormProps) {
+export function LeadForm({ trivia, answers, cuenta = null, onSubmit }: LeadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const { register, handleSubmit, formState: { errors } } = useForm<Record<string, string>>()
+  // Lo que ya sabemos por la cuenta llega precargado: pedirle de nuevo el
+  // nombre y el correo a alguien que acaba de iniciar sesión es fricción sin
+  // ninguna contrapartida.
+  const precargados = useMemo(() => {
+    if (!cuenta) return {}
+    const valores: Record<string, string> = {}
+    for (const f of trivia.formFields) {
+      const v = valorDeCuenta(f, cuenta)
+      if (v) valores[f.fieldName] = v
+    }
+    return valores
+  }, [cuenta, trivia.formFields])
+
+  const { register, handleSubmit, formState: { errors } } = useForm<Record<string, string>>({
+    defaultValues: precargados,
+  })
 
   const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl)
 

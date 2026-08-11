@@ -58,6 +58,9 @@ export const triviaBaseSchema = z.object({
     .max(100, 'Cannot exceed 100 plays per user')
     .default(1),
 
+  /// Exige cuenta de jugador para participar.
+  requiresAccount: z.boolean().default(false),
+
   gameInstructions: z.string().optional().nullable(),
   termsAndConditions: z.string().optional().nullable(),
   heroImageUrl: z.string().optional().nullable(),

@@ -1,7 +1,9 @@
 // Author: Angel Colman
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/prisma'
+import { authOptions } from '@/lib/auth'
 import { GameShell } from '@/components/game/GameShell'
 import { SESSION_COOKIE_NAME } from '@/lib/session-fingerprint'
 import { getNowAsuncion, stripMarkdown } from '@/lib/utils'
@@ -45,6 +47,23 @@ export default async function PlayPage({ params }: PageProps) {
 
   if (!trivia) notFound()
 
+  // Trivias con premio pueden exigir cuenta: no se le entrega un premio a una
+  // cookie, y el límite de jugadas solo es real si hay una cuenta detrás.
+  const session = await getServerSession(authOptions)
+  const playerId = session?.user?.role === 'player' ? session.user.id : null
+
+  if (trivia.requiresAccount && !playerId) {
+    redirect(`/cuenta/ingresar?volver=/play/${params.slug}`)
+  }
+
+  // Datos de la cuenta, para no volver a pedir lo que ya sabemos.
+  const player = playerId
+    ? await prisma.player.findUnique({
+        where: { id: playerId },
+        select: { fullName: true, email: true, phone: true, cedula: true },
+      })
+    : null
+
   // Check validity period
   const isExpired = trivia.endDate && now > trivia.endDate
   const isNotStarted = trivia.startDate && now < trivia.startDate
@@ -58,11 +77,20 @@ export default async function PlayPage({ params }: PageProps) {
     initialState = 'not_started'
   } else if (isExpired) {
     initialState = 'expired'
+  } else if (trivia.requiresAccount && playerId && trivia.maxPlaysPerUser > 0) {
+    // Con cuenta, el límite se cuenta contra el jugador: borrar la cookie ya
+    // no alcanza para volver a jugar.
+    const jugadas = await prisma.lead.count({
+      where: { triviaId: trivia.id, playerId },
+    })
+    if (jugadas >= trivia.maxPlaysPerUser) {
+      initialState = 'already_played'
+    }
   } else if (sessionId && trivia.maxPlaysPerUser > 0) {
-    const session = await prisma.gameSession.findUnique({
+    const jugada = await prisma.gameSession.findUnique({
       where: { triviaId_sessionIdentifier: { triviaId: trivia.id, sessionIdentifier: sessionId } },
     })
-    if (session && session.playCount >= trivia.maxPlaysPerUser && session.hasCompleted) {
+    if (jugada && jugada.playCount >= trivia.maxPlaysPerUser && jugada.hasCompleted) {
       initialState = 'already_played'
     }
   }
@@ -79,6 +107,7 @@ export default async function PlayPage({ params }: PageProps) {
     backgroundColor: trivia.backgroundColor,
     textColor: trivia.textColor,
     maxPlaysPerUser: trivia.maxPlaysPerUser,
+    requiresAccount: trivia.requiresAccount,
     startDate: trivia.startDate?.toISOString() ?? null,
     endDate: trivia.endDate?.toISOString() ?? null,
     gameInstructions: trivia.gameInstructions ?? null,
@@ -112,5 +141,5 @@ export default async function PlayPage({ params }: PageProps) {
     } : null,
   }
 
-  return <GameShell trivia={triviaData} initialState={initialState} />
+  return <GameShell trivia={triviaData} initialState={initialState} cuenta={player} />
 }

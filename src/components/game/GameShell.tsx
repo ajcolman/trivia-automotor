@@ -24,6 +24,7 @@ export interface TriviaData {
   backgroundColor: string
   textColor: string
   maxPlaysPerUser: number
+  requiresAccount: boolean
   startDate: string | null
   endDate: string | null
   gameInstructions: string | null
@@ -86,12 +87,21 @@ export interface GameResult {
   scoredAnswers: unknown[]
 }
 
+/** Datos de la cuenta del jugador, cuando hay sesión. */
+export interface CuentaJugador {
+  fullName: string
+  email: string
+  phone: string
+  cedula: string | null
+}
+
 interface GameShellProps {
   trivia: TriviaData
   initialState?: GameState
+  cuenta?: CuentaJugador | null
 }
 
-export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
+export function GameShell({ trivia, initialState = 'intro', cuenta = null }: GameShellProps) {
   const [gameState, setGameState] = useState<GameState>(initialState)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<AnswerRecord[]>([])
@@ -199,6 +209,7 @@ export function GameShell({ trivia, initialState = 'intro' }: GameShellProps) {
           <LeadForm
             trivia={themedTrivia}
             answers={answers}
+            cuenta={cuenta}
             onSubmit={handleFormSubmit}
           />
         )}

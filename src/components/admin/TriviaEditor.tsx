@@ -87,6 +87,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       isPublic: trivia?.isPublic ?? true,
       showLeaderboard: trivia?.showLeaderboard ?? true,
       maxPlaysPerUser: trivia?.maxPlaysPerUser ?? 1,
+      requiresAccount: trivia?.requiresAccount ?? false,
       startDate: trivia?.startDate ? new Date(trivia.startDate).toISOString().slice(0, 16) : '',
       endDate: trivia?.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
       gameInstructions: trivia?.gameInstructions ?? '',
@@ -109,6 +110,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         isPublic: trivia.isPublic ?? true,
         showLeaderboard: trivia.showLeaderboard ?? true,
         maxPlaysPerUser: trivia.maxPlaysPerUser ?? 1,
+        requiresAccount: trivia.requiresAccount ?? false,
         startDate: trivia.startDate ? new Date(trivia.startDate).toISOString().slice(0, 16) : '',
         endDate: trivia.endDate ? new Date(trivia.endDate).toISOString().slice(0, 16) : '',
         gameInstructions: trivia.gameInstructions ?? '',
@@ -153,6 +155,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
       isPublic: watch('isPublic'),
       showLeaderboard: watch('showLeaderboard'),
       maxPlaysPerUser: watch('maxPlaysPerUser'),
+      requiresAccount: watch('requiresAccount'),
       startDate: watch('startDate'),
       endDate: watch('endDate'),
       gameInstructions: watch('gameInstructions'),
@@ -171,6 +174,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
         startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
         maxPlaysPerUser: Number(data.maxPlaysPerUser),
+        requiresAccount: Boolean(data.requiresAccount),
         companyId: data.companyId || null,
         brandIds: data.brandIds ?? [],
         heroImageUrl: watch('heroImageUrl') || null,
@@ -518,6 +522,20 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                     onCheckedChange={v => setValue('isPublic', v)}
                   />
                   <Label>Visible en landing page</Label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Switch
+                    checked={watch('requiresAccount') ?? false}
+                    onCheckedChange={v => setValue('requiresAccount', v)}
+                  />
+                  <div>
+                    <Label>Requiere cuenta</Label>
+                    <p className="max-w-xs text-xs text-slate-500">
+                      Para jugar hay que iniciar sesión. Los datos salen de la cuenta y el
+                      límite de jugadas se cuenta por persona, no por navegador. Recomendado
+                      cuando hay premio.
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch

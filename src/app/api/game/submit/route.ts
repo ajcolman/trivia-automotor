@@ -1,6 +1,8 @@
 // Author: Angel Colman
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/prisma'
+import { authOptions } from '@/lib/auth'
 import { createRateLimiter } from '@/lib/rate-limit'
 import { calculateScore } from '@/lib/score-calculator'
 import { getSessionId } from '@/lib/session-fingerprint'
@@ -26,6 +28,12 @@ export async function POST(req: NextRequest) {
   }
 
   const { triviaId, answers, formData } = parsed.data
+
+  // Si quien juega tiene cuenta, el lead queda vinculado a ella. Eso es lo que
+  // permite contar jugadas por persona y no por cookie, y saber a quién
+  // entregarle un premio sin depender de lo que escribió en el formulario.
+  const sesion = await getServerSession(authOptions)
+  const playerId = sesion?.user?.role === 'player' ? sesion.user.id : null
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -61,6 +69,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Una trivia que exige cuenta no acepta envíos anónimos, aunque alguien
+      // llame a la API directamente.
+      const t = await tx.trivia.findUnique({
+        where: { id: triviaId },
+        select: { requiresAccount: true, maxPlaysPerUser: true },
+      })
+      if (t?.requiresAccount && !playerId) throw new Error('ACCOUNT_REQUIRED')
+
+      // Con cuenta, el límite se cuenta contra el jugador.
+      if (t?.requiresAccount && playerId && t.maxPlaysPerUser > 0) {
+        const jugadas = await tx.lead.count({ where: { triviaId, playerId } })
+        if (jugadas >= t.maxPlaysPerUser) throw new Error('LIMIT_REACHED')
+      }
+
       // Server-side scoring
       const questions = await tx.question.findMany({
         where: { triviaId },
@@ -73,6 +95,7 @@ export async function POST(req: NextRequest) {
       const lead = await tx.lead.create({
         data: {
           triviaId,
+          playerId,
           sessionId,
           formData: formData as object,
           score,
@@ -100,6 +123,12 @@ export async function POST(req: NextRequest) {
     }
     if (msg === 'DUPLICATE_CEDULA') {
       return NextResponse.json({ error: 'Ya existe un participante registrado con esa cédula de identidad.' }, { status: 409 })
+    }
+    if (msg === 'ACCOUNT_REQUIRED') {
+      return NextResponse.json({ error: 'Esta trivia requiere iniciar sesión para participar.' }, { status: 401 })
+    }
+    if (msg === 'LIMIT_REACHED') {
+      return NextResponse.json({ error: 'Ya alcanzaste el límite de participaciones.' }, { status: 409 })
     }
     console.error('Submit error:', err)
     return NextResponse.json({ error: 'Error al guardar resultados' }, { status: 500 })
