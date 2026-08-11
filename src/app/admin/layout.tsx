@@ -6,9 +6,14 @@ import { Sidebar } from '@/components/admin/Sidebar'
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
 
-  // No session → render bare (only /admin/login reaches here unauthenticated;
-  // middleware blocks everything else and redirects to /admin/login).
-  if (!session?.user) return <>{children}</>
+  // Sin sesión de administrador → se muestra el contenido pelado, que es la
+  // pantalla de login. Hay dos casos de "no administrador": un jugador, que
+  // también tiene sesión, y un administrador cuya ventana de 8 horas venció y
+  // quedó sin rol. Los dos tienen que ver el formulario, no el panel vacío.
+  const rol = (session?.user as { role?: string } | undefined)?.role
+  if (!session?.user || (rol !== 'admin' && rol !== 'super_admin')) {
+    return <>{children}</>
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f0f4ff]">
