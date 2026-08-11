@@ -2,9 +2,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import { Trophy, Users, Zap, ChevronRight, Clock, Award, Medal, Gift, UserRound } from 'lucide-react'
+import { Trophy, Users, Zap, ChevronRight, Clock, Award, Medal, Gift, UserRound, Flag, Gamepad2 } from 'lucide-react'
 import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/utils'
 import { PrizesModal } from '@/components/landing/PrizesModal'
+import { ArcadeCabinet } from '@/components/landing/ArcadeCabinet'
 import { CarLoop } from '@/components/predicciones/CarLoop'
 import {
   heroBackgroundImageStyle,
@@ -80,20 +81,31 @@ async function getLandingData() {
     select: {
       id: true, slug: true, title: true, description: true, status: true,
       primaryColor: true, secondaryColor: true, heroImageUrl: true,
+      prizes: {
+        orderBy: { position: 'asc' },
+        select: { id: true, name: true, description: true, imageUrl: true, position: true },
+      },
       _count: { select: { markets: true, contenders: true } },
     },
   })
 
+  // Fútbol es una máquina permanente de la sala: aunque no haya torneos con
+  // inscripción abierta, el modo local (dos jugadores, misma pantalla) está
+  // siempre disponible. El conteo solo decide qué copy mostrar.
+  const pendingTournaments = await prisma.tournament.count({ where: { status: 'pending' } })
+
   const settings = await prisma.platformSettings.findUnique({
     where: { id: 'singleton' },
   })
-  return { activeTrivias, predictionEvents, settings }
+  return { activeTrivias, predictionEvents, pendingTournaments, settings }
 }
 
 export default async function HomePage() {
-  const { activeTrivias, predictionEvents, settings } = await getLandingData()
+  const { activeTrivias, predictionEvents, pendingTournaments, settings } = await getLandingData()
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
   const totalPrizes = activeTrivias.reduce((s, t) => s + t.prizes.length, 0)
+  // Máquinas en sala: los juegos de la base más fútbol, que está siempre.
+  const machines = predictionEvents.length + activeTrivias.length + 1
 
   const heroImg = settings?.heroImageUrl ? mediaUrl(settings.heroImageUrl) : '/images/fondo.png'
   const heroSet = resolveHeroImageSettings(settings?.heroImageSettings as any, 620)
@@ -261,219 +273,331 @@ export default async function HomePage() {
           </ol>
         </section>
 
-        {/* ── TRIVIA CARDS ────────────────────────────────────────────── */}
+        {/* ── SALA DE JUEGOS ──────────────────────────────────────────── */}
         <main id="trivias" className="max-w-6xl mx-auto px-4 py-10 sm:py-12 scroll-mt-20">
-          {activeTrivias.length === 0 && predictionEvents.length === 0 ? (
-            <div className="text-center py-20 sm:py-24 rounded-3xl bg-white/5 border border-white/10">
-              <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-10 h-10 text-automotor-300" />
+          <div className="flex items-center justify-between gap-3 mb-7 sm:mb-8">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-automotor-500 shadow-glow flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <Gamepad2 className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Próximamente</h2>
-              <p className="text-automotor-200 text-sm">Estamos preparando nuevos juegos con premios. ¡Volvé pronto!</p>
+              <div className="min-w-0">
+                <h2 className="font-expanded text-xl sm:text-2xl font-black text-white leading-none truncate">
+                  Sala de juegos
+                </h2>
+                <p className="text-automotor-300 text-xs mt-1">
+                  Cada máquina se juega distinto: la marquesina te dice cómo.
+                </p>
+              </div>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between gap-3 mb-7 sm:mb-8">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-automotor-500 shadow-glow flex items-center justify-center flex-shrink-0" aria-hidden="true">
-                    <Zap className="w-5 h-5 text-white" />
+            <span className="flex-shrink-0 text-xs font-bold text-automotor-200 bg-white/10 border border-white/10 rounded-full px-2.5 py-1 tabular-nums">
+              {machines} máquina{machines !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {/* La sala: fila de máquinas que envuelve y se centra. Con una
+              máquina queda una pieza centrada e intencional; con diez se
+              arma la sala en filas de a tres. En el celular apilan a ancho
+              completo. Cada gabinete es chrome de plataforma; los colores
+              del juego mandan solo en su pantalla (ver ArcadeCabinet). */}
+          <ul role="list" className="flex flex-wrap justify-center gap-5 sm:gap-6">
+            {predictionEvents.map(evento => (
+              <ArcadeCabinet
+                key={evento.id}
+                typeLabel="Predicciones"
+                typeAccent="text-brand-accent"
+                typeIcon={<Flag className="h-3.5 w-3.5" aria-hidden="true" />}
+                badge={evento.status === 'live' ? (
+                  <span className="rounded-full bg-brand-accent px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-automotor-950">
+                    En vivo
+                  </span>
+                ) : undefined}
+                screen={
+                  <div
+                    className="relative h-40 p-4"
+                    style={{ background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})` }}
+                  >
+                    <h3 className="font-expanded relative z-10 max-w-[13rem] text-xl font-black leading-tight text-white text-balance">
+                      {evento.title}
+                    </h3>
+                    {/* El i20 N como ícono de marca Automotor. CarLoop trae
+                        el loop en video (372 KB) con `mix-blend-mode: screen`
+                        mezclando directo contra el degradado del juego -- sin
+                        envoltorio con fondo propio, ver CarLoop.tsx. Con
+                        reduced-motion, ahorro de datos o conexión lenta cae
+                        solo al sprite fijo. */}
+                    <CarLoop className="pointer-events-none absolute -bottom-1 -right-2 w-44 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none" />
                   </div>
-                  <h2 className="font-expanded text-xl sm:text-2xl font-black text-white leading-none truncate">
-                    Elegí tu juego
-                  </h2>
-                </div>
-                <span className="flex-shrink-0 text-xs font-bold text-automotor-200 bg-white/10 border border-white/10 rounded-full px-2.5 py-1 tabular-nums">
-                  {activeTrivias.length + predictionEvents.length} activo
-                  {activeTrivias.length + predictionEvents.length !== 1 ? 's' : ''}
-                </span>
-              </div>
+                }
+              >
+                {evento.description && (
+                  <p className="text-sm leading-relaxed text-automotor-200 line-clamp-2">
+                    {evento.description}
+                  </p>
+                )}
 
-              {/* ── JUEGOS DE PREDICCIÓN ──────────────────────────────── */}
-              {predictionEvents.length > 0 && (
-                <div className="mb-6 sm:mb-8 grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
-                  {predictionEvents.map(evento => (
-                    <Link
-                      key={evento.id}
-                      href={`/predicciones/${evento.slug}`}
-                      className="group relative flex flex-col overflow-hidden rounded-2xl shadow-xl shadow-automotor-950/60 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-automotor-300"
-                      style={{
-                        background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})`,
-                      }}
-                    >
-                      {/* El i20 N como ícono de marca Automotor, no como una
-                          inscripción concreta del rally. CarLoop trae el loop
-                          en video (372 KB) con `mix-blend-mode: screen`, que
-                          mezcla directo contra el degradado oscuro de la card
-                          -- sin envoltorio con fondo propio, ver CarLoop.tsx.
-                          Con reduced-motion, ahorro de datos o conexión lenta
-                          cae solo a este mismo sprite fijo. */}
-                      <CarLoop className="pointer-events-none absolute -bottom-2 -right-4 w-52 sm:w-64 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none" />
-
-                      <div className="relative p-5 sm:p-6">
-                        <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                          <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-white backdrop-blur-sm">
-                            Predicciones
-                          </span>
-                          {evento.status === 'live' && (
-                            <span className="rounded-full bg-brand-accent px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-automotor-950">
-                              En vivo
+                {/* Premios del evento: mismo panel ámbar que las trivias.
+                    Hoy puede venir vacío -- apenas se carguen, aparece. */}
+                {evento.prizes.length > 0 && (
+                  <div className="mt-3 rounded-xl border border-amber-200/40 bg-amber-50/95 p-3">
+                    <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-700 mb-2">
+                      <Gift className="w-3.5 h-3.5" aria-hidden="true" /> Ganate esto
+                    </p>
+                    <ul className="space-y-2">
+                      {evento.prizes.slice(0, 3).map(prize => (
+                        <li key={prize.id} className="flex items-center gap-2.5 min-w-0">
+                          {prize.imageUrl ? (
+                            <Image
+                              src={mediaUrl(prize.imageUrl)}
+                              alt=""
+                              width={40}
+                              height={40}
+                              className="w-10 h-10 rounded-lg object-cover border border-amber-200 bg-white flex-shrink-0"
+                              unoptimized
+                            />
+                          ) : (
+                            <span className="w-10 h-10 rounded-lg bg-white border border-amber-200 flex items-center justify-center text-lg flex-shrink-0" aria-hidden="true">
+                              {MEDALS[prize.position - 1] ?? '🎁'}
                             </span>
                           )}
-                        </div>
-
-                        <h3 className="font-expanded text-xl sm:text-2xl font-black leading-tight text-white text-balance">
-                          {evento.title}
-                        </h3>
-                        {evento.description && (
-                          <p className="mt-1.5 max-w-[22rem] text-sm leading-relaxed text-white/80 line-clamp-2">
-                            {evento.description}
-                          </p>
-                        )}
-
-                        <div className="mt-4 flex items-center gap-4 text-xs font-bold text-white/70">
-                          <span className="tabular-nums">{evento._count.markets} predicciones</span>
-                          <span className="tabular-nums">{evento._count.contenders} equipos</span>
-                        </div>
-
-                        <span className="mt-5 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-white px-6 text-sm font-black tracking-tight text-automotor-950 transition-transform group-hover:gap-2.5 motion-reduce:transition-none">
-                          Jugar ahora <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                        </span>
+                          <span className="text-sm font-bold text-slate-800 truncate">{prize.name}</span>
+                          <span className="ml-auto flex-shrink-0 text-[10px] font-black text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 tabular-nums">
+                            {prize.position}°
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {evento.prizes.length > 3 && (
+                      <div className="mt-2.5">
+                        <PrizesModal
+                          prizes={evento.prizes}
+                          primaryColor={evento.primaryColor}
+                          secondaryColor={evento.secondaryColor}
+                          triviaTitle={evento.title}
+                        />
                       </div>
-                    </Link>
-                  ))}
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-auto pt-4">
+                  <div className="mb-3 flex items-center gap-4 text-xs font-bold text-automotor-300/80">
+                    <span className="tabular-nums">{evento._count.markets} predicciones</span>
+                    <span className="tabular-nums">{evento._count.contenders} equipos</span>
+                  </div>
+                  <Link
+                    href={`/predicciones/${evento.slug}`}
+                    className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
+                    style={{ background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})` }}
+                  >
+                    Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                  </Link>
                 </div>
-              )}
+              </ArcadeCabinet>
+            ))}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {activeTrivias.map(trivia => {
-                  const flyer = trivia.flyers[0]
-                  const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl)
+            {activeTrivias.map(trivia => {
+              const flyer = trivia.flyers[0]
+              const logo = mediaUrl(trivia.logoUrl ?? trivia.company?.logoUrl ?? trivia.brands[0]?.logoUrl)
 
-                  return (
-                    <Link
-                      key={trivia.id}
-                      href={`/play/${trivia.slug}`}
-                      className="group flex flex-col bg-white rounded-2xl shadow-xl shadow-automotor-950/60 hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-1.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-automotor-300"
-                    >
-                      {/* Banner */}
+              return (
+                <ArcadeCabinet
+                  key={trivia.id}
+                  typeLabel="Trivia"
+                  typeAccent="text-automotor-300"
+                  typeIcon={<Zap className="h-3.5 w-3.5" aria-hidden="true" />}
+                  badge={trivia.endDate ? (
+                    <span className="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-automotor-200">
+                      <Clock className="h-3 w-3" aria-hidden="true" /> hasta {formatDateShort(trivia.endDate)}
+                    </span>
+                  ) : undefined}
+                  screen={
+                    <div className="relative h-40">
                       {flyer ? (
-                        <div className="relative h-44 overflow-hidden">
-                          <Image src={mediaUrl(flyer.imageUrl)} alt={trivia.title} fill className="object-cover group-hover:scale-105 motion-reduce:group-hover:scale-100 transition-transform duration-500" unoptimized />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                          {trivia.endDate && (
-                            <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
-                              <Clock className="w-3 h-3" aria-hidden="true" /> hasta {formatDateShort(trivia.endDate)}
-                            </div>
-                          )}
-                        </div>
+                        <Image src={mediaUrl(flyer.imageUrl)} alt="" fill className="object-cover" unoptimized />
                       ) : (
                         <div
-                          className="h-40 relative flex items-center justify-center overflow-hidden"
+                          className="absolute inset-0 flex items-center justify-center pb-8"
                           style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
                         >
                           <div className="absolute inset-0 opacity-10"
                             style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                           {logo ? (
-                            <Image src={logo} alt={`Logo de ${trivia.title}`} width={140} height={56} className="h-14 w-auto object-contain relative z-10 drop-shadow-lg" unoptimized />
+                            <Image src={logo} alt="" width={140} height={56} className="relative h-12 w-auto object-contain drop-shadow-lg" unoptimized />
                           ) : (
-                            <Trophy className="w-14 h-14 text-white/40 relative z-10" />
-                          )}
-                          {trivia.endDate && (
-                            <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
-                              <Clock className="w-3 h-3" aria-hidden="true" /> hasta {formatDateShort(trivia.endDate)}
-                            </div>
+                            <Trophy className="relative w-12 h-12 text-white/40" aria-hidden="true" />
                           )}
                         </div>
                       )}
-
-                      <div className="p-5 flex flex-col flex-1">
-                        {/* Badges */}
-                        <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
-                          {trivia.company && (
-                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: trivia.primaryColor }}>
-                              {trivia.company.name}
-                            </span>
-                          )}
-                          {trivia.brands[0] && (
-                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                              {trivia.brands[0].name}
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="font-black text-slate-900 text-lg mb-1 group-hover:text-automotor-700 transition-colors motion-reduce:transition-none leading-tight">
+                      {/* Escrima inferior: el título siempre se lee sobre
+                          flyer o degradado, sin depender de la imagen. */}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent p-4 pt-8">
+                        <h3 className="font-expanded text-lg font-black leading-tight text-white text-balance">
                           {trivia.title}
                         </h3>
-                        {trivia.description && (
-                          <p className="text-sm text-slate-500 mb-1 line-clamp-2 leading-relaxed">{stripMarkdown(trivia.description)}</p>
-                        )}
-
-                        {/* Premios: protagonistas, a la vista */}
-                        {trivia.prizes.length > 0 && (
-                          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
-                            <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-700 mb-2">
-                              <Gift className="w-3.5 h-3.5" aria-hidden="true" /> Ganate esto
-                            </p>
-                            <ul className="space-y-2">
-                              {trivia.prizes.slice(0, 3).map(prize => (
-                                <li key={prize.id} className="flex items-center gap-2.5 min-w-0">
-                                  {prize.imageUrl ? (
-                                    <Image
-                                      src={mediaUrl(prize.imageUrl)}
-                                      alt=""
-                                      width={40}
-                                      height={40}
-                                      className="w-10 h-10 rounded-lg object-cover border border-amber-200 bg-white flex-shrink-0"
-                                      unoptimized
-                                    />
-                                  ) : (
-                                    <span className="w-10 h-10 rounded-lg bg-white border border-amber-200 flex items-center justify-center text-lg flex-shrink-0" aria-hidden="true">
-                                      {MEDALS[prize.position - 1] ?? '🎁'}
-                                    </span>
-                                  )}
-                                  <span className="text-sm font-bold text-slate-800 truncate">{prize.name}</span>
-                                  <span className="ml-auto flex-shrink-0 text-[10px] font-black text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 tabular-nums">
-                                    {prize.position}°
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                            {trivia.prizes.length > 3 && (
-                              <div className="mt-2.5">
-                                <PrizesModal
-                                  prizes={trivia.prizes}
-                                  primaryColor={trivia.primaryColor}
-                                  secondaryColor={trivia.secondaryColor}
-                                  triviaTitle={trivia.title}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Meta + CTA */}
-                        <div className="mt-auto pt-4">
-                          <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mb-3">
-                            <span className="flex items-center gap-1.5">
-                              <Users className="w-3.5 h-3.5" aria-hidden="true" />
-                              <span className="tabular-nums">{trivia._count.leads} ya jugaron</span>
-                            </span>
-                            <span className="tabular-nums">{trivia._count.questions} preguntas</span>
-                          </div>
-                          <span
-                            className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 group-hover:brightness-110 group-hover:gap-3 motion-reduce:transition-none"
-                            style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
-                          >
-                            Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
-                          </span>
-                        </div>
                       </div>
+                    </div>
+                  }
+                >
+                  <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                    {trivia.company && (
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: trivia.primaryColor }}>
+                        {trivia.company.name}
+                      </span>
+                    )}
+                    {trivia.brands[0] && (
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-automotor-200">
+                        {trivia.brands[0].name}
+                      </span>
+                    )}
+                  </div>
+
+                  {trivia.description && (
+                    <p className="text-sm leading-relaxed text-automotor-200 line-clamp-2">{stripMarkdown(trivia.description)}</p>
+                  )}
+
+                  {/* Premios: protagonistas, a la vista. Panel claro sobre la
+                      base oscura -- el mismo patrón ámbar del tablero de
+                      predicciones, y así el disparador del modal (que se
+                      colorea con primaryColor) sigue siendo legible. */}
+                  {trivia.prizes.length > 0 && (
+                    <div className="mt-3 rounded-xl border border-amber-200/40 bg-amber-50/95 p-3">
+                      <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-700 mb-2">
+                        <Gift className="w-3.5 h-3.5" aria-hidden="true" /> Ganate esto
+                      </p>
+                      <ul className="space-y-2">
+                        {trivia.prizes.slice(0, 3).map(prize => (
+                          <li key={prize.id} className="flex items-center gap-2.5 min-w-0">
+                            {prize.imageUrl ? (
+                              <Image
+                                src={mediaUrl(prize.imageUrl)}
+                                alt=""
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 rounded-lg object-cover border border-amber-200 bg-white flex-shrink-0"
+                                unoptimized
+                              />
+                            ) : (
+                              <span className="w-10 h-10 rounded-lg bg-white border border-amber-200 flex items-center justify-center text-lg flex-shrink-0" aria-hidden="true">
+                                {MEDALS[prize.position - 1] ?? '🎁'}
+                              </span>
+                            )}
+                            <span className="text-sm font-bold text-slate-800 truncate">{prize.name}</span>
+                            <span className="ml-auto flex-shrink-0 text-[10px] font-black text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 tabular-nums">
+                              {prize.position}°
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      {trivia.prizes.length > 3 && (
+                        <div className="mt-2.5">
+                          <PrizesModal
+                            prizes={trivia.prizes}
+                            primaryColor={trivia.primaryColor}
+                            secondaryColor={trivia.secondaryColor}
+                            triviaTitle={trivia.title}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-auto pt-4">
+                    <div className="flex items-center justify-between gap-2 text-xs text-automotor-300/80 mb-3">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span className="tabular-nums">{trivia._count.leads} ya jugaron</span>
+                      </span>
+                      <span className="tabular-nums">{trivia._count.questions} preguntas</span>
+                    </div>
+                    <Link
+                      href={`/play/${trivia.slug}`}
+                      className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
+                      style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
+                    >
+                      Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
                     </Link>
-                  )
-                })}
+                  </div>
+                </ArcadeCabinet>
+              )
+            })}
+
+            {/* ── FÚTBOL: máquina permanente de la sala ─────────────────
+                No depende de la base: con torneos abiertos invita a
+                inscribirse, sin torneos ofrece el modo local (dos jugadores
+                en la misma pantalla), que está siempre disponible. Conserva
+                la identidad retro-mono de /futbol en su pantalla. */}
+            <ArcadeCabinet
+              typeLabel="Fútbol"
+              typeAccent="text-green-400"
+              typeIcon={<span className="text-[13px] leading-none" aria-hidden="true">⚽</span>}
+              badge={pendingTournaments > 0 ? (
+                <span className="rounded-full bg-green-400/90 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider text-automotor-950">
+                  Inscripción abierta
+                </span>
+              ) : undefined}
+              screen={
+                <div
+                  className="relative flex h-40 flex-col items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(160deg, #0d1b3e 0%, #0a1628 100%)' }}
+                >
+                  <span className="text-5xl drop-shadow" aria-hidden="true">⚽</span>
+                  <span className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-sky-300">
+                    Torneos Automotor
+                  </span>
+                  <div className="flex w-40 items-center gap-2" aria-hidden="true">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent to-sky-500/40" />
+                    <div className="h-1.5 w-1.5 rotate-45 bg-sky-500" />
+                    <div className="h-px flex-1 bg-gradient-to-l from-transparent to-sky-500/40" />
+                  </div>
+                </div>
+              }
+            >
+              <p className="text-sm leading-relaxed text-automotor-200 line-clamp-2">
+                {pendingTournaments > 0
+                  ? `${pendingTournaments} torneo${pendingTournaments !== 1 ? 's' : ''} con inscripción abierta. Elegí tu vehículo y metele goles al rival.`
+                  : 'Fútbol con los vehículos Automotor. Modo local siempre abierto: dos jugadores en la misma pantalla.'}
+              </p>
+              <div className="mt-auto pt-4">
+                <div className="flex items-center gap-4 text-xs font-bold text-automotor-300/80 mb-3">
+                  <span>WASD y flechas</span>
+                  <span>Gamepad compatible</span>
+                </div>
+                <Link
+                  href="/futbol"
+                  className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
+                  style={{ background: 'linear-gradient(135deg, #1a3a1a, #2d6e2d)' }}
+                >
+                  Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                </Link>
               </div>
-            </>
-          )}
+            </ArcadeCabinet>
+
+            {/* ── Gabinete apagado: la sala recién arranca ──────────────
+                Con menos de tres máquinas, el lugar reservado dice que la
+                sala crece -- mejor que dos tercios de grilla vacía. */}
+            {machines < 3 && (
+              <ArcadeCabinet
+                dimmed
+                typeLabel="Próximamente"
+                typeAccent="text-white/40"
+                typeIcon={<PlayMark ring={false} className="h-3.5 w-3.5" />}
+                screen={
+                  <div className="relative flex h-40 items-center justify-center bg-automotor-950/70">
+                    <PlayMark className="h-16 w-16 text-white/15" />
+                  </div>
+                }
+              >
+                <p className="text-sm leading-relaxed text-automotor-200/80">
+                  Hay un lugar reservado en la sala: la próxima máquina está en preparación.
+                </p>
+                <div className="mt-auto pt-4">
+                  <div className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-dashed border-white/20 text-sm font-bold text-white/40">
+                    Muy pronto
+                  </div>
+                </div>
+              </ArcadeCabinet>
+            )}
+          </ul>
         </main>
 
         {/* ── RANKING ─────────────────────────────────────────────────── */}
