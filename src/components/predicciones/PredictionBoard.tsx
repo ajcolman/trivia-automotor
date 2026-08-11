@@ -3,9 +3,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
+import { CarLoop } from './CarLoop'
 import type { ContenderDTO, MarketDTO } from './tipos'
 
 const TZ = 'America/Asuncion'
@@ -141,16 +141,7 @@ export function PredictionBoard({
         className="relative overflow-hidden px-4 pb-8 pt-6"
         style={{ background: `linear-gradient(135deg, ${colorPrimario}, ${colorSecundario})` }}
       >
-        <Image
-          src="/sprites/i20n-rally-8bit.png"
-          alt=""
-          aria-hidden="true"
-          width={348}
-          height={126}
-          className="pointer-events-none absolute -bottom-3 -right-6 w-48 opacity-80 sm:w-64"
-          style={{ imageRendering: 'pixelated' }}
-          unoptimized
-        />
+        <CarLoop className="pointer-events-none absolute -bottom-4 -right-8 w-56 opacity-90 sm:w-72" />
         <div className="relative mx-auto max-w-3xl">
           <Link
             href="/"
