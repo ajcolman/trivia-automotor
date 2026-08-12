@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { PredictionBoard } from '@/components/predicciones/PredictionBoard'
+import { publicLeaderboard } from '@/lib/predictions/resolver'
 import type { ContenderDTO, MarketDTO } from '@/components/predicciones/tipos'
 
 export const dynamic = 'force-dynamic'
@@ -81,6 +82,8 @@ export default async function PrediccionesPage({ params }: PageProps) {
 
   const porMercado = new Map(predicciones.map(p => [p.marketId, p]))
 
+  const ranking = await publicLeaderboard(evento.id, session.user.id)
+
   const markets: MarketDTO[] = evento.markets.map(m => {
     const previa = porMercado.get(m.id)
     return {
@@ -125,6 +128,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
       markets={markets}
       contenders={contenders}
       premios={evento.prizes}
+      ranking={ranking}
     />
   )
 }

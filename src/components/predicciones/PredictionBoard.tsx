@@ -3,11 +3,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift, Ban } from 'lucide-react'
+import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift, Ban, PartyPopper } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
 import { CarLoop } from './CarLoop'
 import { PhotoZoom } from '@/components/ui/photo-zoom'
 import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
+import type { FilaPublica } from '@/lib/predictions/resolver'
 import { readableTextColor, readableOnGradient } from '@/lib/contrast'
 
 const TZ = 'America/Asuncion'
@@ -41,6 +42,7 @@ interface Props {
   markets: MarketDTO[]
   contenders: ContenderDTO[]
   premios: PremioDTO[]
+  ranking: { top: FilaPublica[]; vos: FilaPublica | null }
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
@@ -49,7 +51,7 @@ const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export function PredictionBoard({
   titulo, reglas, colorPrimario, colorSecundario, colorAcento, colorFondo, colorTexto,
-  markets, contenders, premios,
+  markets, contenders, premios, ranking,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -153,6 +155,8 @@ export function PredictionBoard({
     return Array.isArray(p) ? p.length > 0 && p.every(Boolean) : p != null
   }).length
 
+  const completo = jugables.length > 0 && elegidos === jugables.length
+
   const marketAbierto = picker ? markets.find(m => m.id === picker.marketId) : null
   const bloqueados = marketAbierto?.type === 'ordered_pick' && Array.isArray(picks[marketAbierto.id])
     ? (picks[marketAbierto.id] as string[]).filter((id, i) => Boolean(id) && i !== picker?.slot)
@@ -183,11 +187,44 @@ export function PredictionBoard({
           <h1 className="font-expanded max-w-[16ch] text-2xl font-black leading-tight text-balance sm:text-3xl">
             {titulo}
           </h1>
-          <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 text-sm font-bold text-white backdrop-blur-sm">
-            <Check className="h-4 w-4" aria-hidden="true" />
-            <span className="tabular-nums">{elegidos}</span> de{' '}
-            <span className="tabular-nums">{jugables.length}</span> cargadas
-          </p>
+          {/* Avance: el número solo no dice cuánto falta. La barra lo muestra
+              de un vistazo y el estado cambia al completar todo. */}
+          <div className="mt-3 max-w-xs">
+            <p
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold backdrop-blur-sm ${
+                completo ? 'bg-green-500 text-white' : 'bg-black/25 text-white'
+              }`}
+            >
+              {completo ? (
+                <>
+                  <PartyPopper className="h-4 w-4" aria-hidden="true" />
+                  ¡Listo! Cargaste las <span className="tabular-nums">{jugables.length}</span>
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" aria-hidden="true" />
+                  <span className="tabular-nums">{elegidos}</span> de{' '}
+                  <span className="tabular-nums">{jugables.length}</span> cargadas
+                </>
+              )}
+            </p>
+
+            <div
+              className="mt-2 h-2 overflow-hidden rounded-full bg-black/30"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={jugables.length}
+              aria-valuenow={elegidos}
+              aria-label={`${elegidos} de ${jugables.length} predicciones cargadas`}
+            >
+              <div
+                className={`h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none ${
+                  completo ? 'bg-green-400' : 'bg-white/80'
+                }`}
+                style={{ width: `${jugables.length ? (elegidos / jugables.length) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
         </div>
       </header>
 
@@ -284,7 +321,23 @@ export function PredictionBoard({
         {/* ── Tramos por jornada ─────────────────────────────────── */}
         {jornadas.map(([jornada, lista]) => (
           <section key={jornada} className="mt-8">
-            <h2 className="font-expanded mb-3 text-lg font-black capitalize text-white">{jornada}</h2>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <h2 className="font-expanded text-lg font-black capitalize text-white">{jornada}</h2>
+              {(() => {
+                const dia = lista.filter((m: MarketDTO) => !m.segment?.isCancelled)
+                const hechos = dia.filter((m: MarketDTO) => picks[m.id] != null).length
+                const listo = dia.length > 0 && hechos === dia.length
+                return (
+                  <span
+                    className={`flex-shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold tabular-nums ${
+                      listo ? 'bg-green-500/20 text-green-300' : 'bg-white/10 text-automotor-200'
+                    }`}
+                  >
+                    {listo ? '✓ completa' : `${hechos}/${dia.length}`}
+                  </span>
+                )
+              })()}
+            </div>
             <ul className="space-y-2.5">
               {lista.map((m: MarketDTO) => {
                 const cancelado = m.segment?.isCancelled ?? false
@@ -326,6 +379,55 @@ export function PredictionBoard({
           </section>
         ))}
       </div>
+
+      <section className="mx-auto mt-10 max-w-3xl px-4">
+        <h2 className="font-expanded mb-3 flex items-center gap-2 text-lg font-black text-white">
+          <Trophy className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+          Ranking
+        </h2>
+
+        {ranking.top.length === 0 ? (
+          <p className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-automotor-200">
+            Todavía no hay puntajes. Se arma cuando se corran los primeros tramos y se carguen
+            los resultados.
+          </p>
+        ) : (
+          <div className="overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10">
+            <ol>
+              {ranking.top.map(f => (
+                <li
+                  key={f.posicion}
+                  className={`flex items-center gap-3 border-b border-white/5 px-4 py-2.5 last:border-0 ${
+                    f.esVos ? 'bg-brand-accent/15' : ''
+                  }`}
+                >
+                  <span className="w-7 flex-shrink-0 text-center text-lg leading-none">
+                    {f.posicion <= 3 ? MEDALLAS[f.posicion - 1] : (
+                      <span className="text-xs font-bold text-automotor-300 tabular-nums">{f.posicion}</span>
+                    )}
+                  </span>
+                  <span className={`min-w-0 flex-1 truncate text-sm font-semibold ${f.esVos ? 'text-brand-accent-light' : 'text-white'}`}>
+                    {f.nombre}
+                  </span>
+                  <span className="text-sm font-black tabular-nums text-white">{f.puntos}</span>
+                </li>
+              ))}
+            </ol>
+
+            {ranking.vos && (
+              <div className="flex items-center gap-3 border-t border-white/10 bg-brand-accent/15 px-4 py-2.5">
+                <span className="w-7 flex-shrink-0 text-center text-xs font-bold text-automotor-300 tabular-nums">
+                  {ranking.vos.posicion}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-brand-accent-light">
+                  {ranking.vos.nombre}
+                </span>
+                <span className="text-sm font-black tabular-nums text-white">{ranking.vos.puntos}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
       <ContenderPicker
         abierto={picker !== null}

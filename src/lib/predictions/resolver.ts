@@ -167,3 +167,45 @@ export async function eventLeaderboard(eventId: string, limite = 100): Promise<F
     .sort((a, b) => b.puntos - a.puntos || b.acertadas - a.acertadas)
     .slice(0, limite)
 }
+
+/**
+ * Tabla de posiciones para mostrarle al jugador.
+ *
+ * Los nombres van abreviados -- "Juan P." -- como en el ranking de trivias de
+ * la landing: es una tabla pública y no corresponde exponer el nombre completo
+ * de todos los participantes.
+ */
+export interface FilaPublica {
+  posicion: number
+  nombre: string
+  puntos: number
+  esVos: boolean
+}
+
+export async function publicLeaderboard(
+  eventId: string,
+  playerId: string,
+  limite = 10,
+): Promise<{ top: FilaPublica[]; vos: FilaPublica | null }> {
+  const todos = await eventLeaderboard(eventId, 1000)
+
+  const abreviar = (nombre: string) => {
+    const partes = nombre.trim().split(/\s+/)
+    return partes.length > 1
+      ? `${partes[0]} ${partes[partes.length - 1][0].toUpperCase()}.`
+      : partes[0]
+  }
+
+  const filas: FilaPublica[] = todos.map((f, i) => ({
+    posicion: i + 1,
+    nombre: f.playerId === playerId ? 'Vos' : abreviar(f.nombre),
+    puntos: f.puntos,
+    esVos: f.playerId === playerId,
+  }))
+
+  const top = filas.slice(0, limite)
+  // Si el jugador quedó fuera del top, se le muestra igual su posición: saber
+  // que se está 23º motiva más que no aparecer en ningún lado.
+  const propia = filas.find(f => f.esVos) ?? null
+  return { top, vos: propia && propia.posicion > limite ? propia : null }
+}
