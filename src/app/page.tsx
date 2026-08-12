@@ -2,10 +2,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import { Trophy, Users, Zap, ChevronRight, Clock, Award, Medal, Gift, UserRound, Flag, Gamepad2 } from 'lucide-react'
+import { Trophy, Users, Zap, ChevronRight, Clock, Award, Gift, UserRound, Flag, Gamepad2 } from 'lucide-react'
 import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/utils'
 import { PrizesModal } from '@/components/landing/PrizesModal'
 import { ArcadeCabinet } from '@/components/landing/ArcadeCabinet'
+import { RankingModal, type FilaRankingPublica } from '@/components/landing/RankingModal'
 import { CarLoop } from '@/components/predicciones/CarLoop'
 import {
   heroBackgroundImageStyle,
@@ -17,6 +18,35 @@ import {
 export const revalidate = 60
 
 const MEDALS = ['🥇', '🥈', '🥉']
+
+/** "Juan Carlos Pérez" -> "Juan P." — la tabla es pública. */
+function abreviarNombre(nombre: string): string {
+  const partes = nombre.trim().split(/\s+/)
+  return partes.length > 1
+    ? `${partes[0]} ${partes[partes.length - 1][0].toUpperCase()}.`
+    : partes[0]
+}
+
+/**
+ * Fila de ranking de una trivia. El nombre vive en `formData`, que cada trivia
+ * arma con sus propios campos, de ahí el rastreo de claves alternativas.
+ */
+function rankingTrivia(trivia: {
+  leads: { formData: unknown; score: number; maxScore: number }[]
+}): FilaRankingPublica[] {
+  return trivia.leads.map(lead => {
+    const datos = (lead.formData ?? {}) as Record<string, string>
+    const nombre = datos.nombre ?? datos.name ?? 'Participante'
+    const apellido = datos.apellido ?? datos.lastName ?? ''
+    const inicial = apellido ? ` ${apellido[0].toUpperCase()}.` : ''
+    const pct = lead.maxScore > 0 ? Math.round((lead.score / lead.maxScore) * 100) : 0
+    return {
+      nombre: `${nombre.split(' ')[0]}${inicial}`,
+      puntos: lead.score,
+      detalle: `${pct}% correctas`,
+    }
+  })
+}
 
 /**
  * Marca "Play" de Automotor Play: triángulo de play con esquinas redondeadas
@@ -69,11 +99,13 @@ async function getLandingData() {
       _count: { select: { leads: true, questions: true } },
       leads: {
         orderBy: [{ score: 'desc' }, { completedAt: 'asc' }],
-        take: 5,
+        take: 20,
         select: { formData: true, score: true, maxScore: true },
       },
     },
   })
+  // Ranking por evento de predicción: lo mismo que ve el jugador dentro, pero
+  // accesible desde la sala sin tener que entrar al juego.
   // Juegos de predicción abiertos. Los que están en borrador no se muestran.
   const predictionEvents = await prisma.predictionEvent.findMany({
     where: { status: { in: ['open', 'live'] } },
@@ -94,14 +126,73 @@ async function getLandingData() {
   // siempre disponible. El conteo solo decide qué copy mostrar.
   const pendingTournaments = await prisma.tournament.count({ where: { status: 'pending' } })
 
+  // Ranking de cada máquina, para el botón del gabinete. Es la misma tabla
+  // que ve el jugador dentro del juego, con los nombres abreviados: se mira
+  // desde la sala sin tener que entrar a jugar.
+  const rankingPredicciones = new Map<string, FilaRankingPublica[]>()
+  for (const evento of predictionEvents) {
+    const predicciones = await prisma.prediction.findMany({
+      where: { market: { eventId: evento.id } },
+      select: { playerId: true, pointsAwarded: true, player: { select: { fullName: true } } },
+    })
+    const porJugador = new Map<string, { nombre: string; puntos: number; acertadas: number }>()
+    for (const pred of predicciones) {
+      const fila = porJugador.get(pred.playerId) ?? { nombre: pred.player.fullName, puntos: 0, acertadas: 0 }
+      if (pred.pointsAwarded != null) {
+        fila.puntos += pred.pointsAwarded
+        if (pred.pointsAwarded > 0) fila.acertadas++
+      }
+      porJugador.set(pred.playerId, fila)
+    }
+    rankingPredicciones.set(
+      evento.id,
+      Array.from(porJugador.values())
+        .sort((a, b) => b.puntos - a.puntos || b.acertadas - a.acertadas)
+        .slice(0, 20)
+        .map(f => ({
+          nombre: abreviarNombre(f.nombre),
+          puntos: f.puntos,
+          detalle: `${f.acertadas} acierto${f.acertadas !== 1 ? 's' : ''}`,
+        })),
+    )
+  }
+
+  // Fútbol: solo hay tabla si se jugaron partidos de torneo. El modo local no
+  // deja marcador, así que sin partidos terminados la máquina no lleva botón.
+  const partidos = await prisma.tournamentMatch.findMany({
+    where: { status: 'finished' },
+    select: {
+      scoreP1: true, scoreP2: true, winnerId: true,
+      player1: { select: { id: true, playerName: true } },
+      player2: { select: { id: true, playerName: true } },
+    },
+  })
+  const porParticipante = new Map<string, { nombre: string; victorias: number; goles: number }>()
+  for (const m of partidos) {
+    for (const [jugador, goles] of [[m.player1, m.scoreP1], [m.player2, m.scoreP2]] as const) {
+      const fila = porParticipante.get(jugador.id) ?? { nombre: jugador.playerName, victorias: 0, goles: 0 }
+      fila.goles += goles
+      if (m.winnerId === jugador.id) fila.victorias++
+      porParticipante.set(jugador.id, fila)
+    }
+  }
+  const rankingFutbol: FilaRankingPublica[] = Array.from(porParticipante.values())
+    .sort((a, b) => b.victorias - a.victorias || b.goles - a.goles)
+    .slice(0, 20)
+    .map(f => ({
+      nombre: abreviarNombre(f.nombre),
+      puntos: f.victorias,
+      detalle: `${f.goles} gol${f.goles !== 1 ? 'es' : ''} a favor`,
+    }))
+
   const settings = await prisma.platformSettings.findUnique({
     where: { id: 'singleton' },
   })
-  return { activeTrivias, predictionEvents, pendingTournaments, settings }
+  return { activeTrivias, predictionEvents, pendingTournaments, rankingPredicciones, rankingFutbol, settings }
 }
 
 export default async function HomePage() {
-  const { activeTrivias, predictionEvents, pendingTournaments, settings } = await getLandingData()
+  const { activeTrivias, predictionEvents, pendingTournaments, rankingPredicciones, rankingFutbol, settings } = await getLandingData()
   const totalParticipants = activeTrivias.reduce((s, t) => s + t._count.leads, 0)
   const totalPrizes = activeTrivias.reduce((s, t) => s + t.prizes.length, 0)
   // Máquinas en sala: los juegos de la base más fútbol, que está siempre.
@@ -384,13 +475,20 @@ export default async function HomePage() {
                     <span className="tabular-nums">{evento._count.markets} predicciones</span>
                     <span className="tabular-nums">{evento._count.contenders} equipos</span>
                   </div>
-                  <Link
-                    href={`/predicciones/${evento.slug}`}
-                    className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
-                    style={{ background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})` }}
-                  >
-                    Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/predicciones/${evento.slug}`}
+                      className="flex min-h-[48px] flex-1 items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
+                      style={{ background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})` }}
+                    >
+                      Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                    </Link>
+                    <RankingModal
+                      titulo={evento.title}
+                      filas={rankingPredicciones.get(evento.id) ?? []}
+                      colorAcento={evento.primaryColor}
+                    />
+                  </div>
                 </div>
               </ArcadeCabinet>
             ))}
@@ -509,13 +607,23 @@ export default async function HomePage() {
                       </span>
                       <span className="tabular-nums">{trivia._count.questions} preguntas</span>
                     </div>
-                    <Link
-                      href={`/play/${trivia.slug}`}
-                      className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
-                      style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
-                    >
-                      Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/play/${trivia.slug}`}
+                        className="flex min-h-[48px] flex-1 items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
+                        style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
+                      >
+                        Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                      </Link>
+                      {/* Si la trivia esconde su tabla, tampoco se muestra acá. */}
+                      {trivia.showLeaderboard !== false && (
+                        <RankingModal
+                          titulo={trivia.title}
+                          filas={rankingTrivia(trivia)}
+                          colorAcento={trivia.primaryColor}
+                        />
+                      )}
+                    </div>
                   </div>
                 </ArcadeCabinet>
               )
@@ -562,13 +670,18 @@ export default async function HomePage() {
                   <span>WASD y flechas</span>
                   <span>Gamepad compatible</span>
                 </div>
-                <Link
-                  href="/futbol"
-                  className="flex w-full min-h-[48px] items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
-                  style={{ background: 'linear-gradient(135deg, #1a3a1a, #2d6e2d)' }}
-                >
-                  Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/futbol"
+                    className="flex min-h-[48px] flex-1 items-center justify-center gap-1.5 rounded-xl px-4 text-base font-black text-white shadow-lg transition-all duration-300 hover:brightness-110 hover:gap-3 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300 focus-visible:ring-offset-2 focus-visible:ring-offset-automotor-900"
+                    style={{ background: 'linear-gradient(135deg, #1a3a1a, #2d6e2d)' }}
+                  >
+                    Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
+                  </Link>
+                  {rankingFutbol.length > 0 && (
+                    <RankingModal titulo="Torneos Automotor" filas={rankingFutbol} colorAcento="#2d6e2d" />
+                  )}
+                </div>
               </div>
             </ArcadeCabinet>
 
@@ -600,73 +713,6 @@ export default async function HomePage() {
           </ul>
         </main>
 
-        {/* ── RANKING ─────────────────────────────────────────────────── */}
-        {activeTrivias.some(t => t.showLeaderboard !== false && t.leads.length > 0) && (
-          <section className="max-w-6xl mx-auto px-4 pb-12">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-9 h-9 rounded-xl bg-automotor-500 shadow-glow flex items-center justify-center flex-shrink-0" aria-hidden="true">
-                <Medal className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="font-expanded text-xl sm:text-2xl font-black text-white leading-none">Ranking de jugadores</h2>
-                <p className="text-automotor-300 text-xs mt-1">Los mejores puestos se llevan los premios</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {activeTrivias.filter(t => t.showLeaderboard !== false && t.leads.length > 0).map(trivia => (
-                <div key={trivia.id} className="bg-white rounded-2xl shadow-xl shadow-automotor-950/60 overflow-hidden">
-                  {/* Card header */}
-                  <div
-                    className="px-5 py-3.5 flex items-center gap-2"
-                    style={{ background: `linear-gradient(135deg, ${trivia.primaryColor}, ${trivia.secondaryColor})` }}
-                  >
-                    <Trophy className="w-4 h-4 text-white opacity-80 flex-shrink-0" aria-hidden="true" />
-                    <h3 className="font-black text-white text-sm truncate">{trivia.title}</h3>
-                    <span className="ml-auto text-white/70 text-xs flex-shrink-0 tabular-nums">{trivia._count.leads} jugadores</span>
-                  </div>
-                  {/* Entries */}
-                  <div className="divide-y divide-slate-50">
-                    {trivia.leads.map((lead, i) => {
-                      const data = lead.formData as Record<string, string>
-                      const rawName = data.nombre ?? data.name ?? 'Participante'
-                      const rawLast = data.apellido ?? data.lastName ?? ''
-                      const firstName = rawName.split(' ')[0]
-                      const lastInitial = rawLast ? rawLast[0].toUpperCase() + '.' : ''
-                      const displayName = lastInitial ? `${firstName} ${lastInitial}` : firstName
-                      const pct = lead.maxScore > 0 ? Math.round((lead.score / lead.maxScore) * 100) : 0
-                      return (
-                        <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                          <span className="w-7 text-center flex-shrink-0 text-lg leading-none">
-                            {trivia.prizes.some(p => p.position === i + 1) && i < 3 ? (
-                              MEDALS[i]
-                            ) : (
-                              <span className="text-xs font-bold text-slate-500 tabular-nums">{i + 1}</span>
-                            )}
-                          </span>
-                          <span className="flex-1 text-sm font-semibold text-slate-700 truncate">{displayName}</span>
-                          <span className="font-black text-sm tabular-nums" style={{ color: trivia.primaryColor }}>
-                            {lead.score.toLocaleString()}
-                          </span>
-                          <span className="text-xs text-slate-500 w-9 text-right tabular-nums">{pct}%</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div className="px-4 pb-3 pt-1">
-                    <Link
-                      href={`/play/${trivia.slug}`}
-                      className="min-h-[44px] text-xs font-bold flex items-center justify-center gap-1 py-2 rounded-xl transition-all hover:opacity-80 motion-reduce:transition-none"
-                      style={{ color: trivia.primaryColor, backgroundColor: `${trivia.primaryColor}10` }}
-                    >
-                      ¡Jugá y entrá al ranking! <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
 
       {/* ── FOOTER ──────────────────────────────────────────────────── */}
