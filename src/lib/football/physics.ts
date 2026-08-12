@@ -44,10 +44,21 @@ export const FIELD = {
   wallThickness: 20,
 }
 
-// Vehicle size
-const VEHICLE_W = 36
-const VEHICLE_H = 22
-const BALL_RADIUS = 12
+/**
+ * Tamaño del auto y de la pelota.
+ *
+ * Se exportan porque el canvas dibuja con estos mismos valores: antes cada
+ * archivo tenía su copia, y si una se cambiaba sin la otra el auto se veía de
+ * un tamaño y chocaba como si fuera de otro -- una pelota que rebota antes de
+ * tocarlo, o que lo atraviesa, sin que nada falle visiblemente.
+ *
+ * A 48x30 el auto ocupa 6% del ancho de la cancha. Más grande que esto empieza
+ * a faltar lugar para maniobrar entre dos autos y el partido se vuelve un
+ * forcejeo.
+ */
+export const VEHICLE_W = 48
+export const VEHICLE_H = 30
+export const BALL_RADIUS = 15
 
 // Physics constants
 const VEHICLE_ACCEL = 900     // px/s²

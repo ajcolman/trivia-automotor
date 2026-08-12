@@ -6,6 +6,9 @@ import {
   createInitialState,
   stepPhysics,
   FIELD,
+  VEHICLE_W,
+  VEHICLE_H,
+  BALL_RADIUS,
   type GameState,
   type PlayerInput,
   type Vehicle,
@@ -47,9 +50,8 @@ const BALL_COLOR = '#ffffff'
 const P1_COLOR = '#0052cc'
 const P2_COLOR = '#cc1a00'
 
-const VEHICLE_W = 36
-const VEHICLE_H = 22
-const BALL_RADIUS = 12
+// Vienen de physics.ts a propósito: el dibujo y la colisión tienen que usar
+// exactamente el mismo tamaño.
 
 function drawField(ctx: CanvasRenderingContext2D, grassTexture: HTMLImageElement | null) {
   const { width, height, wallThickness, goalWidth, goalHeight } = FIELD
@@ -214,24 +216,30 @@ function drawVehicle(
     // field canvas) with the player's color. Shape and detail stay readable
     // underneath the wash.
     const tint = vehicle.playerId === 1 ? P1_COLOR : P2_COLOR
-    tintScratch.width = VEHICLE_W
-    tintScratch.height = VEHICLE_H
-    const sctx = tintScratch.getContext('2d')
-    if (sctx) {
-      sctx.imageSmoothingEnabled = false
-      sctx.drawImage(sprite, 0, 0, VEHICLE_W, VEHICLE_H)
-      sctx.globalCompositeOperation = 'source-atop'
-      sctx.globalAlpha = 0.4
-      sctx.fillStyle = tint
-      sctx.fillRect(0, 0, VEHICLE_W, VEHICLE_H)
-      sctx.globalCompositeOperation = 'source-over'
-      sctx.globalAlpha = 1
-      ctx.imageSmoothingEnabled = false
-      ctx.drawImage(tintScratch, -VEHICLE_W / 2, -VEHICLE_H / 2, VEHICLE_W, VEHICLE_H)
-    } else {
-      ctx.imageSmoothingEnabled = false
-      ctx.drawImage(sprite, -VEHICLE_W / 2, -VEHICLE_H / 2, VEHICLE_W, VEHICLE_H)
-    }
+
+    // El distintivo va debajo del auto, no encima. Teñir la carrocería
+    // funcionaba con los dibujos planos anteriores, pero con los sprites
+    // actuales borra el color real del modelo y los deja como manchas de un
+    // solo tono. El anillo identifica igual de rápido y deja ver el auto.
+    ctx.save()
+    ctx.rotate(-vehicle.angle)          // el anillo no gira con el auto
+    ctx.beginPath()
+    // Radio apenas mayor que la media diagonal del auto, para que el anillo lo
+    // contenga en cualquier ángulo sin que las puntas asomen.
+    const radio = Math.hypot(VEHICLE_W, VEHICLE_H) / 2 + 2
+    ctx.ellipse(0, 0, radio, radio, 0, 0, Math.PI * 2)
+    ctx.fillStyle = tint
+    ctx.globalAlpha = 0.16
+    ctx.fill()
+    ctx.globalAlpha = 0.9
+    ctx.lineWidth = 2.5
+    ctx.strokeStyle = tint
+    ctx.stroke()
+    ctx.globalAlpha = 1
+    ctx.restore()
+
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(sprite, -VEHICLE_W / 2, -VEHICLE_H / 2, VEHICLE_W, VEHICLE_H)
   } else {
     // Pixel-art fallback car
     const color = vehicle.playerId === 1 ? P1_COLOR : P2_COLOR
