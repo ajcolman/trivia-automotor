@@ -199,14 +199,39 @@ function drawVehicle(
   ctx: CanvasRenderingContext2D,
   vehicle: Vehicle,
   sprite: HTMLImageElement | null,
+  tintScratch: HTMLCanvasElement,
 ) {
   ctx.save()
   ctx.translate(vehicle.pos.x, vehicle.pos.y)
   ctx.rotate(vehicle.angle)
 
   if (sprite && sprite.complete && sprite.naturalWidth > 0) {
-    ctx.imageSmoothingEnabled = false
-    ctx.drawImage(sprite, -VEHICLE_W / 2, -VEHICLE_H / 2, VEHICLE_W, VEHICLE_H)
+    // Both players can pick the same real-life model, and most of these
+    // sprites are painted in similar factory colors — so mid-match they'd be
+    // indistinguishable without help. We render the sprite into a small
+    // offscreen canvas and wash only its opaque pixels (source-atop keeps the
+    // tint confined to the car, unlike compositing straight onto the shared
+    // field canvas) with the player's color. Shape and detail stay readable
+    // underneath the wash.
+    const tint = vehicle.playerId === 1 ? P1_COLOR : P2_COLOR
+    tintScratch.width = VEHICLE_W
+    tintScratch.height = VEHICLE_H
+    const sctx = tintScratch.getContext('2d')
+    if (sctx) {
+      sctx.imageSmoothingEnabled = false
+      sctx.drawImage(sprite, 0, 0, VEHICLE_W, VEHICLE_H)
+      sctx.globalCompositeOperation = 'source-atop'
+      sctx.globalAlpha = 0.4
+      sctx.fillStyle = tint
+      sctx.fillRect(0, 0, VEHICLE_W, VEHICLE_H)
+      sctx.globalCompositeOperation = 'source-over'
+      sctx.globalAlpha = 1
+      ctx.imageSmoothingEnabled = false
+      ctx.drawImage(tintScratch, -VEHICLE_W / 2, -VEHICLE_H / 2, VEHICLE_W, VEHICLE_H)
+    } else {
+      ctx.imageSmoothingEnabled = false
+      ctx.drawImage(sprite, -VEHICLE_W / 2, -VEHICLE_H / 2, VEHICLE_W, VEHICLE_H)
+    }
   } else {
     // Pixel-art fallback car
     const color = vehicle.playerId === 1 ? P1_COLOR : P2_COLOR
@@ -324,6 +349,15 @@ export default function GameCanvas({
   const sprite1Ref = useRef<HTMLImageElement | null>(null)
   const sprite2Ref = useRef<HTMLImageElement | null>(null)
   const grassTextureRef = useRef<HTMLImageElement | null>(null)
+  // Small offscreen canvases used to tint each player's sprite (see drawVehicle)
+  const tintScratch1Ref = useRef<HTMLCanvasElement | null>(null)
+  const tintScratch2Ref = useRef<HTMLCanvasElement | null>(null)
+  if (!tintScratch1Ref.current && typeof document !== 'undefined') {
+    tintScratch1Ref.current = document.createElement('canvas')
+  }
+  if (!tintScratch2Ref.current && typeof document !== 'undefined') {
+    tintScratch2Ref.current = document.createElement('canvas')
+  }
 
   // Stable callback ref for onMatchEnd
   const onMatchEndRef = useRef(onMatchEnd)
@@ -431,8 +465,8 @@ export default function GameCanvas({
 
     drawField(ctx, grassTextureRef.current)
     drawBall(ctx, state.ball)
-    drawVehicle(ctx, state.vehicle1, sprite1Ref.current)
-    drawVehicle(ctx, state.vehicle2, sprite2Ref.current)
+    if (tintScratch1Ref.current) drawVehicle(ctx, state.vehicle1, sprite1Ref.current, tintScratch1Ref.current)
+    if (tintScratch2Ref.current) drawVehicle(ctx, state.vehicle2, sprite2Ref.current, tintScratch2Ref.current)
     drawHUD(ctx, state, player1Name, player2Name)
 
     // GOL flash overlay
