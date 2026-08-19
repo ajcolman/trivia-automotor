@@ -71,6 +71,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "shadcn": "^4.16.2",
     "tsx": "^4.21.0"
   },

@@ -55,7 +55,7 @@ export function TriviaResetButton({ triviaId, triviaTitle, leadsCount }: TriviaR
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
               Vas a eliminar todos los datos de prueba de{' '}
-              <strong>"{triviaTitle}"</strong>:
+              <strong>“{triviaTitle}”</strong>:
             </p>
             <ul className="text-sm text-slate-500 space-y-1 list-disc list-inside bg-orange-50 rounded-xl p-3">
               <li><strong>{leadsCount}</strong> contacto{leadsCount !== 1 ? 's' : ''} registrado{leadsCount !== 1 ? 's' : ''}</li>

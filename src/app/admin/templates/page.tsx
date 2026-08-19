@@ -39,7 +39,7 @@ export default function TemplatesPage() {
 
   useEffect(() => { load() }, [])
 
-  const useTemplate = async (template: Template) => {
+  const usarPlantilla = async (template: Template) => {
     const res = await fetch('/api/admin/trivias', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -94,7 +94,7 @@ export default function TemplatesPage() {
         {t.description && <p className="text-xs text-slate-400 mb-2 line-clamp-2">{t.description}</p>}
         {!isOwned && t.owner && <p className="text-xs text-slate-400 mb-2">De: {t.owner.name}</p>}
         <div className="flex gap-1">
-          <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => useTemplate(t)}>
+          <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => usarPlantilla(t)}>
             <Copy className="w-3 h-3 mr-1" /> Usar
           </Button>
           {isOwned && (

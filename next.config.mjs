@@ -1,6 +1,14 @@
 // Author: Angel Colman
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    // El lint se corre a mano con `npm run lint`, no durante el build. Next
+    // lo corre solo cuando hay config de ESLint y aborta el build ante el
+    // primer error: no vale la pena que un deploy se caiga por una comilla
+    // sin escapar. Si en algún momento querés que el build lo exija, sacá
+    // esta clave.
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
