@@ -1,6 +1,7 @@
 // Author: Angel Colman
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { participantName } from '@/lib/participant-name'
 
 export async function GET(
   _req: NextRequest,
@@ -20,14 +21,10 @@ export async function GET(
   })
 
   const leaderboard = leads.map((lead, index) => {
-    const data = lead.formData as Record<string, string>
-    const rawName = data.nombre || data.name || 'Participante'
-    const rawLastName = data.apellido || data.lastName || ''
-    const firstName = rawName.split(' ')[0]
-    const lastInitial = rawLastName ? rawLastName[0].toUpperCase() + '.' : ''
     return {
       position: index + 1,
-      displayName: lastInitial ? `${firstName} ${lastInitial}` : firstName,
+      // La tabla es pública, así que va abreviado: "Juan P.".
+      displayName: participantName(lead.formData).abreviado,
       score: lead.score,
       maxScore: lead.maxScore,
       completedAt: lead.completedAt,

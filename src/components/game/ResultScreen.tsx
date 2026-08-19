@@ -7,6 +7,7 @@ import type { TriviaData, GameResult, AnswerRecord } from './GameShell'
 import Image from 'next/image'
 import Link from 'next/link'
 import { mediaUrl } from '@/lib/utils'
+import { participantName as resolverNombre } from '@/lib/participant-name'
 
 interface LeaderboardEntry {
   position: number
@@ -79,28 +80,6 @@ interface ScoredAnswer {
   correctAnswer: number
 }
 
-const NAME_KEYS = ['nombre', 'name', 'nombres', 'firstname', 'apellido', 'lastname', 'nombre_completo', 'fullname']
-
-function getParticipantName(formData?: Record<string, string> | null): string {
-  if (!formData) return 'Participante'
-  const values = Object.entries(formData)
-    .filter(([, value]) => typeof value === 'string' && value.trim().length > 0)
-    .map(([key, value]) => ({ key: key.toLowerCase(), value: value.trim() }))
-
-  const fullName = values.find(v => v.key.includes('nombre_completo') || v.key.includes('fullname'))
-  if (fullName) return fullName.value
-
-  const first = values.find(v => ['nombre', 'name', 'nombres', 'firstname'].includes(v.key))
-  const last = values.find(v => ['apellido', 'lastname'].includes(v.key))
-  const merged = `${first?.value ?? ''} ${last?.value ?? ''}`.trim()
-  if (merged) return merged
-
-  const firstNameLike = values.find(v => NAME_KEYS.some(key => v.key.includes(key)))
-  if (firstNameLike) return firstNameLike.value
-
-  return values[0]?.value ?? 'Participante'
-}
-
 export function ResultScreen({ trivia, result, participantData }: ResultScreenProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [displayScore, setDisplayScore] = useState(0)
@@ -111,7 +90,8 @@ export function ResultScreen({ trivia, result, participantData }: ResultScreenPr
   const pct = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : 0
   const RATINGS = trivia.maxPlaysPerUser === 1 ? RATINGS_SINGLE : RATINGS_MULTI
   const rating = RATINGS.find(r => pct >= r.min) ?? RATINGS[RATINGS.length - 1]
-  const participantName = getParticipantName(participantData)
+  // Acá va el nombre completo: es el saludo a la persona, no una tabla pública.
+  const participantName = resolverNombre(participantData).completo
 
   // Animate score counter
   useEffect(() => {

@@ -7,6 +7,7 @@ import { formatDateShort, getNowAsuncion, mediaUrl, stripMarkdown } from '@/lib/
 import { PrizesModal } from '@/components/landing/PrizesModal'
 import { ArcadeCabinet } from '@/components/landing/ArcadeCabinet'
 import { RankingModal, type FilaRankingPublica } from '@/components/landing/RankingModal'
+import { participantName, abbreviateName } from '@/lib/participant-name'
 import { CarLoop } from '@/components/predicciones/CarLoop'
 import {
   heroBackgroundImageStyle,
@@ -19,29 +20,17 @@ export const revalidate = 60
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-/** "Juan Carlos Pérez" -> "Juan P." — la tabla es pública. */
-function abreviarNombre(nombre: string): string {
-  const partes = nombre.trim().split(/\s+/)
-  return partes.length > 1
-    ? `${partes[0]} ${partes[partes.length - 1][0].toUpperCase()}.`
-    : partes[0]
-}
-
 /**
  * Fila de ranking de una trivia. El nombre vive en `formData`, que cada trivia
- * arma con sus propios campos, de ahí el rastreo de claves alternativas.
+ * arma con sus propios campos: resolverlo es trabajo de `participantName`.
  */
 function rankingTrivia(trivia: {
   leads: { formData: unknown; score: number; maxScore: number }[]
 }): FilaRankingPublica[] {
   return trivia.leads.map(lead => {
-    const datos = (lead.formData ?? {}) as Record<string, string>
-    const nombre = datos.nombre ?? datos.name ?? 'Participante'
-    const apellido = datos.apellido ?? datos.lastName ?? ''
-    const inicial = apellido ? ` ${apellido[0].toUpperCase()}.` : ''
     const pct = lead.maxScore > 0 ? Math.round((lead.score / lead.maxScore) * 100) : 0
     return {
-      nombre: `${nombre.split(' ')[0]}${inicial}`,
+      nombre: participantName(lead.formData).abreviado,
       puntos: lead.score,
       detalle: `${pct}% correctas`,
     }
@@ -154,7 +143,7 @@ async function getLandingData() {
         .sort((a, b) => b.puntos - a.puntos || b.acertadas - a.acertadas)
         .slice(0, 20)
         .map(f => ({
-          nombre: abreviarNombre(f.nombre),
+          nombre: abbreviateName(f.nombre),
           puntos: f.puntos,
           detalle: `${f.acertadas} acierto${f.acertadas !== 1 ? 's' : ''}`,
         })),
@@ -184,7 +173,7 @@ async function getLandingData() {
     .sort((a, b) => b.victorias - a.victorias || b.goles - a.goles)
     .slice(0, 20)
     .map(f => ({
-      nombre: abreviarNombre(f.nombre),
+      nombre: abbreviateName(f.nombre),
       puntos: f.victorias,
       detalle: `${f.goles} gol${f.goles !== 1 ? 'es' : ''} a favor`,
     }))
