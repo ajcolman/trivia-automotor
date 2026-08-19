@@ -1,5 +1,6 @@
 // Author: Angel Colman
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { EventStatus, Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
@@ -106,6 +107,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
     },
   })
+
+  // La landing se sirve con `revalidate = 60`, así que sin esto un cambio
+  // recién se veía al vencer la ventana -- y como la primera visita después
+  // del vencimiento todavía devuelve la copia vieja mientras regenera, hacían
+  // falta dos recargas. Todo lo que se toca acá (estado, título, descripción,
+  // ranking, colores) se muestra en la sala: se invalida y se ve al instante.
+  revalidatePath('/')
 
   await logAudit({
     entityType: 'PredictionEvent',
