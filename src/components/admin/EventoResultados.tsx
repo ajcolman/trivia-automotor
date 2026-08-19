@@ -9,6 +9,7 @@ import {
   ListChecks, Percent, MailCheck, CheckCircle2,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import type { FilaRanking } from '@/lib/predictions/resolver'
 import { EventoPremios, type PremioFila } from './EventoPremios'
 import { EventoTramos, type TramoFila } from './EventoTramos'
@@ -48,6 +49,8 @@ interface Props {
   estadisticas: EstadisticasEvento
   premios: PremioFila[]
   tramos: TramoFila[]
+  /** Si el ranking se muestra al jugador y en la sala. */
+  mostrarRanking: boolean
 }
 
 const ESTADOS: { valor: string; texto: string; ayuda: string }[] = [
@@ -65,10 +68,12 @@ const fFecha = new Intl.DateTimeFormat('es-PY', {
 
 export function EventoResultados({
   eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas, premios, tramos,
+  mostrarRanking,
 }: Props) {
   const router = useRouter()
   const [guardando, setGuardando] = useState<string | null>(null)
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
+  const [cambiandoRanking, setCambiandoRanking] = useState(false)
   const [reinicio, setReinicio] = useState<'resultados' | 'todo' | null>(null)
   const [reiniciando, setReiniciando] = useState(false)
   const [borrador, setBorrador] = useState<Record<string, string[]>>(() =>
@@ -90,6 +95,24 @@ export function EventoResultados({
     setCambiandoEstado(false)
     if (res.ok) { toast.success('Estado actualizado'); router.refresh() }
     else toast.error((await res.json().catch(() => ({})))?.error ?? 'No se pudo cambiar el estado')
+  }
+
+  /// La tabla se esconde sin borrar nada: los puntajes se siguen calculando y
+  /// el admin los ve acá abajo, pero el jugador y la sala no.
+  async function alternarRanking(visible: boolean) {
+    setCambiandoRanking(true)
+    const res = await fetch(`/api/admin/prediction-events/${eventoId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ showLeaderboard: visible }),
+    })
+    setCambiandoRanking(false)
+    if (res.ok) {
+      toast.success(visible ? 'El ranking vuelve a verse' : 'El ranking quedó oculto para los jugadores')
+      router.refresh()
+    } else {
+      toast.error((await res.json().catch(() => ({})))?.error ?? 'No se pudo cambiar la visibilidad')
+    }
   }
 
   async function ejecutarReinicio(alcance: 'resultados' | 'todo') {
@@ -342,6 +365,28 @@ export function EventoResultados({
           <h2 className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-slate-400">
             <Trophy className="h-4 w-4" /> Ranking
           </h2>
+
+          {/* Esconderlo no apaga el cálculo: esta tabla sigue estando acá. */}
+          <div className="mb-2 flex items-start gap-2.5 rounded-2xl border border-slate-200 bg-white p-3">
+            <Switch
+              checked={mostrarRanking}
+              disabled={cambiandoRanking}
+              onCheckedChange={alternarRanking}
+              aria-label="Mostrar el ranking a los jugadores"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-700">
+                {mostrarRanking ? 'Visible para los jugadores' : 'Oculto para los jugadores'}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {mostrarRanking
+                  ? 'La tabla se ve dentro del juego y desde el botón del gabinete en la sala.'
+                  : 'Los puntajes se siguen calculando y los ves acá abajo, pero nadie más los ve.'}
+              </p>
+            </div>
+            {cambiandoRanking && <Loader2 className="ml-auto h-4 w-4 flex-shrink-0 animate-spin text-slate-400" />}
+          </div>
+
           <div className="rounded-2xl border border-slate-200 bg-white p-2">
             {ranking.length === 0 ? (
               <p className="p-6 text-center text-sm text-slate-400">

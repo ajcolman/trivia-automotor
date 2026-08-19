@@ -496,6 +496,9 @@ model PredictionEvent {
   /// Alineado con Trivia.textColor.
   textColor       String      @default("#1A1A2E")
   rules           String?
+  /// Mismo interruptor que Trivia.showLeaderboard: se puede esconder la tabla
+  /// de posiciones sin cerrar el juego ni borrar los puntajes.
+  showLeaderboard Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

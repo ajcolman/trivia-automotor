@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { eventLeaderboard } from '@/lib/predictions/resolver'
 import { EventoResultados } from '@/components/admin/EventoResultados'
 import { EventoDiseno } from '@/components/admin/EventoDiseno'
+import { EventoTextos } from '@/components/admin/EventoTextos'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     where: { id: params.id },
     select: {
       id: true, slug: true, title: true, status: true,
+      description: true, rules: true, showLeaderboard: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
       segments: {
         orderBy: { orderIndex: 'asc' },
@@ -87,6 +89,15 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         <ChevronLeft className="h-4 w-4" /> Juegos de predicción
       </Link>
 
+      <EventoTextos
+        eventoId={evento.id}
+        textos={{
+          title: evento.title,
+          description: evento.description,
+          rules: evento.rules,
+        }}
+      />
+
       <EventoDiseno
         eventoId={evento.id}
         colores={{
@@ -121,6 +132,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         estadisticas={estadisticas}
         premios={evento.prizes}
         tramos={evento.segments.map(t => ({ ...t, locksAt: t.locksAt.toISOString() }))}
+        mostrarRanking={evento.showLeaderboard}
       />
     </div>
   )

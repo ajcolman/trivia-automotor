@@ -42,7 +42,8 @@ interface Props {
   markets: MarketDTO[]
   contenders: ContenderDTO[]
   premios: PremioDTO[]
-  ranking: { top: FilaPublica[]; vos: FilaPublica | null }
+  /** Null cuando el evento tiene el ranking apagado desde el admin. */
+  ranking: { top: FilaPublica[]; vos: FilaPublica | null } | null
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
@@ -268,56 +269,6 @@ export function PredictionBoard({
           </section>
         )}
 
-        {/* ── Podio ──────────────────────────────────────────────── */}
-        {podio && (
-          <section className="mt-6">
-            <h2 className="font-expanded mb-3 flex items-center gap-2 text-lg font-black text-white">
-              <Trophy className="h-5 w-5 text-brand-accent" aria-hidden="true" />
-              {podio.title}
-            </h2>
-            <Card
-              market={podio}
-              ahora={ahora}
-              estado={estados[podio.id]}
-              error={errores[podio.id]}
-              paleta={paleta}
-            >
-              <ol className="space-y-2">
-                {Array.from({ length: podio.config.positions ?? 3 }).map((_, i) => {
-                  const lista = Array.isArray(picks[podio.id]) ? (picks[podio.id] as string[]) : []
-                  const elegido = lista[i] ? porId.get(lista[i]) : null
-                  const cerrado = new Date(podio.locksAt).getTime() <= ahora
-                  return (
-                    <li key={i}>
-                      <button
-                        type="button"
-                        disabled={cerrado}
-                        onClick={() => setPicker({ marketId: podio.id, slot: i })}
-                        className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border-2 border-slate-200 px-3 text-left transition-colors hover:border-automotor-400 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
-                      >
-                        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-black text-slate-700 tabular-nums">
-                          {i + 1}°
-                        </span>
-                        {elegido ? (
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate font-bold text-slate-900">{elegido.name}</span>
-                            <span className="block truncate text-xs text-slate-500">
-                              {elegido.number ? `#${elegido.number} · ` : ''}{elegido.category}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="flex-1 text-sm text-slate-400">Elegir tripulación</span>
-                        )}
-                        {!cerrado && <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400" aria-hidden="true" />}
-                      </button>
-                    </li>
-                  )
-                })}
-              </ol>
-            </Card>
-          </section>
-        )}
-
         {/* ── Tramos por jornada ─────────────────────────────────── */}
         {jornadas.map(([jornada, lista]) => (
           <section key={jornada} className="mt-8">
@@ -378,56 +329,117 @@ export function PredictionBoard({
             </ul>
           </section>
         ))}
+
+        {/* ── Podio final ────────────────────────────────────────
+            Va al final porque es lo último que se define del rally, después
+            del último tramo. Pero cierra con la largada del primero, así que
+            el aviso explica por qué el reloj corre distinto al de los tramos
+            que tiene arriba. */}
+        {podio && (
+          <section className="mt-10">
+            <h2 className="font-expanded mb-1 flex items-center gap-2 text-lg font-black text-white">
+              <Trophy className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+              {podio.title}
+            </h2>
+            <p className="mb-3 text-sm text-automotor-200">
+              Se define recién al terminar el rally, pero se carga antes de la largada.
+            </p>
+            <Card
+              market={podio}
+              ahora={ahora}
+              estado={estados[podio.id]}
+              error={errores[podio.id]}
+              paleta={paleta}
+            >
+              <ol className="space-y-2">
+                {Array.from({ length: podio.config.positions ?? 3 }).map((_, i) => {
+                  const lista = Array.isArray(picks[podio.id]) ? (picks[podio.id] as string[]) : []
+                  const elegido = lista[i] ? porId.get(lista[i]) : null
+                  const cerrado = new Date(podio.locksAt).getTime() <= ahora
+                  return (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        disabled={cerrado}
+                        onClick={() => setPicker({ marketId: podio.id, slot: i })}
+                        className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border-2 border-slate-200 px-3 text-left transition-colors hover:border-automotor-400 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-automotor-300"
+                      >
+                        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-black text-slate-700 tabular-nums">
+                          {i + 1}°
+                        </span>
+                        {elegido ? (
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-bold text-slate-900">{elegido.name}</span>
+                            <span className="block truncate text-xs text-slate-500">
+                              {elegido.number ? `#${elegido.number} · ` : ''}{elegido.category}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="flex-1 text-sm text-slate-400">Elegir tripulación</span>
+                        )}
+                        {!cerrado && <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-400" aria-hidden="true" />}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ol>
+            </Card>
+          </section>
+        )}
       </div>
 
-      <section className="mx-auto mt-10 max-w-3xl px-4">
-        <h2 className="font-expanded mb-3 flex items-center gap-2 text-lg font-black text-white">
-          <Trophy className="h-5 w-5 text-brand-accent" aria-hidden="true" />
-          Ranking
-        </h2>
+      {/* Sin ranking la sección entera desaparece: mostrar el encabezado con un
+          vacío parecería que todavía no hay puntajes, y no es eso. */}
+      {ranking && (
+        <section className="mx-auto mt-10 max-w-3xl px-4">
+          <h2 className="font-expanded mb-3 flex items-center gap-2 text-lg font-black text-white">
+            <Trophy className="h-5 w-5 text-brand-accent" aria-hidden="true" />
+            Ranking
+          </h2>
 
-        {ranking.top.length === 0 ? (
-          <p className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-automotor-200">
-            Todavía no hay puntajes. Se arma cuando se corran los primeros tramos y se carguen
-            los resultados.
-          </p>
-        ) : (
-          <div className="overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10">
-            <ol>
-              {ranking.top.map(f => (
-                <li
-                  key={f.posicion}
-                  className={`flex items-center gap-3 border-b border-white/5 px-4 py-2.5 last:border-0 ${
-                    f.esVos ? 'bg-brand-accent/15' : ''
-                  }`}
-                >
-                  <span className="w-7 flex-shrink-0 text-center text-lg leading-none">
-                    {f.posicion <= 3 ? MEDALLAS[f.posicion - 1] : (
-                      <span className="text-xs font-bold text-automotor-300 tabular-nums">{f.posicion}</span>
-                    )}
-                  </span>
-                  <span className={`min-w-0 flex-1 truncate text-sm font-semibold ${f.esVos ? 'text-brand-accent-light' : 'text-white'}`}>
-                    {f.nombre}
-                  </span>
-                  <span className="text-sm font-black tabular-nums text-white">{f.puntos}</span>
-                </li>
-              ))}
-            </ol>
+          {ranking.top.length === 0 ? (
+            <p className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-automotor-200">
+              Todavía no hay puntajes. Se arma cuando se corran los primeros tramos y se carguen
+              los resultados.
+            </p>
+          ) : (
+            <div className="overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10">
+              <ol>
+                {ranking.top.map(f => (
+                  <li
+                    key={f.posicion}
+                    className={`flex items-center gap-3 border-b border-white/5 px-4 py-2.5 last:border-0 ${
+                      f.esVos ? 'bg-brand-accent/15' : ''
+                    }`}
+                  >
+                    <span className="w-7 flex-shrink-0 text-center text-lg leading-none">
+                      {f.posicion <= 3 ? MEDALLAS[f.posicion - 1] : (
+                        <span className="text-xs font-bold text-automotor-300 tabular-nums">{f.posicion}</span>
+                      )}
+                    </span>
+                    <span className={`min-w-0 flex-1 truncate text-sm font-semibold ${f.esVos ? 'text-brand-accent-light' : 'text-white'}`}>
+                      {f.nombre}
+                    </span>
+                    <span className="text-sm font-black tabular-nums text-white">{f.puntos}</span>
+                  </li>
+                ))}
+              </ol>
 
-            {ranking.vos && (
-              <div className="flex items-center gap-3 border-t border-white/10 bg-brand-accent/15 px-4 py-2.5">
-                <span className="w-7 flex-shrink-0 text-center text-xs font-bold text-automotor-300 tabular-nums">
-                  {ranking.vos.posicion}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-brand-accent-light">
-                  {ranking.vos.nombre}
-                </span>
-                <span className="text-sm font-black tabular-nums text-white">{ranking.vos.puntos}</span>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+              {ranking.vos && (
+                <div className="flex items-center gap-3 border-t border-white/10 bg-brand-accent/15 px-4 py-2.5">
+                  <span className="w-7 flex-shrink-0 text-center text-xs font-bold text-automotor-300 tabular-nums">
+                    {ranking.vos.posicion}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-brand-accent-light">
+                    {ranking.vos.nombre}
+                  </span>
+                  <span className="text-sm font-black tabular-nums text-white">{ranking.vos.puntos}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       <ContenderPicker
         abierto={picker !== null}
@@ -473,13 +485,13 @@ function Card({
     >
       <div className="mb-2.5 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          {market.segment ? (
+          {/* El mercado de evento -- hoy solo el podio -- ya lleva su nombre en
+              el encabezado de la sección, así que acá se repetía. */}
+          {market.segment && (
             <p className="truncate text-sm font-bold">
               <span style={{ color: paleta.primario }}>{market.segment.code}</span>{' '}
               {market.segment.name}
             </p>
-          ) : (
-            <p className="truncate text-sm font-bold">{market.title}</p>
           )}
           <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
             {market.segment?.distanceKm != null && (

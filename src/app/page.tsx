@@ -112,6 +112,7 @@ async function getLandingData() {
     orderBy: { closesAt: 'asc' },
     select: {
       id: true, slug: true, title: true, description: true, status: true,
+      showLeaderboard: true,
       primaryColor: true, secondaryColor: true, heroImageUrl: true,
       prizes: {
         orderBy: { position: 'asc' },
@@ -131,6 +132,9 @@ async function getLandingData() {
   // desde la sala sin tener que entrar a jugar.
   const rankingPredicciones = new Map<string, FilaRankingPublica[]>()
   for (const evento of predictionEvents) {
+    // Con el ranking apagado desde el admin el gabinete no lleva botón, así
+    // que tampoco hace falta recorrer las predicciones del evento.
+    if (!evento.showLeaderboard) continue
     const predicciones = await prisma.prediction.findMany({
       where: { market: { eventId: evento.id } },
       select: { playerId: true, pointsAwarded: true, player: { select: { fullName: true } } },
@@ -483,11 +487,14 @@ export default async function HomePage() {
                     >
                       Jugar ahora <ChevronRight className="w-5 h-5" aria-hidden="true" />
                     </Link>
-                    <RankingModal
-                      titulo={evento.title}
-                      filas={rankingPredicciones.get(evento.id) ?? []}
-                      colorAcento={evento.primaryColor}
-                    />
+                    {/* Si el juego esconde su tabla, tampoco se muestra acá. */}
+                    {evento.showLeaderboard && (
+                      <RankingModal
+                        titulo={evento.title}
+                        filas={rankingPredicciones.get(evento.id) ?? []}
+                        colorAcento={evento.primaryColor}
+                      />
+                    )}
                   </div>
                 </div>
               </ArcadeCabinet>

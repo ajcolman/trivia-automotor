@@ -13,9 +13,18 @@ const ESTADOS = Object.values(EventStatus) as string[]
 const COLOR_KEYS = ['primaryColor', 'secondaryColor', 'accentColor', 'backgroundColor', 'textColor'] as const
 type ColorKey = (typeof COLOR_KEYS)[number]
 
+/// Textos que ve el jugador. `title` y `description` salen en la sala; `rules`
+/// es el recuadro que se lee arriba de todo dentro del juego.
+const TEXTO_KEYS = ['title', 'description', 'rules'] as const
+type TextoKey = (typeof TEXTO_KEYS)[number]
+
+/** Cuánto texto tolera cada campo antes de romper la tarjeta del gabinete. */
+const LARGO_MAXIMO: Record<TextoKey, number> = { title: 120, description: 500, rules: 2000 }
+
 /**
- * Actualiza el estado del evento y/o su paleta de colores.
- * Body: `{ status?: EventStatus, colors?: Partial<Record<ColorKey, string>> }`
+ * Actualiza el estado del evento, sus textos, la visibilidad del ranking
+ * y/o su paleta de colores.
+ * Body: `{ status?, title?, description?, rules?, showLeaderboard?, colors? }`
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireAuth()
@@ -33,6 +42,38 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
     data.status = body.status as EventStatus
     changeParts.push(`estado → ${body.status}`)
+  }
+
+  for (const key of TEXTO_KEYS) {
+    if (!(key in body)) continue
+    const valor = body[key]
+    // `description` y `rules` se vacían mandando null o cadena vacía; el
+    // título es lo único que no puede quedar en blanco.
+    if (valor !== null && typeof valor !== 'string') {
+      return NextResponse.json({ error: `${key} debe ser texto.` }, { status: 400 })
+    }
+    const limpio = (valor ?? '').trim()
+    if (limpio.length > LARGO_MAXIMO[key]) {
+      return NextResponse.json(
+        { error: `El texto supera los ${LARGO_MAXIMO[key]} caracteres.` },
+        { status: 400 },
+      )
+    }
+    if (key === 'title') {
+      if (!limpio) return NextResponse.json({ error: 'El título no puede quedar vacío.' }, { status: 400 })
+      data.title = limpio
+    } else {
+      data[key] = limpio || null
+    }
+    changeParts.push(key === 'title' ? 'título' : key === 'description' ? 'descripción' : 'reglas')
+  }
+
+  if ('showLeaderboard' in body) {
+    if (typeof body.showLeaderboard !== 'boolean') {
+      return NextResponse.json({ error: 'showLeaderboard debe ser booleano.' }, { status: 400 })
+    }
+    data.showLeaderboard = body.showLeaderboard
+    changeParts.push(`ranking ${body.showLeaderboard ? 'visible' : 'oculto'}`)
   }
 
   if ('colors' in body) {
@@ -61,7 +102,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     where: { id: params.id },
     data,
     select: {
-      id: true, title: true, status: true,
+      id: true, title: true, status: true, description: true, rules: true, showLeaderboard: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
     },
   })

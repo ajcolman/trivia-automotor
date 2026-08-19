@@ -41,6 +41,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
       title: true,
       status: true,
       rules: true,
+      showLeaderboard: true,
       primaryColor: true,
       secondaryColor: true,
       accentColor: true,
@@ -82,7 +83,11 @@ export default async function PrediccionesPage({ params }: PageProps) {
 
   const porMercado = new Map(predicciones.map(p => [p.marketId, p]))
 
-  const ranking = await publicLeaderboard(evento.id, session.user.id)
+  // Con el ranking apagado desde el admin ni siquiera se calcula: es una
+  // consulta sobre todas las predicciones del evento que nadie va a ver.
+  const ranking = evento.showLeaderboard
+    ? await publicLeaderboard(evento.id, session.user.id)
+    : null
 
   const markets: MarketDTO[] = evento.markets.map(m => {
     const previa = porMercado.get(m.id)
