@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
+import { revalidateLanding } from '@/lib/revalidate'
 
 export async function POST(req: Request) {
   try {
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
       }
     })
 
+    revalidateLanding()
     return NextResponse.json(prize)
   } catch (error) {
     console.error('Error creating prize:', error)

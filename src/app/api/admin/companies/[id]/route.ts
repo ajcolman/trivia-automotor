@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -41,6 +42,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     action: 'UPDATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
   })
 
+  revalidateLanding()
   return NextResponse.json(company)
 }
 
@@ -56,5 +58,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   })
 
   await prisma.company.delete({ where: { id: params.id } })
+  revalidateLanding()
   return NextResponse.json({ ok: true })
 }

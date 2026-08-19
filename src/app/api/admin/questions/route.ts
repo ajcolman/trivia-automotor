@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { questionSchema } from '@/lib/validations/trivia'
+import { revalidateLanding } from '@/lib/revalidate'
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireAuth()
@@ -37,5 +38,6 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  revalidateLanding()
   return NextResponse.json(question, { status: 201 })
 }

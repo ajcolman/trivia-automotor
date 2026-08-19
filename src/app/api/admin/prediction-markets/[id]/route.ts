@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/admin-auth'
 import { resolveMarket, clearResolution } from '@/lib/predictions/resolver'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 /** Carga o corrige el resultado de un mercado y repuntúa sus predicciones. */
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
@@ -26,6 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     userEmail: session.user.email,
   })
 
+  revalidateLanding()
   return NextResponse.json({
     ok: true,
     puntuadas: resultado.puntuadas,
@@ -50,5 +52,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     userEmail: session.user.email,
   })
 
+  revalidateLanding()
   return NextResponse.json({ ok: true, despuntuadas })
 }

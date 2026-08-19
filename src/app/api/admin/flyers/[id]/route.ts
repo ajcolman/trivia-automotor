@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
+import { revalidateLanding } from '@/lib/revalidate'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireAuth()
@@ -21,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     where: { id: params.id },
     data: { isActive: typeof body.isActive === 'boolean' ? body.isActive : !flyer.isActive },
   })
+  revalidateLanding()
   return NextResponse.json(updated)
 }
 
@@ -38,5 +40,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   }
 
   await prisma.triviaFlyer.delete({ where: { id: params.id } })
+  revalidateLanding()
   return NextResponse.json({ ok: true })
 }

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { triviaBaseSchema } from '@/lib/validations/trivia'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 async function checkOwnership(id: string, userId: string, role: string) {
   const trivia = await prisma.trivia.findUnique({ where: { id } })
@@ -71,6 +72,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     action: 'UPDATE', userId: session.user.id, userName: session.user.name ?? '', userEmail: session.user.email ?? '',
   })
 
+  revalidateLanding()
   return NextResponse.json(updated)
 }
 
@@ -88,5 +90,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   })
 
   await prisma.trivia.delete({ where: { id: params.id } })
+  revalidateLanding()
   return NextResponse.json({ ok: true })
 }

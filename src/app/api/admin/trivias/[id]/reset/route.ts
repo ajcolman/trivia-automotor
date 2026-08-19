@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
+import { revalidateLanding } from '@/lib/revalidate'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireAuth()
@@ -22,5 +23,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     prisma.pageView.deleteMany({ where: { triviaId: params.id } })
   ])
 
+  revalidateLanding()
   return NextResponse.json({ ok: true, message: 'Trivia reseteada exitosamente' })
 }

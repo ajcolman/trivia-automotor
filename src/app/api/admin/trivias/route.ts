@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { triviaSchema } from '@/lib/validations/trivia'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 export async function GET(_req: NextRequest) {
   const { session, error } = await requireAuth()
@@ -55,5 +56,6 @@ export async function POST(req: NextRequest) {
     action: 'CREATE', userId: session.user.id, userName: session.user.name ?? '', userEmail: session.user.email ?? '',
   })
 
+  revalidateLanding()
   return NextResponse.json(trivia, { status: 201 })
 }

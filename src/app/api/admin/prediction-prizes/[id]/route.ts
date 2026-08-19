@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 const cambioSchema = z.object({
   name: z.string().trim().min(1).max(160).optional(),
@@ -57,6 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     userEmail: session.user.email,
   })
 
+  revalidateLanding()
   return NextResponse.json({ ok: true, premio })
 }
 
@@ -84,5 +86,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     userEmail: session.user.email,
   })
 
+  revalidateLanding()
   return NextResponse.json({ ok: true })
 }

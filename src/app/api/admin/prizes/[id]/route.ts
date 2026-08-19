@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { z } from 'zod'
+import { revalidateLanding } from '@/lib/revalidate'
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -31,6 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!parsed.success) return NextResponse.json({ error: 'Datos inválidos' }, { status: 422 })
 
   const updated = await prisma.prize.update({ where: { id: params.id }, data: parsed.data })
+  revalidateLanding()
   return NextResponse.json(updated)
 }
 
@@ -50,5 +52,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   }
 
   await prisma.prize.delete({ where: { id: params.id } })
+  revalidateLanding()
   return NextResponse.json({ ok: true })
 }

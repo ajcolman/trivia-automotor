@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 /**
  * Reinicia un evento de predicción.
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     userEmail: session.user.email,
   })
 
+  revalidateLanding()
   return NextResponse.json({
     ok: true,
     resultados: resultados.count,

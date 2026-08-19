@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 const updateTournamentSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -89,6 +90,7 @@ export async function PATCH(
     action: 'UPDATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
   })
 
+  revalidateLanding()
   return NextResponse.json(updated)
 }
 
@@ -111,5 +113,6 @@ export async function DELETE(
 
   await prisma.tournament.delete({ where: { id: params.id } })
 
+  revalidateLanding()
   return NextResponse.json({ success: true })
 }

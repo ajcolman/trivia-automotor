@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { z } from 'zod'
+import { revalidateLanding } from '@/lib/revalidate'
 
 const flyerSchema = z.object({
   triviaId: z.string().min(1),
@@ -27,5 +28,6 @@ export async function POST(req: NextRequest) {
   }
 
   const flyer = await prisma.triviaFlyer.create({ data: parsed.data })
+  revalidateLanding()
   return NextResponse.json(flyer, { status: 201 })
 }

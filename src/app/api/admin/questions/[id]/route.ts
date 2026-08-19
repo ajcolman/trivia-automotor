@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAuth, isSuperAdmin } from '@/lib/admin-auth'
 import { questionSchema } from '@/lib/validations/trivia'
+import { revalidateLanding } from '@/lib/revalidate'
 
 async function checkOwnership(questionId: string, userId: string, role: string) {
   const question = await prisma.question.findUnique({
@@ -29,6 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const updated = await prisma.question.update({ where: { id: params.id }, data: parsed.data })
+  revalidateLanding()
   return NextResponse.json(updated)
 }
 
@@ -41,5 +43,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (q === false) return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
 
   await prisma.question.delete({ where: { id: params.id } })
+  revalidateLanding()
   return NextResponse.json({ ok: true })
 }

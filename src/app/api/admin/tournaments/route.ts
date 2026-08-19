@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { z } from 'zod'
 import { logAudit } from '@/lib/audit'
+import { revalidateLanding } from '@/lib/revalidate'
 
 const createTournamentSchema = z.object({
   name: z.string().min(1).max(200),
@@ -76,5 +77,6 @@ export async function POST(req: NextRequest) {
     action: 'CREATE', userId: session!.user.id, userName: session!.user.name ?? '', userEmail: session!.user.email ?? '',
   })
 
+  revalidateLanding()
   return NextResponse.json(tournament, { status: 201 })
 }
