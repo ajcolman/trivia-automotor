@@ -2,8 +2,9 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { MailWarning, ChevronRight, Pencil } from 'lucide-react'
+import { ChevronRight, Pencil } from 'lucide-react'
 import { LogoutButton } from '@/components/cuenta/LogoutButton'
+import { VerificarAviso } from '@/components/cuenta/VerificarAviso'
 import type { Metadata } from 'next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -13,7 +14,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function CuentaPage() {
+export default async function CuentaPage({
+  searchParams,
+}: {
+  searchParams: { correo?: string }
+}) {
   const session = await getServerSession(authOptions)
 
   // Solo jugadores. Un administrador con sesión abierta no tiene cuenta acá.
@@ -40,15 +45,7 @@ export default async function CuentaPage() {
       </div>
 
       {!player.emailVerifiedAt && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex gap-3">
-          <MailWarning className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
-          <div>
-            <p className="text-sm font-bold text-amber-900">Confirmá tu correo</p>
-            <p className="text-sm text-amber-800 mt-0.5">
-              Te enviamos un enlace a {player.email}. Hace falta para poder entregarte un premio.
-            </p>
-          </div>
-        </div>
+        <VerificarAviso email={player.email} falloElEnvio={searchParams.correo === '0'} />
       )}
 
       <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xl">

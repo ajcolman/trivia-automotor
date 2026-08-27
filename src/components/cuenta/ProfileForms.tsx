@@ -12,6 +12,7 @@ import {
   type PlayerProfileInput,
   type PlayerPasswordInput,
 } from '@/lib/validations/player'
+import { sugerirCorreo } from '@/lib/validations/email-domain'
 
 const campo =
   'w-full min-h-[48px] rounded-xl border-2 border-slate-200 px-4 text-base text-slate-900 ' +
@@ -46,9 +47,11 @@ export function ProfileForm({ inicial }: { inicial: PlayerProfileInput }) {
   const router = useRouter()
   const [ok, setOk] = useState<string | null>(null)
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
+  // Corrección propuesta cuando el dominio parece mal tipeado.
+  const [sugerencia, setSugerencia] = useState<string | null>(null)
 
   const {
-    register, handleSubmit, setError,
+    register, handleSubmit, setError, setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<PlayerProfileInput>({
     resolver: zodResolver(playerProfileSchema),
@@ -90,7 +93,11 @@ export function ProfileForm({ inicial }: { inicial: PlayerProfileInput }) {
       <div>
         <label htmlFor="p-email" className={etiqueta}>Correo</label>
         <input id="p-email" type="email" autoComplete="email" inputMode="email" className={campo}
-          aria-invalid={!!errors.email} aria-describedby="ayuda-email" {...register('email')} />
+          aria-invalid={!!errors.email} aria-describedby="ayuda-email"
+          {...register('email', {
+            onBlur: e => setSugerencia(sugerirCorreo(e.target.value)),
+            onChange: () => setSugerencia(null),
+          })} />
         {errors.email
           ? <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
           : (
@@ -99,6 +106,22 @@ export function ProfileForm({ inicial }: { inicial: PlayerProfileInput }) {
               Si lo cambiás, vas a tener que confirmar la dirección nueva.
             </p>
           )}
+        {!errors.email && sugerencia && (
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-amber-700">
+            ¿Quisiste decir
+            <button
+              type="button"
+              onClick={() => {
+                setValue('email', sugerencia, { shouldValidate: true })
+                setSugerencia(null)
+              }}
+              className="rounded font-bold underline underline-offset-2 hover:text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+            >
+              {sugerencia}
+            </button>
+            ?
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { playerRegisterSchema, type PlayerRegisterInput } from '@/lib/validations/player'
+import { sugerirCorreo } from '@/lib/validations/email-domain'
 
 const campo =
   'w-full min-h-[48px] rounded-xl border-2 border-slate-200 px-4 text-base text-slate-900 ' +
@@ -20,11 +21,15 @@ export function RegisterForm() {
   const router = useRouter()
   const [verPassword, setVerPassword] = useState(false)
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
+  // Corrección propuesta cuando el dominio parece mal tipeado. Es una
+  // sugerencia y no un error: se puede ignorar y seguir.
+  const [sugerencia, setSugerencia] = useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<PlayerRegisterInput>({
     resolver: zodResolver(playerRegisterSchema),
@@ -60,7 +65,12 @@ export function RegisterForm() {
       router.push('/cuenta/ingresar?creada=1')
       return
     }
-    router.push('/cuenta?bienvenida=1')
+
+    // Si el correo de verificación no llegó a salir, la cuenta igual quedó
+    // creada. Se lo decimos en /cuenta, donde tiene el botón para pedirlo de
+    // nuevo: callarlo dejaba al jugador esperando un mensaje que nunca salió.
+    const correoOk = cuerpo?.correoEnviado !== false
+    router.push(`/cuenta?bienvenida=1${correoOk ? '' : '&correo=0'}`)
     router.refresh()
   }
 
@@ -93,11 +103,35 @@ export function RegisterForm() {
           className={campo}
           placeholder="juan@ejemplo.com"
           aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? 'err-email' : undefined}
-          {...register('email')}
+          aria-describedby={
+            errors.email ? 'err-email' : sugerencia ? 'sugerencia-email' : undefined
+          }
+          {...register('email', {
+            onBlur: e => setSugerencia(sugerirCorreo(e.target.value)),
+            onChange: () => setSugerencia(null),
+          })}
         />
         {errors.email && (
           <p id="err-email" className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
+        )}
+        {!errors.email && sugerencia && (
+          <p
+            id="sugerencia-email"
+            className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-amber-700"
+          >
+            ¿Quisiste decir
+            <button
+              type="button"
+              onClick={() => {
+                setValue('email', sugerencia, { shouldValidate: true })
+                setSugerencia(null)
+              }}
+              className="font-bold underline underline-offset-2 hover:text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded"
+            >
+              {sugerencia}
+            </button>
+            ?
+          </p>
         )}
       </div>
 

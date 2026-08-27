@@ -10,10 +10,26 @@ import { createHash, randomBytes } from 'crypto'
 import type { PlayerTokenType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
-/** Vigencia por tipo de token. */
+/**
+ * Vigencia por tipo de token.
+ *
+ * La verificación dura una semana a propósito: alguien que se registra un
+ * viernes de carrera puede abrir el correo el lunes y el enlace todavía sirve.
+ * La recuperación de contraseña sigue corta porque abre una puerta más
+ * sensible.
+ */
 const TTL_MS: Record<PlayerTokenType, number> = {
-  email_verification: 24 * 60 * 60 * 1000, // 24 horas
+  email_verification: 7 * 24 * 60 * 60 * 1000, // 7 días
   password_reset: 60 * 60 * 1000, // 1 hora
+}
+
+/**
+ * Cómo se nombra cada vigencia en los correos. Vive acá para que el texto que
+ * lee el jugador no se despegue del TTL real si alguno cambia.
+ */
+export const TTL_LABEL: Record<PlayerTokenType, string> = {
+  email_verification: '7 días',
+  password_reset: '1 hora',
 }
 
 function hashToken(token: string): string {

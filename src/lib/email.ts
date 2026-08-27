@@ -14,6 +14,7 @@
  * registro de jugadores funciona en desarrollo sin configurar nada.
  */
 import nodemailer, { type Transporter } from 'nodemailer'
+import { TTL_LABEL } from '@/lib/player-tokens'
 
 export interface EmailMessage {
   to: string
@@ -100,7 +101,7 @@ export function passwordResetEmail(fullName: string, url: string): Omit<EmailMes
   const nombre = fullName.split(' ')[0]
   return {
     subject: 'Restablecer tu contraseña de Automotor Play',
-    text: `Hola ${nombre},\n\nPediste restablecer tu contraseña. Entrá acá para elegir una nueva:\n${url}\n\nEl enlace vence en 1 hora y sirve una sola vez.\n\nSi no lo pediste, ignorá este mensaje: tu contraseña sigue siendo la misma.`,
+    text: `Hola ${nombre},\n\nPediste restablecer tu contraseña. Entrá acá para elegir una nueva:\n${url}\n\nEl enlace vence en ${TTL_LABEL.password_reset} y sirve una sola vez.\n\nSi no lo pediste, ignorá este mensaje: tu contraseña sigue siendo la misma.`,
     html: `
 <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#021F39">
   <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#005CA8;margin:0 0 16px">Automotor Play</p>
@@ -114,7 +115,7 @@ export function passwordResetEmail(fullName: string, url: string): Omit<EmailMes
     </a>
   </p>
   <p style="font-size:14px;color:#4A5E70;line-height:1.6;margin:0 0 8px">
-    El enlace vence en 1 hora y sirve una sola vez. Si el botón no funciona, copiá esta dirección:
+    El enlace vence en ${TTL_LABEL.password_reset} y sirve una sola vez. Si el botón no funciona, copiá esta dirección:
   </p>
   <p style="font-size:13px;color:#4A5E70;word-break:break-all;margin:0 0 24px">${url}</p>
   <p style="font-size:13px;color:#7C8FA0;border-top:1px solid #D8E3EC;padding-top:16px;margin:0">
@@ -129,7 +130,7 @@ export function verificationEmail(fullName: string, url: string): Omit<EmailMess
   const nombre = fullName.split(' ')[0]
   return {
     subject: 'Confirmá tu cuenta de Automotor Play',
-    text: `Hola ${nombre},\n\nConfirmá tu cuenta para participar y competir por los premios:\n${url}\n\nEl enlace vence en 24 horas.\n\nSi no creaste esta cuenta, ignorá este mensaje.`,
+    text: `Hola ${nombre},\n\nConfirmá tu cuenta para participar y competir por los premios:\n${url}\n\nEl enlace vence en ${TTL_LABEL.email_verification}.\n\nSi no creaste esta cuenta, ignorá este mensaje.`,
     html: `
 <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#021F39">
   <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#005CA8;margin:0 0 16px">Automotor Play</p>
@@ -143,11 +144,50 @@ export function verificationEmail(fullName: string, url: string): Omit<EmailMess
     </a>
   </p>
   <p style="font-size:14px;color:#4A5E70;line-height:1.6;margin:0 0 8px">
-    El enlace vence en 24 horas. Si el botón no funciona, copiá esta dirección:
+    El enlace vence en ${TTL_LABEL.email_verification}. Si el botón no funciona, copiá esta dirección:
   </p>
   <p style="font-size:13px;color:#4A5E70;word-break:break-all;margin:0 0 24px">${url}</p>
   <p style="font-size:13px;color:#7C8FA0;border-top:1px solid #D8E3EC;padding-top:16px;margin:0">
     Si no creaste esta cuenta, ignorá este mensaje.
+  </p>
+</div>`.trim(),
+  }
+}
+
+/**
+ * Plantilla del recordatorio para quien jugó pero nunca confirmó el correo.
+ *
+ * Se distingue del correo de verificación en que asume que ya jugó: le habla
+ * del premio, que es lo que se pierde si no confirma.
+ */
+export function verificationReminderEmail(
+  fullName: string,
+  url: string,
+  eventoTitulo: string,
+): Omit<EmailMessage, 'to'> {
+  const nombre = fullName.split(' ')[0]
+  return {
+    subject: `Te falta confirmar tu correo para ${eventoTitulo}`,
+    text: `Hola ${nombre},\n\nJugaste ${eventoTitulo}, pero tu correo todavía no está confirmado y lo necesitamos para poder entregarte el premio si ganás.\n\nEs un solo paso:\n${url}\n\nEl enlace vence en ${TTL_LABEL.email_verification}.\n\nSi ya lo confirmaste, ignorá este mensaje.`,
+    html: `
+<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#021F39">
+  <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#005CA8;margin:0 0 16px">Automotor Play</p>
+  <h1 style="font-size:24px;line-height:1.2;margin:0 0 16px">Te falta confirmar tu correo</h1>
+  <p style="font-size:16px;line-height:1.6;margin:0 0 24px">
+    Hola ${nombre}, jugaste ${eventoTitulo} pero tu correo todavía no está confirmado.
+    Lo necesitamos para poder entregarte el premio si ganás.
+  </p>
+  <p style="margin:0 0 24px">
+    <a href="${url}" style="display:inline-block;background:#005CA8;color:#fff;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:999px">
+      Confirmar mi correo
+    </a>
+  </p>
+  <p style="font-size:14px;color:#4A5E70;line-height:1.6;margin:0 0 8px">
+    El enlace vence en ${TTL_LABEL.email_verification}. Si el botón no funciona, copiá esta dirección:
+  </p>
+  <p style="font-size:13px;color:#4A5E70;word-break:break-all;margin:0 0 24px">${url}</p>
+  <p style="font-size:13px;color:#7C8FA0;border-top:1px solid #D8E3EC;padding-top:16px;margin:0">
+    Si ya lo confirmaste, ignorá este mensaje.
   </p>
 </div>`.trim(),
   }
