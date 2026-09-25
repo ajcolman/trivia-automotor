@@ -1,10 +1,9 @@
 // Author: Angel Colman
 import Link from 'next/link'
-import { Flag, ChevronRight, Users, ListChecks, CheckCircle2 } from 'lucide-react'
+import { Flag, ChevronRight, Users, ListChecks, CheckCircle2, Plus } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
 import { formatDateShort } from '@/lib/utils'
-import { EventoNuevo } from '@/components/admin/EventoNuevo'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,15 +65,26 @@ export default async function EventosPage() {
             </p>
           </div>
         </div>
-        <EventoNuevo />
+        <Link
+          href="/admin/eventos/nuevo"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-[#005CA8] px-4 text-sm font-bold text-white transition-colors hover:bg-[#004E8F]"
+        >
+          <Plus className="h-4 w-4" /> Nuevo juego
+        </Link>
       </div>
 
       {eventos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center">
           <p className="font-semibold text-slate-500">Todavía no hay juegos cargados.</p>
-          <p className="mt-1 text-sm text-slate-400">
-            Creá uno con “Nuevo juego” y cargale tramos, participantes y preguntas.
+          <p className="mb-4 mt-1 text-sm text-slate-400">
+            Creá uno y cargale tramos, participantes y preguntas.
           </p>
+          <Link
+            href="/admin/eventos/nuevo"
+            className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-[#005CA8] px-4 text-sm font-bold text-white transition-colors hover:bg-[#004E8F]"
+          >
+            <Plus className="h-4 w-4" /> Crear el primero
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
