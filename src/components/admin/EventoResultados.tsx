@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import type { FilaRanking } from '@/lib/predictions/resolver'
 import { EventoPremios, type PremioFila } from './EventoPremios'
-import { EventoTramos, type TramoFila } from './EventoTramos'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface ContenderOpcion { id: string; etiqueta: string }
@@ -48,7 +47,6 @@ interface Props {
   ranking: FilaRanking[]
   estadisticas: EstadisticasEvento
   premios: PremioFila[]
-  tramos: TramoFila[]
   /** Si el ranking se muestra al jugador y en la sala. */
   mostrarRanking: boolean
 }
@@ -67,7 +65,7 @@ const fFecha = new Intl.DateTimeFormat('es-PY', {
 })
 
 export function EventoResultados({
-  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas, premios, tramos,
+  eventoId, titulo, slug, estado, contenders, markets, ranking, estadisticas, premios,
   mostrarRanking,
 }: Props) {
   const router = useRouter()
@@ -151,7 +149,7 @@ export function EventoResultados({
     }
 
     setGuardando(m.id)
-    const res = await fetch(`/api/admin/prediction-markets/${m.id}`, {
+    const res = await fetch(`/api/admin/prediction-markets/${m.id}/resolution`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value: m.posiciones === 1 ? elegidos[0] : elegidos }),
@@ -173,7 +171,7 @@ export function EventoResultados({
 
   async function borrarResultado(m: MarketFila) {
     setGuardando(m.id)
-    const res = await fetch(`/api/admin/prediction-markets/${m.id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/admin/prediction-markets/${m.id}/resolution`, { method: 'DELETE' })
     setGuardando(null)
     if (res.ok) {
       setBorrador(b => ({ ...b, [m.id]: [] }))
@@ -265,8 +263,6 @@ export function EventoResultados({
       </section>
 
       <EventoPremios eventoId={eventoId} premios={premios} />
-
-      <EventoTramos tramos={tramos} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         {/* ── Resultados ─────────────────────────────────────── */}

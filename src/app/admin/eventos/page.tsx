@@ -4,8 +4,12 @@ import { Flag, ChevronRight, Users, ListChecks, CheckCircle2 } from 'lucide-reac
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
 import { formatDateShort } from '@/lib/utils'
+import { EventoNuevo } from '@/components/admin/EventoNuevo'
 
 export const dynamic = 'force-dynamic'
+
+/** Los estados que la sala lista en la portada (ver `src/app/page.tsx`). */
+const VISIBLES_EN_SALA: string[] = ['open', 'live']
 
 const ETIQUETA: Record<string, { texto: string; clase: string }> = {
   draft: { texto: 'Borrador', clase: 'bg-slate-100 text-slate-600' },
@@ -50,23 +54,26 @@ export default async function EventosPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#005CA8]">
-          <Flag className="h-5 w-5 text-white" />
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#005CA8]">
+            <Flag className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900">Juegos de predicción</h1>
+            <p className="text-sm text-slate-500">
+              Armá el juego, cargá resultados y controlá cuándo está abierto al público.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-slate-900">Juegos de predicción</h1>
-          <p className="text-sm text-slate-500">
-            Cargá resultados y controlá cuándo el juego está abierto al público.
-          </p>
-        </div>
+        <EventoNuevo />
       </div>
 
       {eventos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center">
-          <p className="font-semibold text-slate-500">Todavía no hay eventos cargados.</p>
+          <p className="font-semibold text-slate-500">Todavía no hay juegos cargados.</p>
           <p className="mt-1 text-sm text-slate-400">
-            Se crean desde el script de sembrado del proyecto.
+            Creá uno con “Nuevo juego” y cargale tramos, participantes y preguntas.
           </p>
         </div>
       ) : (
@@ -84,6 +91,9 @@ export default async function EventosPage() {
                   <div className="mb-1 flex flex-wrap items-center gap-2">
                     <h2 className="truncate font-bold text-slate-900">{e.title}</h2>
                     <Badge className={`border-0 ${et.clase}`}>{et.texto}</Badge>
+                    {VISIBLES_EN_SALA.includes(e.status) && (
+                      <span className="text-xs font-semibold text-slate-400">visible en la sala</span>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                     <span className="flex items-center gap-1">

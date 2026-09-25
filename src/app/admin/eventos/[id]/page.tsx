@@ -7,6 +7,10 @@ import { eventLeaderboard } from '@/lib/predictions/resolver'
 import { EventoResultados } from '@/components/admin/EventoResultados'
 import { EventoDiseno } from '@/components/admin/EventoDiseno'
 import { EventoTextos } from '@/components/admin/EventoTextos'
+import { EventoTramos } from '@/components/admin/EventoTramos'
+import { EventoParticipantes } from '@/components/admin/EventoParticipantes'
+import { EventoPreguntas } from '@/components/admin/EventoPreguntas'
+import type { MarketConfig, MarketType } from '@/lib/predictions/scoring'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,19 +23,24 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
       segments: {
         orderBy: { orderIndex: 'asc' },
-        select: { id: true, code: true, name: true, distanceKm: true, locksAt: true, isCancelled: true },
+        select: {
+          id: true, code: true, name: true, distanceKm: true, locksAt: true, isCancelled: true,
+          markets: { select: { _count: { select: { predictions: true } } } },
+        },
       },
       prizes: { orderBy: { position: 'asc' }, select: { id: true, name: true, description: true, imageUrl: true, position: true } },
       contenders: {
-        where: { isActive: true },
         orderBy: [{ isFeatured: 'desc' }, { orderIndex: 'asc' }],
-        select: { id: true, number: true, name: true, category: true },
+        select: {
+          id: true, number: true, name: true, subtitle: true,
+          teamName: true, category: true, isFeatured: true, isActive: true,
+        },
       },
       markets: {
         orderBy: { orderIndex: 'asc' },
         select: {
           id: true, type: true, title: true, locksAt: true, config: true,
-          segment: { select: { code: true, name: true } },
+          segment: { select: { id: true, code: true, name: true } },
           resolution: { select: { value: true, revisedAt: true } },
           _count: { select: { predictions: true } },
         },
@@ -109,15 +118,47 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         }}
       />
 
+      <EventoTramos
+        eventoId={evento.id}
+        tramos={evento.segments.map(({ markets, ...t }) => ({
+          ...t,
+          locksAt: t.locksAt.toISOString(),
+          preguntas: markets.length,
+          predicciones: markets.reduce((s, m) => s + m._count.predictions, 0),
+        }))}
+      />
+
+      <EventoParticipantes
+        eventoId={evento.id}
+        participantes={evento.contenders}
+      />
+
+      <EventoPreguntas
+        eventoId={evento.id}
+        tramos={evento.segments.map(t => ({ id: t.id, code: t.code, name: t.name }))}
+        preguntas={evento.markets.map(m => ({
+          id: m.id,
+          type: m.type as MarketType,
+          title: m.title,
+          locksAt: m.locksAt.toISOString(),
+          config: (m.config ?? {}) as MarketConfig,
+          predicciones: m._count.predictions,
+          tieneResultado: m.resolution != null,
+          tramo: m.segment ? { id: m.segment.id, code: m.segment.code, name: m.segment.name } : null,
+        }))}
+      />
+
       <EventoResultados
         eventoId={evento.id}
         titulo={evento.title}
         slug={evento.slug}
         estado={evento.status}
-        contenders={evento.contenders.map(c => ({
-          id: c.id,
-          etiqueta: `${c.number ? `#${c.number} ` : ''}${c.name}${c.category ? ` · ${c.category}` : ''}`,
-        }))}
+        contenders={evento.contenders
+          .filter(c => c.isActive)
+          .map(c => ({
+            id: c.id,
+            etiqueta: `${c.number ? `#${c.number} ` : ''}${c.name}${c.category ? ` · ${c.category}` : ''}`,
+          }))}
         markets={evento.markets.map(m => ({
           id: m.id,
           type: m.type,
@@ -131,7 +172,6 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         ranking={ranking}
         estadisticas={estadisticas}
         premios={evento.prizes}
-        tramos={evento.segments.map(t => ({ ...t, locksAt: t.locksAt.toISOString() }))}
         mostrarRanking={evento.showLeaderboard}
       />
     </div>

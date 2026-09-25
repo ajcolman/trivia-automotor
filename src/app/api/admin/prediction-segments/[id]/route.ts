@@ -96,3 +96,40 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   return NextResponse.json({ ok: true, segmento: actualizado, despuntuadas })
 }
+
+/** Borra el tramo junto con sus preguntas y lo que se haya predicho en ellas. */
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  const { session, error } = await requireAuth()
+  if (error) return error
+
+  const tramo = await prisma.segment.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true, code: true, name: true,
+      markets: { select: { _count: { select: { predictions: true } } } },
+    },
+  })
+  if (!tramo) return NextResponse.json({ error: 'Tramo no encontrado' }, { status: 404 })
+
+  const predicciones = tramo.markets.reduce((s, m) => s + m._count.predictions, 0)
+
+  // Market cuelga del tramo con onDelete: Cascade, y Prediction de Market:
+  // borrar el tramo se lleva sus preguntas y sus predicciones.
+  await prisma.segment.delete({ where: { id: params.id } })
+
+  await logAudit({
+    entityType: 'Segment',
+    entityId: tramo.id,
+    entityName: `${tramo.code} · ${tramo.name} · ${tramo.markets.length} preguntas y ${predicciones} predicciones borradas`,
+    action: 'DELETE',
+    userId: session.user.id,
+    userName: session.user.name,
+    userEmail: session.user.email,
+  })
+
+  return NextResponse.json({
+    ok: true,
+    preguntasBorradas: tramo.markets.length,
+    prediccionesBorradas: predicciones,
+  })
+}
