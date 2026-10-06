@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/admin-auth'
 import { logAudit } from '@/lib/audit'
 import { isValidHexColor } from '@/lib/utils'
+import { resolveHeroImageSettings } from '@/lib/hero-image'
 import { revalidateLanding } from '@/lib/revalidate'
 
 const ESTADOS = Object.values(EventStatus) as string[]
@@ -23,9 +24,10 @@ type TextoKey = (typeof TEXTO_KEYS)[number]
 const LARGO_MAXIMO: Record<TextoKey, number> = { title: 120, description: 500, rules: 2000 }
 
 /**
- * Actualiza el estado del evento, sus textos, la visibilidad del ranking
- * y/o su paleta de colores.
- * Body: `{ status?, title?, description?, rules?, showLeaderboard?, colors? }`
+ * Actualiza el estado del evento, sus textos, la visibilidad del ranking,
+ * su banner y marca organizadora y/o su paleta de colores.
+ * Body: `{ status?, title?, description?, rules?, showLeaderboard?,
+ *          heroImageUrl?, heroImageSettings?, brandId?, colors? }`
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireAuth()
@@ -77,6 +79,46 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     changeParts.push(`ranking ${body.showLeaderboard ? 'visible' : 'oculto'}`)
   }
 
+  if ('heroImageUrl' in body) {
+    const valor = body.heroImageUrl
+    if (valor !== null && typeof valor !== 'string') {
+      return NextResponse.json({ error: 'heroImageUrl debe ser texto.' }, { status: 400 })
+    }
+    const limpio = (valor ?? '').trim()
+    if (limpio.length > 500) {
+      return NextResponse.json({ error: 'La dirección de la imagen es demasiado larga.' }, { status: 400 })
+    }
+    data.heroImageUrl = limpio || null
+    changeParts.push(limpio ? 'banner' : 'banner quitado')
+  }
+
+  if ('heroImageSettings' in body) {
+    const valor = body.heroImageSettings
+    if (valor !== null && (typeof valor !== 'object' || Array.isArray(valor))) {
+      return NextResponse.json({ error: 'heroImageSettings debe ser un objeto.' }, { status: 400 })
+    }
+    // Se normaliza acá: los valores llegan de un editor en el navegador y un
+    // zoom o un recorte fuera de rango rompería el encuadre en la sala.
+    data.heroImageSettings = valor ? (resolveHeroImageSettings(valor) as object) : Prisma.DbNull
+  }
+
+  if ('brandId' in body) {
+    const valor = body.brandId
+    if (valor !== null && typeof valor !== 'string') {
+      return NextResponse.json({ error: 'brandId debe ser texto.' }, { status: 400 })
+    }
+    const id = (valor ?? '').trim()
+    if (id) {
+      const marca = await prisma.brand.findUnique({ where: { id }, select: { id: true, name: true } })
+      if (!marca) return NextResponse.json({ error: 'La marca elegida no existe.' }, { status: 400 })
+      data.brand = { connect: { id } }
+      changeParts.push(`marca → ${marca.name}`)
+    } else {
+      data.brand = { disconnect: true }
+      changeParts.push('marca quitada')
+    }
+  }
+
   if ('colors' in body) {
     const colors = body.colors
     if (typeof colors !== 'object' || colors === null) {
@@ -104,12 +146,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     data,
     select: {
       id: true, title: true, status: true, description: true, rules: true, showLeaderboard: true,
+      heroImageUrl: true, heroImageSettings: true, brandId: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
     },
   })
 
-  // Todo lo que se toca acá -- estado, título, descripción, ranking, colores --
-  // se muestra en la sala.
+  // Todo lo que se toca acá -- estado, título, descripción, ranking, banner,
+  // marca, colores -- se muestra en la sala.
   revalidateLanding()
 
   await logAudit({

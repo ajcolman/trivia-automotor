@@ -66,9 +66,10 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  company Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  trivias Trivia[]
-  sprites VehicleSprite[]
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  trivias          Trivia[]
+  sprites          VehicleSprite[]
+  predictionEvents PredictionEvent[]
 
   @@unique([companyId, name])
 }
@@ -476,38 +477,45 @@ model PlayerToken {
 }
 
 model PredictionEvent {
-  id              String      @id @default(cuid())
-  slug            String      @unique
-  title           String
-  description     String?
-  status          EventStatus @default(draft)
-  externalRef     String?
-  opensAt         DateTime?
-  closesAt        DateTime?
-  companyId       String?
-  brandId         String?
-  heroImageUrl    String?
-  primaryColor    String      @default("#005CA8")
-  secondaryColor  String      @default("#004071")
+  id                String      @id @default(cuid())
+  slug              String      @unique
+  title             String
+  description       String?
+  status            EventStatus @default(draft)
+  externalRef       String?
+  opensAt           DateTime?
+  closesAt          DateTime?
+  companyId         String?
+  /// Marca de vehículo que organiza el juego. Se muestra en la sala y en la
+  /// cabecera del jugador, igual que las marcas de una trivia.
+  brandId           String?
+  heroImageUrl      String?
+  /// Encuadre del banner: mismo formato que Trivia.heroImageSettings, así el
+  /// editor de imagen del panel sirve para los dos sin ramificarse.
+  heroImageSettings Json? // { zoom: number, x: number, y: number, height: number }
+  primaryColor      String      @default("#005CA8")
+  secondaryColor    String      @default("#004071")
   /// Alineado con Trivia.accentColor: mismo campo, mismo default, misma paleta de referencia.
-  accentColor     String      @default("#FFD700")
+  accentColor       String      @default("#FFD700")
   /// Alineado con Trivia.backgroundColor.
-  backgroundColor String      @default("#F8FAFC")
+  backgroundColor   String      @default("#F8FAFC")
   /// Alineado con Trivia.textColor.
-  textColor       String      @default("#1A1A2E")
-  rules           String?
+  textColor         String      @default("#1A1A2E")
+  rules             String?
   /// Mismo interruptor que Trivia.showLeaderboard: se puede esconder la tabla
   /// de posiciones sin cerrar el juego ni borrar los puntajes.
-  showLeaderboard Boolean     @default(true)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  showLeaderboard   Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
+  brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: SetNull)
   segments   Segment[]
   contenders Contender[]
   markets    Market[]
   prizes     Prize[]
 
   @@index([status])
+  @@index([brandId])
 }
 
 /// Subunidad con cierre propio: un tramo, una fecha, una carrera.

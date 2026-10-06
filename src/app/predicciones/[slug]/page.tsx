@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { PredictionBoard } from '@/components/predicciones/PredictionBoard'
 import { publicLeaderboard } from '@/lib/predictions/resolver'
+import { resolveHeroImageSettings } from '@/lib/hero-image'
 import type { ContenderDTO, MarketDTO } from '@/components/predicciones/tipos'
 
 export const dynamic = 'force-dynamic'
@@ -42,6 +43,9 @@ export default async function PrediccionesPage({ params }: PageProps) {
       status: true,
       rules: true,
       showLeaderboard: true,
+      heroImageUrl: true,
+      heroImageSettings: true,
+      brand: { select: { name: true, logoUrl: true } },
       primaryColor: true,
       secondaryColor: true,
       accentColor: true,
@@ -134,6 +138,13 @@ export default async function PrediccionesPage({ params }: PageProps) {
       contenders={contenders}
       premios={evento.prizes}
       ranking={ranking}
+      banner={evento.heroImageUrl}
+      bannerSettings={
+        evento.heroImageUrl
+          ? resolveHeroImageSettings(evento.heroImageSettings as never, 260)
+          : null
+      }
+      marca={evento.brand}
     />
   )
 }

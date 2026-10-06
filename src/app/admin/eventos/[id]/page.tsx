@@ -7,10 +7,12 @@ import { eventLeaderboard } from '@/lib/predictions/resolver'
 import { EventoResultados } from '@/components/admin/EventoResultados'
 import { EventoDiseno } from '@/components/admin/EventoDiseno'
 import { EventoTextos } from '@/components/admin/EventoTextos'
+import { EventoBanner } from '@/components/admin/EventoBanner'
 import { EventoTramos } from '@/components/admin/EventoTramos'
 import { EventoParticipantes } from '@/components/admin/EventoParticipantes'
 import { EventoPreguntas } from '@/components/admin/EventoPreguntas'
 import type { MarketConfig, MarketType } from '@/lib/predictions/scoring'
+import { resolveHeroImageSettings } from '@/lib/hero-image'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +22,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     select: {
       id: true, slug: true, title: true, status: true,
       description: true, rules: true, showLeaderboard: true,
+      heroImageUrl: true, heroImageSettings: true, brandId: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
       segments: {
         orderBy: { orderIndex: 'asc' },
@@ -49,6 +52,12 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
   })
 
   if (!evento) notFound()
+
+  const marcas = await prisma.brand.findMany({
+    where: { isActive: true },
+    orderBy: [{ company: { name: 'asc' } }, { name: 'asc' }],
+    select: { id: true, name: true, logoUrl: true, company: { select: { name: true } } },
+  })
 
   const ranking = await eventLeaderboard(evento.id, 20)
 
@@ -105,6 +114,22 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
           description: evento.description,
           rules: evento.rules,
         }}
+      />
+
+      <EventoBanner
+        eventoId={evento.id}
+        titulo={evento.title}
+        bannerUrl={evento.heroImageUrl}
+        bannerSettings={
+          evento.heroImageUrl
+            ? resolveHeroImageSettings(evento.heroImageSettings as never, 320)
+            : null
+        }
+        marcaId={evento.brandId}
+        marcas={marcas.map(m => ({
+          id: m.id, name: m.name, logoUrl: m.logoUrl, empresa: m.company.name,
+        }))}
+        colorPrimario={evento.primaryColor}
       />
 
       <EventoDiseno

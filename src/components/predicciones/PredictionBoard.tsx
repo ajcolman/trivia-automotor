@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift, Ban, PartyPopper } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
 import { CarLoop } from './CarLoop'
@@ -10,6 +11,14 @@ import { PhotoZoom } from '@/components/ui/photo-zoom'
 import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
 import type { FilaPublica } from '@/lib/predictions/resolver'
 import { readableTextColor, readableOnGradient } from '@/lib/contrast'
+import { mediaUrl } from '@/lib/utils'
+import {
+  type HeroImageSettings,
+  heroBackgroundImageStyle,
+  heroOverlayGradient,
+  heroTextOutlineStyle,
+  resolveHeroImageSettings,
+} from '@/lib/hero-image'
 
 const TZ = 'America/Asuncion'
 
@@ -44,6 +53,11 @@ interface Props {
   premios: PremioDTO[]
   /** Null cuando el evento tiene el ranking apagado desde el admin. */
   ranking: { top: FilaPublica[]; vos: FilaPublica | null } | null
+  /** Banner de la cabecera. Null = degradado de siempre. */
+  banner: string | null
+  bannerSettings: HeroImageSettings | null
+  /** Marca de vehículo que organiza el juego. */
+  marca: { name: string; logoUrl: string | null } | null
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
@@ -52,7 +66,7 @@ const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export function PredictionBoard({
   titulo, reglas, colorPrimario, colorSecundario, colorAcento, colorFondo, colorTexto,
-  markets, contenders, premios, ranking,
+  markets, contenders, premios, ranking, banner, bannerSettings, marca,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -159,6 +173,7 @@ export function PredictionBoard({
   const completo = jugables.length > 0 && elegidos === jugables.length
 
   const marketAbierto = picker ? markets.find(m => m.id === picker.marketId) : null
+  const encuadre = resolveHeroImageSettings(bannerSettings, 260)
   const bloqueados = marketAbierto?.type === 'ordered_pick' && Array.isArray(picks[marketAbierto.id])
     ? (picks[marketAbierto.id] as string[]).filter((id, i) => Boolean(id) && i !== picker?.slot)
     : []
@@ -171,21 +186,60 @@ export function PredictionBoard({
       <header
         className="relative overflow-hidden px-4 pb-8 pt-6"
         style={{
+          // Con banner, el degradado queda de piso: la foto va encima y el
+          // oscurecido del encuadre se encarga de que el texto se lea.
           background: `linear-gradient(135deg, ${colorPrimario}, ${colorSecundario})`,
-          color: sobreDegradado,
+          color: banner ? '#fff' : sobreDegradado,
         }}
       >
+        {banner && (
+          <>
+            <div className="absolute inset-0" style={heroBackgroundImageStyle(encuadre, mediaUrl(banner))} />
+            <div className="absolute inset-0" style={{ background: heroOverlayGradient(encuadre, 'intro') }} />
+          </>
+        )}
         {/* El clip conserva todo el desplazamiento del auto, así que se ancla
-            al borde derecho sin desbordar por abajo: las ruedas deben verse. */}
-        <CarLoop className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80" />
+            al borde derecho sin desbordar por abajo: las ruedas deben verse.
+            Sobre una foto no va: su blend cuenta con el degradado plano. */}
+        {!banner && (
+          <CarLoop className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80" />
+        )}
         <div className="relative mx-auto max-w-3xl">
-          <Link
-            href="/"
-            className="mb-3 inline-flex min-h-[44px] items-center text-xs font-bold uppercase tracking-wider opacity-70 transition-opacity hover:opacity-100"
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="inline-flex min-h-[44px] items-center text-xs font-bold uppercase tracking-wider opacity-70 transition-opacity hover:opacity-100"
+            >
+              ← Automotor Play
+            </Link>
+            {/* Quién organiza. Va en su propio sello claro para que el logo
+                se lea igual sobre foto o sobre degradado. */}
+            {marca && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow-sm ring-1 ring-black/5">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                  Organiza
+                </span>
+                {marca.logoUrl ? (
+                  <Image
+                    src={mediaUrl(marca.logoUrl)}
+                    alt={marca.name}
+                    width={80}
+                    height={24}
+                    className="h-5 w-auto object-contain"
+                    unoptimized
+                  />
+                ) : (
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    {marca.name}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+          <h1
+            className="font-expanded max-w-[16ch] text-2xl font-black leading-tight text-balance sm:text-3xl"
+            style={banner ? heroTextOutlineStyle(encuadre, 0.7) : undefined}
           >
-            ← Automotor Play
-          </Link>
-          <h1 className="font-expanded max-w-[16ch] text-2xl font-black leading-tight text-balance sm:text-3xl">
             {titulo}
           </h1>
           {/* Avance: el número solo no dice cuánto falta. La barra lo muestra

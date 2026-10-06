@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { UploadDropzone } from './UploadDropzone'
+import { MEDIDAS } from '@/lib/medidas-imagen'
 import { Button } from '@/components/ui/button'
 import { Eye, EyeOff, Maximize, Move, MoveHorizontal, MoveVertical, RefreshCcw, Type, ZoomIn } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
@@ -24,9 +25,20 @@ interface HeroImageEditorProps {
   onChange: (url: string) => void
   onSettingsChange: (settings: HeroImageSettings) => void
   primaryColor?: string
+  /** Texto del encabezado. Lo pisa quien no sea una trivia. */
+  label?: string
+  /** Línea de ayuda bajo el encabezado. */
+  description?: string
+  /** Texto de muestra en la previa, para que se vea el encuadre real. */
+  previewTitle?: string
 }
 
-export function HeroImageEditor({ value, settings, onChange, onSettingsChange, primaryColor = '#003087' }: HeroImageEditorProps) {
+export function HeroImageEditor({
+  value, settings, onChange, onSettingsChange, primaryColor = '#003087',
+  label = 'Imagen de Cabecera (Hero)',
+  description = 'Esta imagen aparecerá de fondo en la parte superior de la trivia.',
+  previewTitle = 'Titulo de la trivia',
+}: HeroImageEditorProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isPreviewRevealActive, setIsPreviewRevealActive] = useState(false)
   const [dragStart, setDragStart] = useState({ mouseX: 0, mouseY: 0, bgX: 50, bgY: 50 })
@@ -73,9 +85,10 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div>
-            <Label className="text-sm font-bold">Imagen de Cabecera (Hero)</Label>
-            <p className="text-xs text-slate-500 mb-3">Esta imagen aparecerá de fondo en la parte superior de la trivia.</p>
+            <Label className="text-sm font-bold">{label}</Label>
+            <p className="text-xs text-slate-500 mb-3">{description}</p>
             <UploadDropzone
+              medida={MEDIDAS.banner}
               value={value}
               onUpload={onChange}
               label="Subir fondo de cabecera"
@@ -233,7 +246,7 @@ export function HeroImageEditor({ value, settings, onChange, onSettingsChange, p
                   }}
                 >
                   <p className="text-lg font-black text-white leading-tight" style={heroTextOutlineStyle(heroSettings)}>
-                    Titulo de la trivia
+                    {previewTitle}
                   </p>
                   <p className="mt-1 text-xs text-white/80 leading-snug" style={heroTextOutlineStyle(heroSettings, 0.45)}>
                     Texto de ejemplo sobre la imagen de cabecera

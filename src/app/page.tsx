@@ -102,7 +102,9 @@ async function getLandingData() {
     select: {
       id: true, slug: true, title: true, description: true, status: true,
       showLeaderboard: true,
-      primaryColor: true, secondaryColor: true, heroImageUrl: true,
+      primaryColor: true, secondaryColor: true,
+      heroImageUrl: true, heroImageSettings: true,
+      brand: { select: { name: true, logoUrl: true } },
       prizes: {
         orderBy: { position: 'asc' },
         select: { id: true, name: true, description: true, imageUrl: true, position: true },
@@ -395,23 +397,78 @@ export default async function HomePage() {
                     En vivo
                   </span>
                 ) : undefined}
-                screen={
-                  <div
-                    className="relative h-40 p-4"
-                    style={{ background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})` }}
-                  >
-                    <h3 className="font-expanded relative z-10 max-w-[13rem] text-xl font-black leading-tight text-white text-balance">
-                      {evento.title}
-                    </h3>
-                    {/* El i20 N como ícono de marca Automotor. CarLoop trae
-                        el loop en video (372 KB) con `mix-blend-mode: screen`
-                        mezclando directo contra el degradado del juego -- sin
-                        envoltorio con fondo propio, ver CarLoop.tsx. Con
-                        reduced-motion, ahorro de datos o conexión lenta cae
-                        solo al sprite fijo. */}
-                    <CarLoop className="pointer-events-none absolute -bottom-1 -right-2 w-44 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none" />
-                  </div>
-                }
+                screen={(() => {
+                  // Con banner cargado manda la foto: el título baja al pie
+                  // sobre el degradado oscuro, que es donde se lee. Sin
+                  // banner queda la pantalla de siempre, degradado y auto.
+                  const banner = evento.heroImageUrl ? mediaUrl(evento.heroImageUrl) : null
+                  const encuadre = resolveHeroImageSettings(evento.heroImageSettings as never, 160)
+                  return (
+                    <div
+                      className="relative h-40"
+                      style={
+                        banner
+                          ? undefined
+                          : { background: `linear-gradient(135deg, ${evento.primaryColor}, ${evento.secondaryColor})` }
+                      }
+                    >
+                      {banner && (
+                        <>
+                          <div
+                            className="absolute inset-0 transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none"
+                            style={heroBackgroundImageStyle(encuadre, banner)}
+                          />
+                          <div
+                            className="absolute inset-0"
+                            style={{ background: heroOverlayGradient(encuadre, 'landing') }}
+                          />
+                        </>
+                      )}
+
+                      {/* Sello de la marca organizadora, arriba a la derecha:
+                          no compite con el título y se lee igual sobre foto
+                          o sobre degradado. */}
+                      {evento.brand && (
+                        <span className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 shadow-sm ring-1 ring-black/5 backdrop-blur-sm">
+                          {evento.brand.logoUrl ? (
+                            <Image
+                              src={mediaUrl(evento.brand.logoUrl)}
+                              alt={evento.brand.name}
+                              width={64}
+                              height={20}
+                              className="h-4 w-auto object-contain"
+                              unoptimized
+                            />
+                          ) : (
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">
+                              {evento.brand.name}
+                            </span>
+                          )}
+                        </span>
+                      )}
+
+                      <h3
+                        className={`font-expanded absolute z-10 text-xl font-black leading-tight text-white text-balance ${
+                          banner ? 'bottom-3 left-4 right-4' : 'left-4 top-4 max-w-[13rem]'
+                        }`}
+                        style={banner ? heroTextOutlineStyle(encuadre, 0.6) : undefined}
+                      >
+                        {evento.title}
+                      </h3>
+
+                      {/* El i20 N como ícono de marca Automotor. CarLoop trae
+                          el loop en video (372 KB) con `mix-blend-mode: screen`
+                          mezclando directo contra el degradado del juego -- sin
+                          envoltorio con fondo propio, ver CarLoop.tsx. Con
+                          reduced-motion, ahorro de datos o conexión lenta cae
+                          solo al sprite fijo. Sobre una foto no va: el blend
+                          cuenta con el degradado plano detrás. */}
+                      {!banner && (
+                        <CarLoop className="pointer-events-none absolute -bottom-1 -right-2 w-44 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none" />
+                      )}
+                    </div>
+                  )
+                })()}
               >
                 {evento.description && (
                   <p className="text-sm leading-relaxed text-automotor-200 line-clamp-2">
