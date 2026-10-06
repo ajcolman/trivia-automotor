@@ -15,6 +15,7 @@ import { Save, ArrowLeft, Loader2, ExternalLink, Plus, Trash2, GripVertical, X, 
 import { ColorPicker } from './ColorPicker'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { UploadDropzone } from './UploadDropzone'
+import { MEDIDAS } from '@/lib/medidas-imagen'
 import { QuestionImporter } from './QuestionImporter'
 import { MarkdownEditor } from './MarkdownEditor'
 import Link from 'next/link'
@@ -556,7 +557,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
               <div>
                 <Label className="text-sm font-bold">Logo de la trivia</Label>
                 <div className="mt-2 max-w-sm">
-                  <UploadDropzone value={logoUrl} onUpload={setLogoUrl} label="Subir logo (PNG, JPG, SVG)" />
+                  <UploadDropzone value={logoUrl} onUpload={setLogoUrl} label="Subir logo" medida={MEDIDAS.logo} />
                 </div>
               </div>
               <div>
@@ -587,6 +588,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
                   <div className="space-y-3">
                     <div className="max-w-xs">
                       <UploadDropzone
+                        medida={MEDIDAS.flyer}
                         value={null}
                         onUpload={async (url) => {
                           const res = await fetch('/api/admin/flyers', {
@@ -924,6 +926,7 @@ export function TriviaEditor({ trivia, companies, brands, mode }: TriviaEditorPr
               <Label>Imagen del premio (opcional)</Label>
               <div className="mt-1">
                 <UploadDropzone
+                  medida={MEDIDAS.premio}
                   value={prizeForm.imageUrl || null}
                   onUpload={url => setPrizeForm(f => ({ ...f, imageUrl: url }))}
                   label="Arrastra la imagen del premio"

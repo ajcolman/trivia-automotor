@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Gift, Plus, Trash2, Loader2, ImageOff } from 'lucide-react'
 import { UploadDropzone } from './UploadDropzone'
+import { MEDIDAS } from '@/lib/medidas-imagen'
 import { PhotoZoom } from '@/components/ui/photo-zoom'
 
 export interface PremioFila {
@@ -152,6 +153,7 @@ export function EventoPremios({
           <div>
             <span className="mb-1 block text-xs font-bold text-slate-500">Foto</span>
             <UploadDropzone
+              medida={MEDIDAS.premio}
               value={nuevo.imageUrl || null}
               onUpload={url => setNuevo(n => ({ ...n, imageUrl: url }))}
               label="Arrastrá una foto o hacé clic"

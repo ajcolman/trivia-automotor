@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { slugify } from '@/lib/utils'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { MEDIDAS } from '@/lib/medidas-imagen'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
@@ -167,7 +168,7 @@ export default function CompaniesPage() {
             <div>
               <Label>Logo</Label>
               <div className="mt-1">
-                <UploadDropzone value={form.logoUrl} onUpload={url => setForm(f => ({ ...f, logoUrl: url }))} />
+                <UploadDropzone value={form.logoUrl} onUpload={url => setForm(f => ({ ...f, logoUrl: url }))} medida={MEDIDAS.logo} />
               </div>
             </div>
             <div>

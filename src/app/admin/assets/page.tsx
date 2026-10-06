@@ -7,6 +7,7 @@ import { mediaUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { MEDIDAS, textoMedida } from '@/lib/medidas-imagen'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
@@ -46,12 +47,34 @@ export default function AssetsPage() {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-6">
           <p className="text-sm font-semibold text-slate-700 mb-3">Subir nuevo archivo</p>
-          <div className="max-w-sm">
-            <UploadDropzone
-              value={null}
-              onUpload={() => load()}
-              label="Arrastra imágenes aquí"
-            />
+          <div className="flex flex-wrap gap-6">
+            <div className="max-w-sm flex-1 min-w-[16rem]">
+              <UploadDropzone
+                value={null}
+                onUpload={() => load()}
+                label="Arrastra imágenes aquí"
+              />
+            </div>
+
+            {/* Esta biblioteca es de uso general, así que no hay una medida
+                única: se listan las de cada destino para tenerlas a mano al
+                preparar el archivo. */}
+            <div className="min-w-[14rem]">
+              <p className="text-xs font-bold text-slate-500 mb-1.5">Medidas recomendadas</p>
+              <dl className="text-xs text-slate-400 space-y-1">
+                {([
+                  ['Banner / cabecera', MEDIDAS.banner],
+                  ['Logo', MEDIDAS.logo],
+                  ['Premio', MEDIDAS.premio],
+                  ['Flyer', MEDIDAS.flyer],
+                ] as const).map(([nombre, m]) => (
+                  <div key={nombre} className="flex gap-2">
+                    <dt className="w-32 flex-shrink-0">{nombre}</dt>
+                    <dd className="font-semibold text-slate-500 tabular-nums">{textoMedida(m)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </CardContent>
       </Card>

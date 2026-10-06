@@ -6,6 +6,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Loader2, ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { cn, mediaUrl } from '@/lib/utils'
+import { type MedidaImagen, textoMedida } from '@/lib/medidas-imagen'
 
 interface UploadDropzoneProps {
   value?: string | null
@@ -14,6 +15,8 @@ interface UploadDropzoneProps {
   accept?: Record<string, string[]>
   maxSize?: number
   className?: string
+  /** Medida recomendada. Se muestra siempre, también con la imagen cargada. */
+  medida?: MedidaImagen
 }
 
 export function UploadDropzone({
@@ -23,6 +26,7 @@ export function UploadDropzone({
   accept = { 'image/*': ['.png', '.jpg', '.jpeg', '.webp', '.svg'] },
   maxSize = 5 * 1024 * 1024,
   className,
+  medida,
 }: UploadDropzoneProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -130,11 +134,20 @@ export function UploadDropzone({
                 <ImageIcon className="w-8 h-8 text-slate-300 mb-2" />
               )}
               <p className="text-sm text-slate-500 text-center px-4">{label}</p>
-              <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP, SVG · máx. 5MB</p>
             </>
           )}
         </div>
       )}
+      <p className="text-xs leading-relaxed text-slate-400">
+        {medida && (
+          <>
+            <span className="font-semibold text-slate-500">Recomendado {textoMedida(medida)}</span>
+            {medida.nota && <> {medida.nota}</>}
+            <br />
+          </>
+        )}
+        PNG, JPG, WebP o SVG · máx. {Math.round(maxSize / (1024 * 1024))} MB
+      </p>
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )

@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { MEDIDAS } from '@/lib/medidas-imagen'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { mediaUrl } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -174,7 +175,7 @@ export default function BrandsPage() {
               />
               {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
             </div>
-            <div><Label>Logo</Label><div className="mt-1"><UploadDropzone value={form.logoUrl} onUpload={url => setForm(f => ({ ...f, logoUrl: url }))} /></div></div>
+            <div><Label>Logo</Label><div className="mt-1"><UploadDropzone value={form.logoUrl} onUpload={url => setForm(f => ({ ...f, logoUrl: url }))} medida={MEDIDAS.logo} /></div></div>
             <div>
               <Label>Modelos de vehículos</Label>
               <div className="flex gap-2 mt-1">
