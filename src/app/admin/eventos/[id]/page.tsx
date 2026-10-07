@@ -59,6 +59,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     orderBy: [{ brand: { name: 'asc' } }, { modelName: 'asc' }],
     select: {
       id: true, spriteUrl: true, modelName: true, genericType: true,
+      posterUrl: true, blackBackground: true, loopUrl: true,
       brand: { select: { name: true } },
     },
   })
@@ -149,7 +150,9 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         conBanner={Boolean(evento.heroImageUrl)}
         sprites={sprites.map(s => ({
           id: s.id,
-          spriteUrl: s.spriteUrl,
+          spriteUrl: s.posterUrl || s.spriteUrl,
+          blackBackground: s.blackBackground,
+          animado: Boolean(s.loopUrl),
           etiqueta: [s.brand?.name, s.modelName ?? s.genericType].filter(Boolean).join(' · ') || 'Sin nombre',
         }))}
       />

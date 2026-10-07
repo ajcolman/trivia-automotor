@@ -11,6 +11,12 @@ const spriteSchema = z.object({
     (val) => val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://'),
     { message: 'Debe ser una URL completa o una ruta relativa que empiece con /' }
   ),
+  /** Video en loop, si el sprite está animado. */
+  loopUrl: z.string().max(500).optional().nullable(),
+  /** Primer cuadro del loop, mientras el video no cargó. */
+  posterUrl: z.string().max(500).optional().nullable(),
+  /** El archivo trae fondo negro en vez de transparencia. */
+  blackBackground: z.boolean().default(false),
   isGeneric: z.boolean().default(false),
   genericType: z.enum(['sedan', 'truck', 'suv']).optional().nullable(),
 })

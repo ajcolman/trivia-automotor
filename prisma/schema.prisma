@@ -303,13 +303,22 @@ model TemplateShare {
 // ─── Football Module ────────────────────────────────────────────────────────
 
 model VehicleSprite {
-  id          String   @id @default(cuid())
-  brandId     String?
-  modelName   String?
-  spriteUrl   String
-  isGeneric   Boolean  @default(false)
-  genericType String? // "sedan" | "truck" | "suv"
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  brandId         String?
+  modelName       String?
+  spriteUrl       String
+  /// Video en loop, si el sprite está animado. El fútbol usa siempre la
+  /// imagen fija; las predicciones reproducen esto cuando está cargado.
+  loopUrl         String?
+  /// Primer cuadro del loop. Se muestra mientras el video no cargó.
+  posterUrl       String?
+  /// El archivo trae fondo negro en vez de transparencia, así que hay que
+  /// recortarlo con `mix-blend-mode: screen` sobre un fondo oscuro. Es cómo
+  /// salen los loops: el MP4 no admite canal alfa.
+  blackBackground Boolean  @default(false)
+  isGeneric       Boolean  @default(false)
+  genericType     String? // "sedan" | "truck" | "suv"
+  createdAt       DateTime @default(now())
 
   brand            Brand?                  @relation(fields: [brandId], references: [id], onDelete: SetNull)
   participants     TournamentParticipant[]

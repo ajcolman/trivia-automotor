@@ -13,6 +13,9 @@ export interface SpriteOpcion {
   /** `Hyundai · Tucson`, o el tipo genérico si no tiene modelo. */
   etiqueta: string
   spriteUrl: string
+  /** Fondo negro en vez de transparencia: hay que recortarlo con blend. */
+  blackBackground: boolean
+  animado: boolean
 }
 
 /**
@@ -130,14 +133,19 @@ export function EventoVehiculo({
         </Opcion>
 
         {sprites.map(s => (
-          <Opcion key={s.id} id={s.id} etiqueta={s.etiqueta}>
+          <Opcion key={s.id} id={s.id} etiqueta={s.etiqueta} nota={s.animado ? 'animado' : undefined}>
+            {/* Igual que en la sala: el que viene con fondo negro se recorta
+                con blend sobre el navy, no se dibuja tal cual. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={mediaUrl(s.spriteUrl)}
               alt=""
               aria-hidden="true"
               className="max-h-14 w-auto object-contain"
-              style={{ imageRendering: 'pixelated' }}
+              style={{
+                imageRendering: 'pixelated',
+                ...(s.blackBackground ? { mixBlendMode: 'screen' as const } : {}),
+              }}
             />
           </Opcion>
         ))}

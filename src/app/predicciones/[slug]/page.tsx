@@ -46,7 +46,12 @@ export default async function PrediccionesPage({ params }: PageProps) {
       heroImageUrl: true,
       heroImageSettings: true,
       brand: { select: { name: true, logoUrl: true } },
-      vehicleSprite: { select: { spriteUrl: true, modelName: true } },
+      vehicleSprite: {
+        select: {
+          spriteUrl: true, modelName: true,
+          loopUrl: true, posterUrl: true, blackBackground: true,
+        },
+      },
       showVehicle: true,
       primaryColor: true,
       secondaryColor: true,
@@ -152,6 +157,9 @@ export default async function PrediccionesPage({ params }: PageProps) {
         evento.vehicleSprite && {
           url: evento.vehicleSprite.spriteUrl,
           nombre: evento.vehicleSprite.modelName ?? '',
+          loopUrl: evento.vehicleSprite.loopUrl,
+          posterUrl: evento.vehicleSprite.posterUrl,
+          blackBackground: evento.vehicleSprite.blackBackground,
         }
       }
     />

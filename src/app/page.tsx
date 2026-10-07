@@ -105,7 +105,12 @@ async function getLandingData() {
       primaryColor: true, secondaryColor: true,
       heroImageUrl: true, heroImageSettings: true,
       brand: { select: { name: true, logoUrl: true } },
-      vehicleSprite: { select: { spriteUrl: true, modelName: true } },
+      vehicleSprite: {
+        select: {
+          spriteUrl: true, modelName: true,
+          loopUrl: true, posterUrl: true, blackBackground: true,
+        },
+      },
       showVehicle: true,
       prizes: {
         orderBy: { position: 'asc' },
@@ -473,6 +478,9 @@ export default async function HomePage() {
                           sprite={evento.vehicleSprite && {
                             url: evento.vehicleSprite.spriteUrl,
                             nombre: evento.vehicleSprite.modelName ?? '',
+                            loopUrl: evento.vehicleSprite.loopUrl,
+                            posterUrl: evento.vehicleSprite.posterUrl,
+                            blackBackground: evento.vehicleSprite.blackBackground,
                           }}
                           className="pointer-events-none absolute -bottom-1 -right-2 w-44 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none"
                         />

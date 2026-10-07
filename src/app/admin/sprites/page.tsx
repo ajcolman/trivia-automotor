@@ -24,6 +24,9 @@ interface Brand {
 interface VehicleSprite {
   id: string
   spriteUrl: string
+  loopUrl: string | null
+  posterUrl: string | null
+  blackBackground: boolean
   brandId: string | null
   modelName: string | null
   isGeneric: boolean
@@ -42,6 +45,9 @@ const defaultForm = {
   brandId: '',
   modelName: '',
   spriteUrl: '',
+  loopUrl: '',
+  posterUrl: '',
+  blackBackground: false,
   isGeneric: false,
   genericType: 'sedan' as 'sedan' | 'truck' | 'suv',
 }
@@ -92,6 +98,9 @@ export default function SpritesPage() {
 
     const payload = {
       spriteUrl: form.spriteUrl.trim(),
+      loopUrl: form.loopUrl.trim() || null,
+      posterUrl: form.posterUrl.trim() || null,
+      blackBackground: form.blackBackground,
       isGeneric: form.isGeneric,
       brandId: form.isGeneric ? null : form.brandId || null,
       modelName: form.isGeneric ? null : form.modelName.trim() || null,
@@ -149,13 +158,23 @@ export default function SpritesPage() {
         {sprites.map(sprite => (
           <Card key={sprite.id} className="border-0 shadow-sm">
             <CardContent className="p-4 flex flex-col items-center gap-3">
-              <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden">
+              {/* El que viene sobre negro se muestra en una baldosa oscura y
+                  recortado con blend: sobre el gris claro sería una caja
+                  negra, y el blend sobre claro lo borraría entero. */}
+              <div
+                className={`w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden ${
+                  sprite.blackBackground ? 'bg-automotor-950' : 'bg-slate-100'
+                }`}
+              >
                 {sprite.spriteUrl ? (
                   <img
-                    src={sprite.spriteUrl}
+                    src={sprite.posterUrl || sprite.spriteUrl}
                     alt={sprite.modelName ?? sprite.genericType ?? 'sprite'}
-                    className="w-10 h-10 object-contain"
-                    style={{ imageRendering: 'pixelated' }}
+                    className="w-12 h-12 object-contain"
+                    style={{
+                      imageRendering: 'pixelated',
+                      ...(sprite.blackBackground ? { mixBlendMode: 'screen' as const } : {}),
+                    }}
                   />
                 ) : (
                   <ImageOff className="w-6 h-6 text-slate-300" />
@@ -304,6 +323,43 @@ export default function SpritesPage() {
                 className="mt-2"
               />
               {errors.spriteUrl && <p className="text-xs text-red-500 mt-1">{errors.spriteUrl}</p>}
+
+              {/* Animación. Es opcional: el fútbol usa siempre la imagen
+                  fija, y las predicciones reproducen el loop si está. */}
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-3">
+                <p className="text-xs font-bold text-slate-500">Animación (opcional)</p>
+                <div>
+                  <Label className="text-xs">Video en loop</Label>
+                  <Input
+                    value={form.loopUrl}
+                    onChange={e => setForm(f => ({ ...f, loopUrl: e.target.value }))}
+                    placeholder="/sprites/mi-auto-loop.mp4"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Primer cuadro del loop</Label>
+                  <Input
+                    value={form.posterUrl}
+                    onChange={e => setForm(f => ({ ...f, posterUrl: e.target.value }))}
+                    placeholder="/sprites/mi-auto-poster.png"
+                    className="mt-1"
+                  />
+                </div>
+                <label className="flex items-start gap-2 text-xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={form.blackBackground}
+                    onChange={e => setForm(f => ({ ...f, blackBackground: e.target.checked }))}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#005CA8]"
+                  />
+                  <span>
+                    El archivo tiene fondo negro en vez de transparencia. Marcalo para los loops:
+                    el MP4 no admite canal alfa, así que el negro se recorta mezclándolo contra el
+                    fondo oscuro de la página.
+                  </span>
+                </label>
+              </div>
               {form.spriteUrl && (
                 <div className="mt-2 flex items-center gap-3 p-2 bg-slate-50 rounded-lg">
                   <img

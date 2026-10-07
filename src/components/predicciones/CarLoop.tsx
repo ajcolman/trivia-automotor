@@ -9,6 +9,11 @@ import { mediaUrl } from '@/lib/utils'
 export interface SpriteVehiculo {
   url: string
   nombre: string
+  /** Video en loop, si el sprite está animado. */
+  loopUrl?: string | null
+  posterUrl?: string | null
+  /** El archivo trae fondo negro en vez de transparencia. */
+  blackBackground?: boolean
 }
 
 /** El i20 N de rally animado: el que corre si el juego no eligió otro. */
@@ -45,9 +50,11 @@ export function CarLoop({
 }) {
   const [animar, setAnimar] = useState(false)
 
+  // Hay algo que reproducir: el loop del sprite elegido, o el del i20.
+  const loop = sprite ? sprite.loopUrl : I20_RALLY.loop
+
   useEffect(() => {
-    // Un sprite del catálogo no tiene loop que reproducir.
-    if (sprite) return
+    if (!loop) return
 
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (mq.matches) return
@@ -60,26 +67,30 @@ export function CarLoop({
     if (conn?.effectiveType && ['slow-2g', '2g', '3g'].includes(conn.effectiveType)) return
 
     setAnimar(true)
-  }, [sprite])
+  }, [loop])
 
-  if (sprite) {
-    // Sin medidas declaradas: los sprites del catálogo no comparten
-    // proporción (el i20 de rally es 348×126, los de calle 144×88) y fijar
-    // una los deformaría. Un <img> toma la del archivo. Son PNG chicos y
-    // decorativos, así que la optimización de next/image no aporta nada.
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={mediaUrl(sprite.url)}
-        alt=""
-        aria-hidden="true"
-        className={className}
-        style={{ imageRendering: 'pixelated' }}
-      />
-    )
-  }
+  // El i20 viene con fondo negro; un sprite del catálogo lo declara.
+  const sobreNegro = sprite ? Boolean(sprite.blackBackground) : true
+  const recorte = sobreNegro ? { mixBlendMode: 'screen' as const } : {}
 
-  if (!animar) {
+  if (!animar || !loop) {
+    const fijo = sprite ? mediaUrl(sprite.posterUrl || sprite.url) : I20_RALLY.still
+    if (sprite) {
+      // Sin medidas declaradas: los sprites del catálogo no comparten
+      // proporción (el i20 de rally es 348×126, los de calle 144×88) y fijar
+      // una los deformaría. Un <img> toma la del archivo. Son PNG chicos y
+      // decorativos, así que la optimización de next/image no aporta nada.
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={fijo}
+          alt=""
+          aria-hidden="true"
+          className={className}
+          style={{ imageRendering: 'pixelated', ...recorte }}
+        />
+      )
+    }
     return (
       <Image
         src={I20_RALLY.still}
@@ -100,8 +111,8 @@ export function CarLoop({
   // contra el degradado.
   return (
     <video
-      src={I20_RALLY.loop}
-      poster={I20_RALLY.poster}
+      src={sprite ? mediaUrl(loop) : I20_RALLY.loop}
+      poster={sprite ? mediaUrl(sprite.posterUrl || sprite.url) : I20_RALLY.poster}
       autoPlay
       muted
       loop
@@ -109,7 +120,7 @@ export function CarLoop({
       preload="metadata"
       aria-hidden="true"
       className={className}
-      style={{ mixBlendMode: 'screen' }}
+      style={recorte}
       onError={() => setAnimar(false)}
     />
   )
