@@ -20,12 +20,12 @@ async function main() {
   const datos = {
     brandId: marca.id,
     modelName: 'D-Max Rally',
-    spriteUrl: '/sprites/dmax-rally-8bit.png',
-    loopUrl: '/sprites/dmax-rally-loop.mp4',
-    posterUrl: '/sprites/dmax-rally-poster.png',
-    // El MP4 no admite canal alfa, así que el loop viene sobre negro y se
-    // recorta con mix-blend-mode: screen, igual que el i20.
-    blackBackground: true,
+    spriteUrl: '/sprites/dmax-rally-still.png',
+    loopUrl: '/sprites/dmax-rally-loop.gif',
+    posterUrl: '/sprites/dmax-rally-still.png',
+    // El GIF lleva su propia transparencia, así que no hace falta recortarlo
+    // contra el fondo: se ve limpio sobre el banner y sobre el degradado.
+    blackBackground: false,
     isGeneric: false,
   }
 

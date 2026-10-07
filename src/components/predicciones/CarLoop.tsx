@@ -72,6 +72,9 @@ export function CarLoop({
   // El i20 viene con fondo negro; un sprite del catálogo lo declara.
   const sobreNegro = sprite ? Boolean(sprite.blackBackground) : true
   const recorte = sobreNegro ? { mixBlendMode: 'screen' as const } : {}
+  // Un GIF se anima solo y lleva su transparencia: va en <img>. El <video>
+  // es para los loops en MP4, que no admiten canal alfa.
+  const esGif = Boolean(loop && loop.toLowerCase().endsWith('.gif'))
 
   if (!animar || !loop) {
     const fijo = sprite ? mediaUrl(sprite.posterUrl || sprite.url) : I20_RALLY.still
@@ -101,6 +104,19 @@ export function CarLoop({
         className={className}
         style={{ imageRendering: 'pixelated' }}
         unoptimized
+      />
+    )
+  }
+
+  if (esGif && loop) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={mediaUrl(loop)}
+        alt=""
+        aria-hidden="true"
+        className={className}
+        style={{ imageRendering: 'pixelated', ...recorte }}
       />
     )
   }

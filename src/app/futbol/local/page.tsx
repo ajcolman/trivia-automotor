@@ -7,6 +7,10 @@ export const dynamic = 'force-dynamic'
 export default async function LocalPage() {
   const [sprites, tournaments] = await Promise.all([
     prisma.vehicleSprite.findMany({
+      // Los sprites animados son para la cabecera de los juegos de
+      // predicción. Acá el auto se dibuja quieto sobre la cancha, así que el
+      // catálogo del fútbol se queda solo con los fijos.
+      where: { loopUrl: null },
       orderBy: { createdAt: 'asc' },
       select: {
         id: true,

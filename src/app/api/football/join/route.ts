@@ -60,6 +60,13 @@ export async function POST(req: NextRequest) {
     if (!sprite) {
       return NextResponse.json({ error: 'Vehículo no encontrado' }, { status: 404 })
     }
+    // El listado ya los deja afuera; esto cubre que llegue un id a mano.
+    if (sprite.loopUrl) {
+      return NextResponse.json(
+        { error: 'Ese vehículo es animado y no se puede usar en el fútbol.' },
+        { status: 400 },
+      )
+    }
   }
 
   const participant = await prisma.tournamentParticipant.create({
@@ -108,6 +115,8 @@ export async function GET(req: NextRequest) {
   }
 
   const sprites = await prisma.vehicleSprite.findMany({
+    // Solo los fijos: ver el comentario en /futbol.
+    where: { loopUrl: null },
     orderBy: { createdAt: 'asc' },
     select: { id: true, spriteUrl: true, modelName: true, isGeneric: true, genericType: true },
   })
