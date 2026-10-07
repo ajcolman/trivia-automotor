@@ -34,6 +34,12 @@ export const MEDIDAS = {
     alto: 800,
     nota: 'Cuadrada.',
   },
+  /** Sprite de vehículo en 8 bits, de perfil. */
+  sprite: {
+    ancho: 320,
+    alto: 120,
+    nota: 'PNG con transparencia, de perfil. Se respeta la proporción del archivo, así que el alto puede variar.',
+  },
   /** Flyer promocional de la trivia: llena la pantalla del gabinete. */
   flyer: {
     ancho: 1200,

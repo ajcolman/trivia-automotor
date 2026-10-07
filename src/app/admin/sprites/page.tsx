@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { UploadDropzone } from '@/components/admin/UploadDropzone'
+import { MEDIDAS } from '@/lib/medidas-imagen'
 import { toast } from 'sonner'
 
 interface Brand {
@@ -277,18 +279,29 @@ export default function SpritesPage() {
               </>
             )}
 
-            {/* Sprite URL */}
+            {/* Sprite: archivo o, si ya está publicado, su URL */}
             <div>
-              <Label className={errors.spriteUrl ? 'text-red-500' : ''}>URL del sprite *</Label>
+              <Label className={errors.spriteUrl ? 'text-red-500' : ''}>Sprite *</Label>
+              <div className="mt-1">
+                <UploadDropzone
+                  medida={MEDIDAS.sprite}
+                  value={form.spriteUrl || null}
+                  onUpload={url => {
+                    setForm(f => ({ ...f, spriteUrl: url }))
+                    if (url.trim()) setErrors(err => { const { spriteUrl, ...rest } = err; return rest })
+                  }}
+                  label="Arrastrá el sprite o hacé clic"
+                />
+              </div>
               <Input
                 value={form.spriteUrl}
                 onChange={e => {
                   setForm(f => ({ ...f, spriteUrl: e.target.value }))
                   if (e.target.value.trim()) setErrors(err => { const { spriteUrl, ...rest } = err; return rest })
                 }}
-                placeholder="https://..."
+                placeholder="…o pegá una URL ya publicada"
                 aria-invalid={!!errors.spriteUrl}
-                className="mt-1"
+                className="mt-2"
               />
               {errors.spriteUrl && <p className="text-xs text-red-500 mt-1">{errors.spriteUrl}</p>}
               {form.spriteUrl && (
