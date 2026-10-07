@@ -311,8 +311,9 @@ model VehicleSprite {
   genericType String? // "sedan" | "truck" | "suv"
   createdAt   DateTime @default(now())
 
-  brand        Brand?                  @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  participants TournamentParticipant[]
+  brand            Brand?                  @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  participants     TournamentParticipant[]
+  predictionEvents PredictionEvent[]
 
   @@index([brandId])
 }
@@ -493,6 +494,9 @@ model PredictionEvent {
   /// Encuadre del banner: mismo formato que Trivia.heroImageSettings, así el
   /// editor de imagen del panel sirve para los dos sin ramificarse.
   heroImageSettings Json? // { zoom: number, x: number, y: number, height: number }
+  /// Sprite del vehículo que corre en la tarjeta y la cabecera. Null = el
+  /// i20 N de rally animado, que es el que viene con la plataforma.
+  vehicleSpriteId   String?
   primaryColor      String      @default("#005CA8")
   secondaryColor    String      @default("#004071")
   /// Alineado con Trivia.accentColor: mismo campo, mismo default, misma paleta de referencia.
@@ -508,11 +512,12 @@ model PredictionEvent {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  segments   Segment[]
-  contenders Contender[]
-  markets    Market[]
-  prizes     Prize[]
+  brand         Brand?         @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  vehicleSprite VehicleSprite? @relation(fields: [vehicleSpriteId], references: [id], onDelete: SetNull)
+  segments      Segment[]
+  contenders    Contender[]
+  markets       Market[]
+  prizes        Prize[]
 
   @@index([status])
   @@index([brandId])

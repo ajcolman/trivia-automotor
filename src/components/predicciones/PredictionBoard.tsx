@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift, Ban, PartyPopper } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
-import { CarLoop } from './CarLoop'
+import { CarLoop, type SpriteVehiculo } from './CarLoop'
 import { PhotoZoom } from '@/components/ui/photo-zoom'
 import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
 import type { FilaPublica } from '@/lib/predictions/resolver'
@@ -58,6 +58,8 @@ interface Props {
   bannerSettings: HeroImageSettings | null
   /** Marca de vehículo que organiza el juego. */
   marca: { name: string; logoUrl: string | null } | null
+  /** Sprite elegido. Null = el i20 N de rally animado. */
+  sprite: SpriteVehiculo | null
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
@@ -66,7 +68,7 @@ const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export function PredictionBoard({
   titulo, reglas, colorPrimario, colorSecundario, colorAcento, colorFondo, colorTexto,
-  markets, contenders, premios, ranking, banner, bannerSettings, marca,
+  markets, contenders, premios, ranking, banner, bannerSettings, marca, sprite,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -200,9 +202,14 @@ export function PredictionBoard({
         )}
         {/* El clip conserva todo el desplazamiento del auto, así que se ancla
             al borde derecho sin desbordar por abajo: las ruedas deben verse.
-            Sobre una foto no va: su blend cuenta con el degradado plano. */}
-        {!banner && (
-          <CarLoop className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80" />
+            El i20 animado no va sobre una foto -- su blend cuenta con el
+            degradado plano --, pero un sprite del catálogo sí: es un PNG con
+            transparencia. */}
+        {(!banner || sprite) && (
+          <CarLoop
+            sprite={sprite}
+            className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80"
+          />
         )}
         <div className="relative mx-auto max-w-3xl">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

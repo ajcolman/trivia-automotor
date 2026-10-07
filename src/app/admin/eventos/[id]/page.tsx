@@ -8,6 +8,7 @@ import { EventoResultados } from '@/components/admin/EventoResultados'
 import { EventoDiseno } from '@/components/admin/EventoDiseno'
 import { EventoTextos } from '@/components/admin/EventoTextos'
 import { EventoBanner } from '@/components/admin/EventoBanner'
+import { EventoVehiculo } from '@/components/admin/EventoVehiculo'
 import { EventoTramos } from '@/components/admin/EventoTramos'
 import { EventoParticipantes } from '@/components/admin/EventoParticipantes'
 import { EventoPreguntas } from '@/components/admin/EventoPreguntas'
@@ -22,7 +23,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     select: {
       id: true, slug: true, title: true, status: true,
       description: true, rules: true, showLeaderboard: true,
-      heroImageUrl: true, heroImageSettings: true, brandId: true,
+      heroImageUrl: true, heroImageSettings: true, brandId: true, vehicleSpriteId: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
       segments: {
         orderBy: { orderIndex: 'asc' },
@@ -52,6 +53,14 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
   })
 
   if (!evento) notFound()
+
+  const sprites = await prisma.vehicleSprite.findMany({
+    orderBy: [{ brand: { name: 'asc' } }, { modelName: 'asc' }],
+    select: {
+      id: true, spriteUrl: true, modelName: true, genericType: true,
+      brand: { select: { name: true } },
+    },
+  })
 
   const marcas = await prisma.brand.findMany({
     where: { isActive: true },
@@ -130,6 +139,16 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
           id: m.id, name: m.name, logoUrl: m.logoUrl, empresa: m.company.name,
         }))}
         colorPrimario={evento.primaryColor}
+      />
+
+      <EventoVehiculo
+        eventoId={evento.id}
+        spriteId={evento.vehicleSpriteId}
+        sprites={sprites.map(s => ({
+          id: s.id,
+          spriteUrl: s.spriteUrl,
+          etiqueta: [s.brand?.name, s.modelName ?? s.genericType].filter(Boolean).join(' · ') || 'Sin nombre',
+        }))}
       />
 
       <EventoDiseno

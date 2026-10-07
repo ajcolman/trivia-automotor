@@ -105,6 +105,7 @@ async function getLandingData() {
       primaryColor: true, secondaryColor: true,
       heroImageUrl: true, heroImageSettings: true,
       brand: { select: { name: true, logoUrl: true } },
+      vehicleSprite: { select: { spriteUrl: true, modelName: true } },
       prizes: {
         orderBy: { position: 'asc' },
         select: { id: true, name: true, description: true, imageUrl: true, position: true },
@@ -461,10 +462,19 @@ export default async function HomePage() {
                           mezclando directo contra el degradado del juego -- sin
                           envoltorio con fondo propio, ver CarLoop.tsx. Con
                           reduced-motion, ahorro de datos o conexión lenta cae
-                          solo al sprite fijo. Sobre una foto no va: el blend
-                          cuenta con el degradado plano detrás. */}
-                      {!banner && (
-                        <CarLoop className="pointer-events-none absolute -bottom-1 -right-2 w-44 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none" />
+                          solo al sprite fijo.
+
+                          Ese video no va sobre una foto: su blend cuenta con
+                          el degradado plano detrás. Un sprite del catálogo sí,
+                          porque es un PNG con transparencia. */}
+                      {(!banner || evento.vehicleSprite) && (
+                        <CarLoop
+                          sprite={evento.vehicleSprite && {
+                            url: evento.vehicleSprite.spriteUrl,
+                            nombre: evento.vehicleSprite.modelName ?? '',
+                          }}
+                          className="pointer-events-none absolute -bottom-1 -right-2 w-44 opacity-90 transition-transform duration-500 group-hover:translate-x-2 motion-reduce:transition-none"
+                        />
                       )}
                     </div>
                   )

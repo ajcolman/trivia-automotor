@@ -27,7 +27,7 @@ const LARGO_MAXIMO: Record<TextoKey, number> = { title: 120, description: 500, r
  * Actualiza el estado del evento, sus textos, la visibilidad del ranking,
  * su banner y marca organizadora y/o su paleta de colores.
  * Body: `{ status?, title?, description?, rules?, showLeaderboard?,
- *          heroImageUrl?, heroImageSettings?, brandId?, colors? }`
+ *          heroImageUrl?, heroImageSettings?, brandId?, vehicleSpriteId?, colors? }`
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireAuth()
@@ -119,6 +119,27 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
+  if ('vehicleSpriteId' in body) {
+    const valor = body.vehicleSpriteId
+    if (valor !== null && typeof valor !== 'string') {
+      return NextResponse.json({ error: 'vehicleSpriteId debe ser texto.' }, { status: 400 })
+    }
+    const id = (valor ?? '').trim()
+    if (id) {
+      const sprite = await prisma.vehicleSprite.findUnique({
+        where: { id },
+        select: { id: true, modelName: true, genericType: true },
+      })
+      if (!sprite) return NextResponse.json({ error: 'El sprite elegido no existe.' }, { status: 400 })
+      data.vehicleSprite = { connect: { id } }
+      changeParts.push(`vehículo → ${sprite.modelName ?? sprite.genericType ?? id}`)
+    } else {
+      // Sin sprite vuelve el i20 N de rally, que es el de fábrica.
+      data.vehicleSprite = { disconnect: true }
+      changeParts.push('vehículo → i20 N Rally')
+    }
+  }
+
   if ('colors' in body) {
     const colors = body.colors
     if (typeof colors !== 'object' || colors === null) {
@@ -146,7 +167,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     data,
     select: {
       id: true, title: true, status: true, description: true, rules: true, showLeaderboard: true,
-      heroImageUrl: true, heroImageSettings: true, brandId: true,
+      heroImageUrl: true, heroImageSettings: true, brandId: true, vehicleSpriteId: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
     },
   })
