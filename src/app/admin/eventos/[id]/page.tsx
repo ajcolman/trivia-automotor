@@ -23,7 +23,8 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
     select: {
       id: true, slug: true, title: true, status: true,
       description: true, rules: true, showLeaderboard: true,
-      heroImageUrl: true, heroImageSettings: true, brandId: true, vehicleSpriteId: true,
+      heroImageUrl: true, heroImageSettings: true, brandId: true,
+      vehicleSpriteId: true, showVehicle: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
       segments: {
         orderBy: { orderIndex: 'asc' },
@@ -144,6 +145,8 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
       <EventoVehiculo
         eventoId={evento.id}
         spriteId={evento.vehicleSpriteId}
+        mostrar={evento.showVehicle}
+        conBanner={Boolean(evento.heroImageUrl)}
         sprites={sprites.map(s => ({
           id: s.id,
           spriteUrl: s.spriteUrl,

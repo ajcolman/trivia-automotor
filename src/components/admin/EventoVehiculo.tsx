@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Car, Loader2, Check, Sparkles } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { mediaUrl } from '@/lib/utils'
 
 export interface SpriteOpcion {
@@ -22,24 +23,29 @@ export interface SpriteOpcion {
  * rally, que es el único animado: los del catálogo son PNG fijos.
  */
 export function EventoVehiculo({
-  eventoId, spriteId, sprites,
+  eventoId, spriteId, sprites, mostrar, conBanner,
 }: {
   eventoId: string
   spriteId: string | null
   sprites: SpriteOpcion[]
+  /** Si el vehículo se dibuja. */
+  mostrar: boolean
+  /** El juego tiene banner: cambia qué conviene avisar, no qué se puede hacer. */
+  conBanner: boolean
 }) {
   const router = useRouter()
   const [guardando, setGuardando] = useState(false)
   const [elegido, setElegido] = useState<string | null>(spriteId)
+  const [visible, setVisible] = useState(mostrar)
 
-  const sucio = elegido !== spriteId
+  const sucio = elegido !== spriteId || visible !== mostrar
 
   async function guardar() {
     setGuardando(true)
     const res = await fetch(`/api/admin/prediction-events/${eventoId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vehicleSpriteId: elegido }),
+      body: JSON.stringify({ vehicleSpriteId: elegido, showVehicle: visible }),
     })
     const cuerpo = await res.json().catch(() => ({}))
     setGuardando(false)
@@ -93,12 +99,24 @@ export function EventoVehiculo({
       </h2>
       <p className="mb-4 text-xs text-slate-500">
         Cruza la tarjeta del juego en la sala y su cabecera. Sale del catálogo de sprites, el mismo
-        que usan los torneos. El i20 N es el único animado, y por eso es también el único que no se
-        dibuja sobre un banner: su recorte necesita el degradado plano detrás.
+        que usan los torneos. Los nuevos se cargan en Panel → Sprites Vehículos.
       </p>
 
-      <div className="flex flex-wrap gap-3">
-        <Opcion id={null} etiqueta="i20 N Rally" nota="animado · se oculta con banner">
+      {/* ── Mostrarlo o no ──────────────────────────────────────── */}
+      <label className="mb-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+        <Switch checked={visible} onCheckedChange={setVisible} />
+        <span className="min-w-0">
+          <span className="block text-sm font-bold text-slate-700">Mostrar el vehículo</span>
+          <span className="block text-xs text-slate-500">
+            {conBanner
+              ? 'Este juego tiene banner. Sobre una foto cargada el auto puede estorbar o puede quedar bien: miralo y decidí. Tené en cuenta que el i20 N se recorta contra un fondo plano, así que sobre la foto se le nota un velo claro; los del catálogo son PNG con transparencia y se ven limpios.'
+              : 'Sin banner, el auto es lo que le da vida a la tarjeta y a la cabecera.'}
+          </span>
+        </span>
+      </label>
+
+      <div className={`flex flex-wrap gap-3 ${visible ? '' : 'opacity-50'}`}>
+        <Opcion id={null} etiqueta="i20 N Rally" nota="animado · de fábrica">
           {/* El still, no el video: en el panel no hace falta bajar el loop. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

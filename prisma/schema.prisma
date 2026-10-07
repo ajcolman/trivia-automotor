@@ -497,6 +497,9 @@ model PredictionEvent {
   /// Sprite del vehículo que corre en la tarjeta y la cabecera. Null = el
   /// i20 N de rally animado, que es el que viene con la plataforma.
   vehicleSpriteId   String?
+  /// Si el vehículo se dibuja. Sobre un banner cargado a veces estorba, y esa
+  /// es una decisión de quien arma el juego, no una regla.
+  showVehicle       Boolean     @default(true)
   primaryColor      String      @default("#005CA8")
   secondaryColor    String      @default("#004071")
   /// Alineado con Trivia.accentColor: mismo campo, mismo default, misma paleta de referencia.

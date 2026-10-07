@@ -106,6 +106,7 @@ async function getLandingData() {
       heroImageUrl: true, heroImageSettings: true,
       brand: { select: { name: true, logoUrl: true } },
       vehicleSprite: { select: { spriteUrl: true, modelName: true } },
+      showVehicle: true,
       prizes: {
         orderBy: { position: 'asc' },
         select: { id: true, name: true, description: true, imageUrl: true, position: true },
@@ -464,10 +465,10 @@ export default async function HomePage() {
                           reduced-motion, ahorro de datos o conexión lenta cae
                           solo al sprite fijo.
 
-                          Ese video no va sobre una foto: su blend cuenta con
-                          el degradado plano detrás. Un sprite del catálogo sí,
-                          porque es un PNG con transparencia. */}
-                      {(!banner || evento.vehicleSprite) && (
+                          Que se dibuje o no lo decide el panel: sobre un
+                          banner a veces estorba y a veces queda bien, y eso
+                          depende de la foto. */}
+                      {evento.showVehicle && (
                         <CarLoop
                           sprite={evento.vehicleSprite && {
                             url: evento.vehicleSprite.spriteUrl,

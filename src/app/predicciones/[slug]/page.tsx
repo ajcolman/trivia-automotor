@@ -47,6 +47,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
       heroImageSettings: true,
       brand: { select: { name: true, logoUrl: true } },
       vehicleSprite: { select: { spriteUrl: true, modelName: true } },
+      showVehicle: true,
       primaryColor: true,
       secondaryColor: true,
       accentColor: true,
@@ -146,6 +147,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
           : null
       }
       marca={evento.brand}
+      mostrarSprite={evento.showVehicle}
       sprite={
         evento.vehicleSprite && {
           url: evento.vehicleSprite.spriteUrl,

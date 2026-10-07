@@ -27,7 +27,8 @@ const LARGO_MAXIMO: Record<TextoKey, number> = { title: 120, description: 500, r
  * Actualiza el estado del evento, sus textos, la visibilidad del ranking,
  * su banner y marca organizadora y/o su paleta de colores.
  * Body: `{ status?, title?, description?, rules?, showLeaderboard?,
- *          heroImageUrl?, heroImageSettings?, brandId?, vehicleSpriteId?, colors? }`
+ *          heroImageUrl?, heroImageSettings?, brandId?, vehicleSpriteId?,
+ *          showVehicle?, colors? }`
  */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireAuth()
@@ -119,6 +120,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
+  if ('showVehicle' in body) {
+    if (typeof body.showVehicle !== 'boolean') {
+      return NextResponse.json({ error: 'showVehicle debe ser booleano.' }, { status: 400 })
+    }
+    data.showVehicle = body.showVehicle
+    changeParts.push(`vehículo ${body.showVehicle ? 'visible' : 'oculto'}`)
+  }
+
   if ('vehicleSpriteId' in body) {
     const valor = body.vehicleSpriteId
     if (valor !== null && typeof valor !== 'string') {
@@ -167,7 +176,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     data,
     select: {
       id: true, title: true, status: true, description: true, rules: true, showLeaderboard: true,
-      heroImageUrl: true, heroImageSettings: true, brandId: true, vehicleSpriteId: true,
+      heroImageUrl: true, heroImageSettings: true, brandId: true,
+      vehicleSpriteId: true, showVehicle: true,
       primaryColor: true, secondaryColor: true, accentColor: true, backgroundColor: true, textColor: true,
     },
   })

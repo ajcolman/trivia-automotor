@@ -60,6 +60,8 @@ interface Props {
   marca: { name: string; logoUrl: string | null } | null
   /** Sprite elegido. Null = el i20 N de rally animado. */
   sprite: SpriteVehiculo | null
+  /** Si el vehículo se dibuja. Lo decide el panel. */
+  mostrarSprite: boolean
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
@@ -68,7 +70,7 @@ const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export function PredictionBoard({
   titulo, reglas, colorPrimario, colorSecundario, colorAcento, colorFondo, colorTexto,
-  markets, contenders, premios, ranking, banner, bannerSettings, marca, sprite,
+  markets, contenders, premios, ranking, banner, bannerSettings, marca, sprite, mostrarSprite,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -210,10 +212,8 @@ export function PredictionBoard({
         )}
         {/* El clip conserva todo el desplazamiento del auto, así que se ancla
             al borde derecho sin desbordar por abajo: las ruedas deben verse.
-            El i20 animado no va sobre una foto -- su blend cuenta con el
-            degradado plano --, pero un sprite del catálogo sí: es un PNG con
-            transparencia. */}
-        {(!banner || sprite) && (
+            Que se dibuje o no sobre el banner lo decide el panel. */}
+        {mostrarSprite && (
           <CarLoop
             sprite={sprite}
             className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80"
