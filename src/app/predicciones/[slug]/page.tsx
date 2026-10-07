@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { PredictionBoard } from '@/components/predicciones/PredictionBoard'
 import { publicLeaderboard } from '@/lib/predictions/resolver'
-import { resolveHeroImageSettings } from '@/lib/hero-image'
+import { ALTO_BANNER_PREDICCION, resolveHeroImageSettings } from '@/lib/hero-image'
 import type { ContenderDTO, MarketDTO } from '@/components/predicciones/tipos'
 
 export const dynamic = 'force-dynamic'
@@ -142,7 +142,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
       banner={evento.heroImageUrl}
       bannerSettings={
         evento.heroImageUrl
-          ? resolveHeroImageSettings(evento.heroImageSettings as never, 260)
+          ? resolveHeroImageSettings(evento.heroImageSettings as never, ALTO_BANNER_PREDICCION)
           : null
       }
       marca={evento.brand}

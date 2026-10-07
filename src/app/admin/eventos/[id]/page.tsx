@@ -13,7 +13,7 @@ import { EventoTramos } from '@/components/admin/EventoTramos'
 import { EventoParticipantes } from '@/components/admin/EventoParticipantes'
 import { EventoPreguntas } from '@/components/admin/EventoPreguntas'
 import type { MarketConfig, MarketType } from '@/lib/predictions/scoring'
-import { resolveHeroImageSettings } from '@/lib/hero-image'
+import { ALTO_BANNER_PREDICCION, resolveHeroImageSettings } from '@/lib/hero-image'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,7 +131,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
         bannerUrl={evento.heroImageUrl}
         bannerSettings={
           evento.heroImageUrl
-            ? resolveHeroImageSettings(evento.heroImageSettings as never, 320)
+            ? resolveHeroImageSettings(evento.heroImageSettings as never, ALTO_BANNER_PREDICCION)
             : null
         }
         marcaId={evento.brandId}

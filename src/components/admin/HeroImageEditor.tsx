@@ -31,6 +31,21 @@ interface HeroImageEditorProps {
   description?: string
   /** Texto de muestra en la previa, para que se vea el encuadre real. */
   previewTitle?: string
+  /**
+   * Qué oscurecido se le aplica encima, igual que en el destino real: `intro`
+   * carga el negro abajo, `landing` es un velo casi parejo. La previa tiene
+   * que usar el mismo, o muestra un contraste que después no se da.
+   */
+  overlayVariant?: 'intro' | 'landing'
+  /**
+   * Apila los controles sobre una previa a todo el ancho.
+   *
+   * Importa para encuadrar: con `background-size: cover` la franja visible
+   * depende de la proporción de la caja, y una previa de media columna
+   * (~2,3:1) no muestra lo mismo que una cabecera apaisada (~4,5:1). A todo
+   * el ancho del panel la proporción se parece a la real.
+   */
+  previewFullWidth?: boolean
 }
 
 export function HeroImageEditor({
@@ -38,6 +53,8 @@ export function HeroImageEditor({
   label = 'Imagen de Cabecera (Hero)',
   description = 'Esta imagen aparecerá de fondo en la parte superior de la trivia.',
   previewTitle = 'Titulo de la trivia',
+  overlayVariant = 'intro',
+  previewFullWidth = false,
 }: HeroImageEditorProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isPreviewRevealActive, setIsPreviewRevealActive] = useState(false)
@@ -82,7 +99,7 @@ export function HeroImageEditor({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={`grid gap-6 ${previewFullWidth ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
         <div className="space-y-4">
           <div>
             <Label className="text-sm font-bold">{label}</Label>
@@ -236,10 +253,12 @@ export function HeroImageEditor({
                 />
                 <div
                   className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-                  style={{ background: heroOverlayGradient(heroSettings), opacity: hidePreviewContent ? 0 : 1 }}
+                  style={{ background: heroOverlayGradient(heroSettings, overlayVariant), opacity: hidePreviewContent ? 0 : 1 }}
                 />
                 <div
-                  className="absolute bottom-4 left-4 right-4 pointer-events-none transition-all duration-300"
+                  className={`absolute left-4 right-4 pointer-events-none transition-all duration-300 ${
+                    overlayVariant === 'landing' ? 'top-4' : 'bottom-4'
+                  }`}
                   style={{
                     opacity: hidePreviewContent ? 0 : 1,
                     transform: hidePreviewContent ? 'translateY(8px)' : 'translateY(0)',

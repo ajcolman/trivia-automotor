@@ -10,6 +10,15 @@ export interface HeroImageSettings {
   hideContentOnFocus?: boolean
 }
 
+/**
+ * Alto del banner de un juego de predicción, en px.
+ *
+ * Tiene que ser el mismo en el editor del panel y en la cabecera del jugador:
+ * el encuadre se elige sobre una caja de este alto, así que si al dibujarla
+ * fuera otra, el foco cae en otro lado.
+ */
+export const ALTO_BANNER_PREDICCION = 320
+
 export function defaultHeroImageSettings(height = 400): HeroImageSettings {
   return {
     zoom: 1,

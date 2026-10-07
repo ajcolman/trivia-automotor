@@ -192,12 +192,20 @@ export function PredictionBoard({
           // oscurecido del encuadre se encarga de que el texto se lea.
           background: `linear-gradient(135deg, ${colorPrimario}, ${colorSecundario})`,
           color: banner ? '#fff' : sobreDegradado,
+          // El encuadre se eligió sobre una caja de este alto: si acá la
+          // cabecera midiera lo que mide su contenido, la foto se recortaría
+          // distinto y el foco quedaría corrido. Igual que el hero de la sala.
+          ...(banner ? { minHeight: `${encuadre.height}px` } : {}),
         }}
       >
         {banner && (
           <>
             <div className="absolute inset-0" style={heroBackgroundImageStyle(encuadre, mediaUrl(banner))} />
-            <div className="absolute inset-0" style={{ background: heroOverlayGradient(encuadre, 'intro') }} />
+            {/* Variante `landing`: oscurece arriba, que es donde están el
+                título y el avance, y aclara hacia abajo para que se vea la
+                foto. La `intro` hace lo contrario y dejaba el texto sobre la
+                parte clara. */}
+            <div className="absolute inset-0" style={{ background: heroOverlayGradient(encuadre, 'landing') }} />
           </>
         )}
         {/* El clip conserva todo el desplazamiento del auto, así que se ancla

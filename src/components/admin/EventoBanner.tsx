@@ -8,7 +8,11 @@ import { toast } from 'sonner'
 import { ImageIcon, Loader2, Check, Car, X } from 'lucide-react'
 import { HeroImageEditor } from './HeroImageEditor'
 import { mediaUrl } from '@/lib/utils'
-import { type HeroImageSettings, resolveHeroImageSettings } from '@/lib/hero-image'
+import {
+  ALTO_BANNER_PREDICCION,
+  type HeroImageSettings,
+  resolveHeroImageSettings,
+} from '@/lib/hero-image'
 
 export interface MarcaOpcion {
   id: string
@@ -16,9 +20,6 @@ export interface MarcaOpcion {
   logoUrl: string | null
   empresa: string
 }
-
-/** Alto por defecto del banner, en línea con el hero de la sala. */
-const ALTO_BANNER = 320
 
 /**
  * Banner y marca organizadora del juego de predicción.
@@ -43,7 +44,7 @@ export function EventoBanner({
   const [guardando, setGuardando] = useState(false)
   const [url, setUrl] = useState(bannerUrl ?? '')
   const [settings, setSettings] = useState<HeroImageSettings>(
-    resolveHeroImageSettings(bannerSettings, ALTO_BANNER),
+    resolveHeroImageSettings(bannerSettings, ALTO_BANNER_PREDICCION),
   )
   const [marca, setMarca] = useState(marcaId ?? '')
 
@@ -51,7 +52,7 @@ export function EventoBanner({
   const sucio =
     url !== (bannerUrl ?? '') ||
     marca !== (marcaId ?? '') ||
-    JSON.stringify(settings) !== JSON.stringify(resolveHeroImageSettings(bannerSettings, ALTO_BANNER))
+    JSON.stringify(settings) !== JSON.stringify(resolveHeroImageSettings(bannerSettings, ALTO_BANNER_PREDICCION))
 
   async function guardar() {
     setGuardando(true)
@@ -149,6 +150,8 @@ export function EventoBanner({
         label="Banner del juego"
         description="Se usa de fondo en la tarjeta de la sala y en la cabecera del juego. Arrastrá sobre la previa para encuadrar."
         previewTitle={titulo}
+        overlayVariant="landing"
+        previewFullWidth
       />
 
       <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
