@@ -228,7 +228,7 @@ export function HeroImageEditor({
           <Label className="text-sm font-bold">Previsualización en tiempo real</Label>
           <div
             className="relative w-full rounded-3xl overflow-hidden border-4 border-white shadow-2xl bg-slate-200"
-            style={{ height: `${heroSettings.height * 0.6}px` }}
+            style={{ height: `${heroSettings.height * (previewFullWidth ? 1 : 0.6)}px` }}
           >
             {value ? (
               <div
@@ -279,8 +279,44 @@ export function HeroImageEditor({
               </div>
             )}
           </div>
-          <p className="text-[10px] text-slate-400 text-center italic">La previsualización está escalada al 60% del tamaño real.</p>
+          {previewFullWidth ? (
+            <p className="text-[10px] text-slate-400 text-center italic">
+              A tamaño real, con el ancho de esta pantalla.
+            </p>
+          ) : (
+            <p className="text-[10px] text-slate-400 text-center italic">La previsualización está escalada al 60% del tamaño real.</p>
+          )}
         </div>
+
+        {previewFullWidth && value && (
+          <div className="space-y-2">
+            <Label className="text-sm font-bold">En celular</Label>
+            <p className="text-xs text-slate-500">
+              Con el recorte a lo ancho, una pantalla angosta no muestra la misma franja que una
+              ancha. Buscá un encuadre que funcione en las dos.
+            </p>
+            <div className="flex justify-center">
+              <div
+                className="relative overflow-hidden rounded-2xl border-4 border-white shadow-xl bg-slate-200"
+                style={{ width: '390px', height: `${heroSettings.height}px` }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={heroBackgroundImageStyle(heroSettings, mediaUrl(value))}
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{ background: heroOverlayGradient(heroSettings, overlayVariant) }}
+                />
+                <div className={`absolute left-4 right-4 ${overlayVariant === 'landing' ? 'top-4' : 'bottom-4'}`}>
+                  <p className="text-base font-black text-white leading-tight" style={heroTextOutlineStyle(heroSettings)}>
+                    {previewTitle}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
