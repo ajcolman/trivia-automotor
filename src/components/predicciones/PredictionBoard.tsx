@@ -13,6 +13,7 @@ import type { FilaPublica } from '@/lib/predictions/resolver'
 import { readableTextColor, readableOnGradient } from '@/lib/contrast'
 import { mediaUrl } from '@/lib/utils'
 import {
+  ALTO_BANNER_PREDICCION,
   type HeroImageSettings,
   heroBackgroundImageStyle,
   heroOverlayGradient,
@@ -177,7 +178,10 @@ export function PredictionBoard({
   const completo = jugables.length > 0 && elegidos === jugables.length
 
   const marketAbierto = picker ? markets.find(m => m.id === picker.marketId) : null
-  const encuadre = resolveHeroImageSettings(bannerSettings, 260)
+  const encuadre = resolveHeroImageSettings(bannerSettings, ALTO_BANNER_PREDICCION)
+  // "Ocultar contenido al enfocar", del editor de imagen: al pasar el mouse
+  // -- o al enfocar con el teclado -- se aparta todo y queda la foto sola.
+  const puedeDestapar = Boolean(banner && encuadre.hideContentOnFocus)
   const bloqueados = marketAbierto?.type === 'ordered_pick' && Array.isArray(picks[marketAbierto.id])
     ? (picks[marketAbierto.id] as string[]).filter((id, i) => Boolean(id) && i !== picker?.slot)
     : []
@@ -188,7 +192,11 @@ export function PredictionBoard({
 
       {/* ── Cabecera ─────────────────────────────────────────────── */}
       <header
-        className="relative overflow-hidden px-4 pb-8 pt-6"
+        className={`relative overflow-hidden px-4 pb-8 pt-6 ${
+          puedeDestapar ? 'group focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-inset' : ''
+        }`}
+        tabIndex={puedeDestapar ? 0 : undefined}
+        aria-label={puedeDestapar ? 'Ver la imagen de cabecera completa' : undefined}
         style={{
           // Con banner, el degradado queda de piso: la foto va encima y el
           // oscurecido del encuadre se encarga de que el texto se lea.
@@ -198,6 +206,7 @@ export function PredictionBoard({
           // cabecera midiera lo que mide su contenido, la foto se recortaría
           // distinto y el foco quedaría corrido. Igual que el hero de la sala.
           ...(banner ? { minHeight: `${encuadre.height}px` } : {}),
+          ...(puedeDestapar ? { cursor: 'zoom-in' } : {}),
         }}
       >
         {banner && (
@@ -207,7 +216,12 @@ export function PredictionBoard({
                 título y el avance, y aclara hacia abajo para que se vea la
                 foto. La `intro` hace lo contrario y dejaba el texto sobre la
                 parte clara. */}
-            <div className="absolute inset-0" style={{ background: heroOverlayGradient(encuadre, 'landing') }} />
+            <div
+              className={`absolute inset-0 transition-opacity duration-300 motion-reduce:transition-none ${
+                puedeDestapar ? 'group-hover:opacity-0 group-focus:opacity-0' : ''
+              }`}
+              style={{ background: heroOverlayGradient(encuadre, 'landing') }}
+            />
           </>
         )}
         {/* El clip conserva todo el desplazamiento del auto, así que se ancla
@@ -216,10 +230,18 @@ export function PredictionBoard({
         {mostrarSprite && (
           <CarLoop
             sprite={sprite}
-            className="pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 sm:w-80"
+            className={`pointer-events-none absolute bottom-0 right-0 w-64 opacity-90 transition-opacity duration-300 motion-reduce:transition-none sm:w-80 ${
+              puedeDestapar ? 'group-hover:opacity-0 group-focus:opacity-0' : ''
+            }`}
           />
         )}
-        <div className="relative mx-auto max-w-3xl">
+        <div
+          className={`relative mx-auto max-w-3xl transition-all duration-300 motion-reduce:transition-none ${
+            puedeDestapar
+              ? 'group-hover:opacity-0 group-hover:translate-y-3 group-focus:opacity-0 group-focus:translate-y-3'
+              : ''
+          }`}
+        >
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <Link
               href="/"
