@@ -58,7 +58,7 @@ export default async function DashboardPage() {
   const completionRate = totalStarted > 0 ? Math.round((totalCompleted / totalStarted) * 100) : 0
 
   // Juegos de predicción. Van aparte de las trivias porque no comparten
-  // ninguna métrica: acá no hay sesiones ni tasa de completación, sino
+  // ninguna métrica: acá no hay sesiones ni tasa de completitud, sino
   // jugadores con cuenta y predicciones cargadas.
   const [eventosAbiertos, jugadoresPrediccion, prediccionesCargadas] = await Promise.all([
     prisma.predictionEvent.count({ where: { status: { in: ['open', 'live'] } } }),
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
       glow: 'rgba(168,85,247,0.25)',
     },
     {
-      label: 'Completación',
+      label: 'Completitud',
       value: `${completionRate}%`,
       sub: `${totalCompleted} de ${totalStarted}`,
       icon: TrendingUp,
