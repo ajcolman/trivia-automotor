@@ -1,5 +1,6 @@
 // Author: Angel Colman
 import { ImageResponse } from 'next/og'
+import sharp from 'sharp'
 import { prisma } from '@/lib/prisma'
 import { siteUrl } from '@/lib/site-url'
 
@@ -18,7 +19,7 @@ export const runtime = 'nodejs'
 export const revalidate = 3600
 export const alt = 'Juego de predicción en Automotor Play'
 export const size = { width: 1200, height: 630 }
-export const contentType = 'image/png'
+export const contentType = 'image/jpeg'
 
 /**
  * La Archivo en negrita, que es la tipografía del sitio.
@@ -81,8 +82,15 @@ async function traerBanner(url: string): Promise<string | null> {
     const bytes = Buffer.from(await res.arrayBuffer())
     if (bytes.byteLength > PESO_MAXIMO_BANNER) return null
 
-    const tipo = res.headers.get('content-type') ?? 'image/jpeg'
-    return `data:${tipo};base64,${bytes.toString('base64')}`
+    // Recortado al tamaño de la tarjeta antes de componer. Mandarle la foto
+    // entera obliga a decodificar millones de píxeles para dibujarlos en
+    // 1200x630, y eso es lo que hacía que la tarjeta tardara segundos.
+    const ajustado = await sharp(bytes)
+      .resize(size.width, size.height, { fit: 'cover', position: 'attention' })
+      .jpeg({ quality: 80 })
+      .toBuffer()
+
+    return `data:image/jpeg;base64,${ajustado.toString('base64')}`
   } catch {
     return null
   }
@@ -115,7 +123,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
     evento?._count.prizes ? `${evento._count.prizes} premios` : null,
   ].filter(Boolean) as string[]
 
-  return new ImageResponse(
+  const tarjeta = new ImageResponse(
     (
       <div
         style={{
@@ -231,4 +239,18 @@ export default async function Image({ params }: { params: { slug: string } }) {
         : {}),
     },
   )
+
+  // `ImageResponse` solo sabe devolver PNG, y un PNG de una foto pasa el
+  // megabyte: WhatsApp descarta las imágenes grandes y la previa quedaría sin
+  // nada. En JPEG la misma tarjeta baja a un par de cientos de KB.
+  const jpeg = await sharp(Buffer.from(await tarjeta.arrayBuffer()))
+    .jpeg({ quality: 82, progressive: true })
+    .toBuffer()
+
+  return new Response(new Uint8Array(jpeg), {
+    headers: {
+      'Content-Type': 'image/jpeg',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+    },
+  })
 }
