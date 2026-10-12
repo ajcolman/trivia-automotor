@@ -144,17 +144,30 @@ export default async function Image({ params }: { params: { slug: string } }) {
             alt=""
             width={1200}
             height={630}
-            style={{ position: 'absolute', inset: 0, objectFit: 'cover' }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: size.width,
+              height: size.height,
+              objectFit: 'cover',
+            }}
           />
         )}
 
         {/* Velo: la foto puede ser clara y el título tiene que leerse igual. */}
+        {/* El velo necesita medidas explícitas: el motor que dibuja la
+            tarjeta no entiende el atajo `inset`, así que con él el div
+            quedaba en cero por cero y el texto caía sobre la foto cruda. */}
         <div
           style={{
             position: 'absolute',
-            inset: 0,
+            top: 0,
+            left: 0,
+            width: size.width,
+            height: size.height,
             background: banner
-              ? 'linear-gradient(180deg, rgba(2,31,57,0.35) 0%, rgba(2,31,57,0.92) 100%)'
+              ? 'linear-gradient(180deg, rgba(2,31,57,0.20) 0%, rgba(2,31,57,0.62) 45%, rgba(2,31,57,0.94) 100%)'
               : 'linear-gradient(180deg, rgba(2,31,57,0.10) 0%, rgba(2,31,57,0.55) 100%)',
           }}
         />
