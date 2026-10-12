@@ -7,6 +7,7 @@ import { Upload, X, Loader2, ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { cn, mediaUrl } from '@/lib/utils'
 import { type MedidaImagen, textoMedida } from '@/lib/medidas-imagen'
+import { comprimirImagen, pesoLegible } from '@/lib/comprimir-imagen'
 
 interface UploadDropzoneProps {
   value?: string | null
@@ -30,12 +31,28 @@ export function UploadDropzone({
 }: UploadDropzoneProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [ahorro, setAhorro] = useState<string | null>(null)
+
+  // Un número, no el objeto: así la dependencia del callback es estable.
+  const ladoMaximo = medida ? Math.max(medida.ancho, medida.alto) * 2 : undefined
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return
-    const file = acceptedFiles[0]
     setIsUploading(true)
     setError(null)
+    setAhorro(null)
+
+    // Se comprime antes de subir: pesa menos, viaja menos y de paso pierde
+    // los metadatos de la cámara -- fecha, modelo, a veces el GPS.
+    // El tope sale de la medida recomendada: el doble, para que se vea bien
+    // en pantallas de alta densidad sin guardar una foto enorme.
+    const { archivo: file, bytesAntes, bytesDespues, comprimida } = await comprimirImagen(
+      acceptedFiles[0],
+      ladoMaximo,
+    )
+    if (comprimida) {
+      setAhorro(`${pesoLegible(bytesAntes)} → ${pesoLegible(bytesDespues)}`)
+    }
 
     try {
       // 1. Try direct upload to Vercel Blob if in production
@@ -86,7 +103,7 @@ export function UploadDropzone({
     } finally {
       setIsUploading(false)
     }
-  }, [onUpload])
+  }, [onUpload, ladoMaximo])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -148,6 +165,11 @@ export function UploadDropzone({
         )}
         PNG, JPG, WebP o SVG · máx. {Math.round(maxSize / (1024 * 1024))} MB
       </p>
+      {ahorro && (
+        <p className="text-xs font-semibold text-green-700">
+          Comprimida y sin metadatos: {ahorro}
+        </p>
+      )}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )
