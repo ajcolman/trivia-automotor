@@ -45,8 +45,16 @@ async function traerArchivo(): Promise<ArrayBuffer | null> {
   }
 }
 
-/** Lo que se le anima a traer a la tarjeta sin que tarde de más. */
-const PESO_MAXIMO_BANNER = 2 * 1024 * 1024
+/**
+ * Tope de seguridad para el banner, no un criterio de calidad.
+ *
+ * Lo que decide si la tarjeta se genera a tiempo es cuánto tarda en bajar y
+ * cuántos píxeles hay que decodificar, no cuántos bytes ocupa el archivo: una
+ * foto de 4 MB bien comprimida puede ser de 4 megapíxeles y decodificarse en
+ * nada. Así que el corte real es el reloj de abajo, y esto solo evita que una
+ * subida descomunal se coma la memoria.
+ */
+const PESO_MAXIMO_BANNER = 12 * 1024 * 1024
 
 /**
  * Trae el banner como data URL, si es razonable.
@@ -56,7 +64,9 @@ const PESO_MAXIMO_BANNER = 2 * 1024 * 1024
  * con el degradado del juego, que siempre se ve bien.
  */
 async function traerBanner(url: string): Promise<string | null> {
-  const corte = AbortSignal.timeout(4000)
+  // Si tarda más que esto, la tarjeta sale con el degradado: vale más una
+  // tarjeta sin foto que un enlace compartido sin tarjeta.
+  const corte = AbortSignal.timeout(8000)
   try {
     const absoluta = url.includes('vercel-storage.com')
       ? `${siteUrl()}/api/media?url=${encodeURIComponent(url)}`
