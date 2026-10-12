@@ -1,5 +1,5 @@
 // Author: Angel Colman
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
@@ -7,6 +7,8 @@ import { authOptions } from '@/lib/auth'
 import { PredictionBoard } from '@/components/predicciones/PredictionBoard'
 import { publicLeaderboard } from '@/lib/predictions/resolver'
 import { ALTO_BANNER_PREDICCION, resolveHeroImageSettings } from '@/lib/hero-image'
+import { siteUrl } from '@/lib/site-url'
+import { PortadaPublica } from '@/components/predicciones/PortadaPublica'
 import type { ContenderDTO, MarketDTO } from '@/components/predicciones/tipos'
 
 export const dynamic = 'force-dynamic'
@@ -18,22 +20,33 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const evento = await prisma.predictionEvent.findUnique({
     where: { slug: params.slug },
-    select: { title: true, description: true },
+    select: { title: true, description: true, status: true, _count: { select: { markets: true } } },
   })
   if (!evento) return { title: 'Juego no encontrado' }
+
+  // Un borrador no se comparte: que no lo indexen ni le armen tarjeta.
+  if (evento.status === 'draft') {
+    return { title: 'Juego no encontrado', robots: { index: false, follow: false } }
+  }
+
+  const titulo = `${evento.title} | Automotor Play`
+  const bajada =
+    evento.description?.trim() ||
+    `Cargá tus pronósticos${evento._count.markets ? ` en ${evento._count.markets} predicciones` : ''} y competí por premios en Automotor Play.`
+  const url = `${siteUrl()}/predicciones/${params.slug}`
+
   return {
-    title: `${evento.title} | Automotor Play`,
-    description: evento.description ?? undefined,
+    title: titulo,
+    description: bajada,
+    alternates: { canonical: url },
+    // La imagen la arma `opengraph-image.tsx`; Next la enlaza sola.
+    openGraph: { type: 'article', url, title: titulo, description: bajada, siteName: 'Automotor Play' },
+    twitter: { card: 'summary_large_image', title: titulo, description: bajada },
   }
 }
 
 export default async function PrediccionesPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
-
-  // Jugar exige cuenta. Guardamos a dónde volver tras iniciar sesión.
-  if (!session?.user || session.user.role !== 'player') {
-    redirect(`/cuenta/ingresar?volver=/predicciones/${params.slug}`)
-  }
 
   const evento = await prisma.predictionEvent.findUnique({
     where: { slug: params.slug },
@@ -41,6 +54,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
       id: true,
       title: true,
       status: true,
+      description: true,
       rules: true,
       showLeaderboard: true,
       heroImageUrl: true,
@@ -86,6 +100,28 @@ export default async function PrediccionesPage({ params }: PageProps) {
 
   // Un borrador solo debe verse desde el admin, no por URL directa.
   if (evento.status === 'draft') notFound()
+
+  // Jugar exige cuenta, pero mirar no: quien llega por un enlace compartido
+  // ve de qué va el juego y recién ahí se le pide entrar.
+  if (!session?.user || session.user.role !== 'player') {
+    return (
+      <PortadaPublica
+        slug={params.slug}
+        titulo={evento.title}
+        descripcion={evento.description}
+        reglas={evento.rules}
+        estado={evento.status}
+        banner={evento.heroImageUrl}
+        bannerSettings={evento.heroImageSettings}
+        marca={evento.brand}
+        premios={evento.prizes}
+        colorPrimario={evento.primaryColor}
+        colorSecundario={evento.secondaryColor}
+        cantidadPredicciones={evento.markets.length}
+        cantidadParticipantes={evento.contenders.length}
+      />
+    )
+  }
 
   const predicciones = await prisma.prediction.findMany({
     where: { playerId: session.user.id, market: { eventId: evento.id } },
@@ -151,6 +187,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
           ? resolveHeroImageSettings(evento.heroImageSettings as never, ALTO_BANNER_PREDICCION)
           : null
       }
+      slug={params.slug}
       marca={evento.brand}
       mostrarSprite={evento.showVehicle}
       sprite={

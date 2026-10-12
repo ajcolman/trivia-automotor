@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import type { FilaRanking } from '@/lib/predictions/resolver'
 import { EventoPremios, type PremioFila } from './EventoPremios'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { BotonCompartir } from '@/components/predicciones/BotonCompartir'
 
 interface ContenderOpcion { id: string; etiqueta: string }
 
@@ -215,6 +216,7 @@ export function EventoResultados({
           >
             Ver como jugador <ExternalLink className="h-3.5 w-3.5" />
           </a>
+          <BotonCompartir slug={slug} titulo={titulo} variante="panel" />
         </div>
       </div>
 
@@ -237,6 +239,13 @@ export function EventoResultados({
           </div>
         ))}
       </section>
+
+      {estado === 'draft' && (
+        <p className="mb-6 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          El juego está en borrador: el enlace que compartas va a dar “no encontrado”, y los
+          previsualizadores no le van a armar tarjeta. Pasalo a “Abierto” antes de repartirlo.
+        </p>
+      )}
 
       {/* ── Estado ────────────────────────────────────────────── */}
       <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-4">

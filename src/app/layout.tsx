@@ -1,5 +1,6 @@
 // Author: Angel Colman
 import type { Metadata } from 'next'
+import { siteUrl } from '@/lib/site-url'
 import { Archivo } from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
@@ -14,8 +15,19 @@ const archivo = Archivo({
 })
 
 export const metadata: Metadata = {
+  // Sin esto, una imagen declarada con ruta relativa no se resuelve a una
+  // dirección absoluta y los previsualizadores la descartan.
+  metadataBase: new URL(siteUrl()),
   title: 'Automotor Play | Jugá y ganá premios',
   description: 'Automotor Play: juegos interactivos con premios y merch oficial de Automotor S.A. y Carmotor S.A.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Automotor Play',
+    locale: 'es_PY',
+    title: 'Automotor Play | Jugá y ganá premios',
+    description: 'Jugá, sumá puntos y llevate premios y merch oficial de Automotor.',
+  },
+  twitter: { card: 'summary_large_image' },
   authors: [{ name: 'Angel Colman' }],
   icons: { icon: '/favicon.png', shortcut: '/favicon.png' },
 }

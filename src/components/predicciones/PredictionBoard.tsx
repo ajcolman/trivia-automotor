@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { Lock, ChevronRight, Trophy, Check, Loader2, AlertCircle, Gift, Ban, PartyPopper } from 'lucide-react'
 import { ContenderPicker } from './ContenderPicker'
 import { CarLoop, type SpriteVehiculo } from './CarLoop'
+import { BotonCompartir } from './BotonCompartir'
 import { PhotoZoom } from '@/components/ui/photo-zoom'
 import type { ContenderDTO, MarketDTO, PremioDTO } from './tipos'
 import type { FilaPublica } from '@/lib/predictions/resolver'
@@ -63,6 +64,8 @@ interface Props {
   sprite: SpriteVehiculo | null
   /** Si el vehículo se dibuja. Lo decide el panel. */
   mostrarSprite: boolean
+  /** Para armar el enlace que se comparte. */
+  slug: string
 }
 
 type EstadoGuardado = 'guardado' | 'guardando' | 'error'
@@ -71,7 +74,7 @@ const MEDALLAS = ['🥇', '🥈', '🥉']
 
 export function PredictionBoard({
   titulo, reglas, colorPrimario, colorSecundario, colorAcento, colorFondo, colorTexto,
-  markets, contenders, premios, ranking, banner, bannerSettings, marca, sprite, mostrarSprite,
+  markets, contenders, premios, ranking, banner, bannerSettings, marca, sprite, mostrarSprite, slug,
 }: Props) {
   const [picks, setPicks] = useState<Record<string, MarketDTO['pick']>>(
     () => Object.fromEntries(markets.map(m => [m.id, m.pick])),
@@ -249,6 +252,9 @@ export function PredictionBoard({
             >
               ← Automotor Play
             </Link>
+            <span className="ml-auto">
+              <BotonCompartir slug={slug} titulo={titulo} />
+            </span>
             {/* Quién organiza. Va en su propio sello claro para que el logo
                 se lea igual sobre foto o sobre degradado. */}
             {marca && (
