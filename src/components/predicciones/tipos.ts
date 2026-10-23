@@ -28,6 +28,13 @@ export interface MarketDTO {
   /** ISO. Momento en que deja de aceptarse la predicción. */
   locksAt: string
   segment: SegmentDTO | null
+  /**
+   * Quiénes se pueden elegir acá. Null = todos los del juego.
+   *
+   * No todas las tripulaciones inscriptas largan todos los tramos, y a una que
+   * no larga no se le puede ganar.
+   */
+  contenderIds: string[] | null
   pick: string | string[] | number | null
   pointsAwarded: number | null
 }

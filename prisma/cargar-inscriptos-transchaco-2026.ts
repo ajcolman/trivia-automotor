@@ -84,8 +84,8 @@ async function main() {
   console.log(evento.title)
   console.log(`  tripulaciones: ${inscriptos.length} (${nuevas} nuevas)`)
   if (retiradas) console.log(`  desactivadas por no estar en la lista final: ${retiradas}`)
-  const soloQualy = inscriptos.filter(c => c.category.startsWith('Solo clasificación')).length
-  console.log(`  largan todo el rally: ${inscriptos.length - soloQualy} · solo la clasificación: ${soloQualy}`)
+  const largan = inscriptos.filter(c => c.largaEtapas).length
+  console.log(`  largan las etapas: ${largan} · solo la clasificación: ${inscriptos.length - largan}`)
   console.log(`  descripción: ${descripcion !== evento.description ? 'aviso de próximamente retirado' : 'sin cambios'}`)
 }
 

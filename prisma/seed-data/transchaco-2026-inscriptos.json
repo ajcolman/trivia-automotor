@@ -1,6 +1,7 @@
 [
   {
     "number": "4",
+    "largaEtapas": true,
     "name": "Gustavo Saba",
     "subtitle": "Pablo Olmos",
     "teamName": "Saba Competición",
@@ -9,6 +10,7 @@
   },
   {
     "number": "17",
+    "largaEtapas": true,
     "name": "Gerardo Wasmosy",
     "subtitle": "Germán Maune",
     "teamName": "WA Racing",
@@ -17,6 +19,7 @@
   },
   {
     "number": "29",
+    "largaEtapas": true,
     "name": "Alfredo Escauriza",
     "subtitle": "Félix Angulo",
     "teamName": "PETROCHACO Racing",
@@ -25,6 +28,7 @@
   },
   {
     "number": "79",
+    "largaEtapas": true,
     "name": "Alberto Guanes",
     "subtitle": "Marcelo Barreto",
     "teamName": "Team Toro Pytā",
@@ -33,6 +37,7 @@
   },
   {
     "number": "9",
+    "largaEtapas": true,
     "name": "Ricardo Escauriza",
     "subtitle": "Federico García",
     "teamName": "PETROCHACO Racing",
@@ -41,6 +46,7 @@
   },
   {
     "number": "88",
+    "largaEtapas": true,
     "name": "Gianluca Laterra",
     "subtitle": "Ricardo Laterra",
     "teamName": "GL Rally Team",
@@ -49,6 +55,7 @@
   },
   {
     "number": "6",
+    "largaEtapas": true,
     "name": "Alejandro Galanti",
     "subtitle": "Marcelo Toyotoshi",
     "teamName": "GAZOO Racing Paraguay",
@@ -57,6 +64,7 @@
   },
   {
     "number": "7",
+    "largaEtapas": true,
     "name": "Fabrizio Galanti",
     "subtitle": "Tadeo Carrasco",
     "teamName": "GAZOO Racing Paraguay",
@@ -65,6 +73,7 @@
   },
   {
     "number": "67",
+    "largaEtapas": true,
     "name": "Rodrigo Campos",
     "subtitle": "Mirko Bojanovich",
     "teamName": "RC Competición",
@@ -73,6 +82,7 @@
   },
   {
     "number": "50",
+    "largaEtapas": true,
     "name": "Ricardo Fretes",
     "subtitle": "Jorge Modesto",
     "teamName": "FR Rally",
@@ -81,6 +91,7 @@
   },
   {
     "number": "42",
+    "largaEtapas": true,
     "name": "Tiago Weiler",
     "subtitle": "Juan José Sánchez",
     "teamName": "GAZOO Racing Paraguay",
@@ -89,6 +100,7 @@
   },
   {
     "number": "57",
+    "largaEtapas": true,
     "name": "Hugo Cano",
     "subtitle": "Carlos Martínez",
     "teamName": "Cano Rally Team",
@@ -97,6 +109,7 @@
   },
   {
     "number": "55",
+    "largaEtapas": true,
     "name": "Víctor Ruíz Díaz",
     "subtitle": "Marcelo González",
     "teamName": "La Criolla Rally Team",
@@ -105,6 +118,7 @@
   },
   {
     "number": "21",
+    "largaEtapas": true,
     "name": "Fabrizio Chiriani",
     "subtitle": "Jorge González",
     "teamName": "FR Rally",
@@ -113,6 +127,7 @@
   },
   {
     "number": "18",
+    "largaEtapas": false,
     "name": "Sebastián Barchini",
     "subtitle": "Carlos Alfaro",
     "teamName": "eMotorsport",
@@ -121,6 +136,7 @@
   },
   {
     "number": "64",
+    "largaEtapas": false,
     "name": "Armando Medina",
     "subtitle": "Renato Zotti",
     "teamName": "eMotorsport",
@@ -129,6 +145,7 @@
   },
   {
     "number": "44",
+    "largaEtapas": true,
     "name": "Luis Panza",
     "subtitle": "Alfredo Méndez",
     "teamName": "WA Racing",
@@ -137,6 +154,7 @@
   },
   {
     "number": "24",
+    "largaEtapas": false,
     "name": "Bruno Llano",
     "subtitle": "Thiago Llano",
     "teamName": "GAZOO Racing Paraguay",
@@ -145,6 +163,7 @@
   },
   {
     "number": "95",
+    "largaEtapas": true,
     "name": "Luis Silguero",
     "subtitle": "Marcelo Riquelme",
     "teamName": "GT4 Rally Team",
@@ -153,6 +172,7 @@
   },
   {
     "number": "30",
+    "largaEtapas": false,
     "name": "Eugen Gotze",
     "subtitle": "Mateo Galeano",
     "teamName": "eMotorsport",
@@ -161,6 +181,7 @@
   },
   {
     "number": "96",
+    "largaEtapas": true,
     "name": "Nicolás Baeza",
     "subtitle": "Luis Cabo de Vila",
     "teamName": "Baeza Competición",
@@ -169,6 +190,7 @@
   },
   {
     "number": "10",
+    "largaEtapas": false,
     "name": "Miguel Ortega",
     "subtitle": "Lino Vargas",
     "teamName": "La Renga",
@@ -177,6 +199,7 @@
   },
   {
     "number": "16",
+    "largaEtapas": true,
     "name": "Osvaldo Draguicevich",
     "subtitle": "Marco Méndez",
     "teamName": "Dragui Rally Team",
@@ -185,6 +208,7 @@
   },
   {
     "number": "61",
+    "largaEtapas": true,
     "name": "Sebastián Martínez",
     "subtitle": "Alejandro Álvarez",
     "teamName": "ARD Competición",
@@ -193,6 +217,7 @@
   },
   {
     "number": "75",
+    "largaEtapas": true,
     "name": "Orlando Benítez",
     "subtitle": "Omar Benítez",
     "teamName": "Team Mandu’arā",
@@ -201,6 +226,7 @@
   },
   {
     "number": "33",
+    "largaEtapas": true,
     "name": "César Pedotti",
     "subtitle": "Nicolás Elizaur",
     "teamName": "Pochi Rally Team",
@@ -209,6 +235,7 @@
   },
   {
     "number": "73",
+    "largaEtapas": true,
     "name": "Carlos Bogado",
     "subtitle": "Enrique Benítez",
     "teamName": "Ka’i Competición",
@@ -217,6 +244,7 @@
   },
   {
     "number": "60",
+    "largaEtapas": true,
     "name": "Riyosuke Shima",
     "subtitle": "Patricio Rivas",
     "teamName": "GAZOO Racing Paraguay",
@@ -225,6 +253,7 @@
   },
   {
     "number": "54",
+    "largaEtapas": true,
     "name": "César Cruz",
     "subtitle": "Jorge Arrúa",
     "teamName": "DIMO CABAL",
@@ -233,6 +262,7 @@
   },
   {
     "number": "53",
+    "largaEtapas": true,
     "name": "Diego Cruz",
     "subtitle": "Ramiro Ayala",
     "teamName": "DIMO CABAL",
@@ -241,6 +271,7 @@
   },
   {
     "number": "80",
+    "largaEtapas": true,
     "name": "Sergio Galeano",
     "subtitle": "Carlos López",
     "teamName": "SG Rally Team",
@@ -249,6 +280,7 @@
   },
   {
     "number": "51",
+    "largaEtapas": true,
     "name": "Iván Wasmosy",
     "subtitle": "Gonzalo Díaz",
     "teamName": "WA Racing",
@@ -257,6 +289,7 @@
   },
   {
     "number": "26",
+    "largaEtapas": true,
     "name": "Thomas Klassen",
     "subtitle": "Abel Díaz",
     "teamName": "Abel Preparaciones",
@@ -265,6 +298,7 @@
   },
   {
     "number": "19",
+    "largaEtapas": true,
     "name": "Fau Zaldívar",
     "subtitle": "Marcelo Der Ohannesian",
     "teamName": "MZR Paraguay",
@@ -273,6 +307,7 @@
   },
   {
     "number": "1",
+    "largaEtapas": true,
     "name": "Miguel Zaldívar (Jr.)",
     "subtitle": "Adolfo González",
     "teamName": "MZR Paraguay",
@@ -281,6 +316,7 @@
   },
   {
     "number": "84",
+    "largaEtapas": true,
     "name": "Luis María Gómez",
     "subtitle": "Fernando Ruíz Díaz",
     "teamName": "ARD Competición",
@@ -289,6 +325,7 @@
   },
   {
     "number": "82",
+    "largaEtapas": true,
     "name": "Raúl Franco",
     "subtitle": "Jorge Cárdenas",
     "teamName": "Franco Rally Team",
@@ -297,6 +334,7 @@
   },
   {
     "number": "71",
+    "largaEtapas": true,
     "name": "Hernán Arguello",
     "subtitle": "Martín Rodríguez",
     "teamName": "TM-Sport",
@@ -305,6 +343,7 @@
   },
   {
     "number": "52",
+    "largaEtapas": true,
     "name": "Víctor Escobar",
     "subtitle": "Hugo Villalba",
     "teamName": "ERT Competición",
@@ -313,6 +352,7 @@
   },
   {
     "number": "46",
+    "largaEtapas": true,
     "name": "Luis Saccomani",
     "subtitle": "Andrés Saccomani",
     "teamName": "Sacco Rally Team",
@@ -321,6 +361,7 @@
   },
   {
     "number": "3",
+    "largaEtapas": true,
     "name": "Augusto Bestard",
     "subtitle": "José Díaz",
     "teamName": "ABR South America",
@@ -329,6 +370,7 @@
   },
   {
     "number": "23",
+    "largaEtapas": false,
     "name": "Frank Escher",
     "subtitle": "Estéban Gómez",
     "teamName": "ERT",
@@ -337,6 +379,7 @@
   },
   {
     "number": "35",
+    "largaEtapas": true,
     "name": "Herib Chamas",
     "subtitle": "Cristhian Burifaldi",
     "teamName": "CHB Competición Rally Team",
@@ -345,6 +388,7 @@
   },
   {
     "number": "48",
+    "largaEtapas": true,
     "name": "Agustín Medina",
     "subtitle": "Rodrigo Villalba",
     "teamName": "Móvil Motor Competición",
@@ -353,6 +397,7 @@
   },
   {
     "number": "90",
+    "largaEtapas": true,
     "name": "Beto Ramírez",
     "subtitle": "José Marín",
     "teamName": "Team PETROBRAS",
@@ -361,6 +406,7 @@
   },
   {
     "number": "58",
+    "largaEtapas": true,
     "name": "Johnny Zeballos",
     "subtitle": "Luis Ríos",
     "teamName": "AR Racing – Zebas Competición",
@@ -369,6 +415,7 @@
   },
   {
     "number": "86",
+    "largaEtapas": true,
     "name": "Augusto Rossi",
     "subtitle": "Jorge Ríos",
     "teamName": "Ríos Competición",
@@ -377,6 +424,7 @@
   },
   {
     "number": "63",
+    "largaEtapas": true,
     "name": "Manuel Giménez",
     "subtitle": "Diego González",
     "teamName": "RG Competición",
@@ -385,6 +433,7 @@
   },
   {
     "number": "13",
+    "largaEtapas": true,
     "name": "Manuel Irala",
     "subtitle": "Rafael Sosa",
     "teamName": "MIG – TRI21 Rally Team",
@@ -393,6 +442,7 @@
   },
   {
     "number": "28",
+    "largaEtapas": false,
     "name": "Mauricio González",
     "subtitle": "Carlos Zarca",
     "teamName": "HG Rally Team",
@@ -401,6 +451,7 @@
   },
   {
     "number": "15",
+    "largaEtapas": false,
     "name": "Sebastián González",
     "subtitle": "Diego Fabiani",
     "teamName": "HG Rally Team",
@@ -409,6 +460,7 @@
   },
   {
     "number": "37",
+    "largaEtapas": false,
     "name": "Antonio Ramos",
     "subtitle": "Ricardo Villalba",
     "teamName": "Mec Car",
@@ -417,6 +469,7 @@
   },
   {
     "number": "22",
+    "largaEtapas": true,
     "name": "Joel Benítez",
     "subtitle": "Ramiro Rodríguez",
     "teamName": "GB Competición",
@@ -425,6 +478,7 @@
   },
   {
     "number": "78",
+    "largaEtapas": true,
     "name": "Arnaldo Duarte",
     "subtitle": "Luis Duarte",
     "teamName": "Lokillo Motor Sport",
@@ -433,6 +487,7 @@
   },
   {
     "number": "91",
+    "largaEtapas": false,
     "name": "Marcio Villar",
     "subtitle": "Claudio Cazal",
     "teamName": "Abel Preparaciones",
@@ -441,6 +496,7 @@
   },
   {
     "number": "70",
+    "largaEtapas": true,
     "name": "Ceferino Ledesma",
     "subtitle": "Oscar Yani",
     "teamName": "Team Ña Morocha",
@@ -449,6 +505,7 @@
   },
   {
     "number": "83",
+    "largaEtapas": true,
     "name": "Nelson Rolón",
     "subtitle": "Héctor Gómez",
     "teamName": "Iker Rally Team",
@@ -457,6 +514,7 @@
   },
   {
     "number": "27",
+    "largaEtapas": true,
     "name": "Diego Domínguez Jr.",
     "subtitle": "Fernando Mussano",
     "teamName": "DTA",
@@ -465,6 +523,7 @@
   },
   {
     "number": "5",
+    "largaEtapas": false,
     "name": "Juan Martín Masi",
     "subtitle": "Franco Pappalardo",
     "teamName": "Masi Motorsport",
@@ -473,6 +532,7 @@
   },
   {
     "number": "77",
+    "largaEtapas": true,
     "name": "Nicolás Camacho",
     "subtitle": "Israel Quesnel",
     "teamName": "Karaguata Rally Team",
@@ -481,6 +541,7 @@
   },
   {
     "number": "25",
+    "largaEtapas": true,
     "name": "Matías Domínguez",
     "subtitle": "Nicolás Domínguez",
     "teamName": "DTA",
@@ -489,6 +550,7 @@
   },
   {
     "number": "111",
+    "largaEtapas": true,
     "name": "Mark Hicks",
     "subtitle": "Kelvin Hicks",
     "teamName": "Team MEK Motorsport",
@@ -497,6 +559,7 @@
   },
   {
     "number": "123",
+    "largaEtapas": true,
     "name": "Blas Zapag",
     "subtitle": "Enrique Fratta",
     "teamName": "COPETROL Rally",
@@ -505,6 +568,7 @@
   },
   {
     "number": "101",
+    "largaEtapas": true,
     "name": "Arturo Núñez",
     "subtitle": "Giovanni Gil",
     "teamName": "Tata Proto Rally Team",
@@ -513,6 +577,7 @@
   },
   {
     "number": "107",
+    "largaEtapas": true,
     "name": "Mike White",
     "subtitle": "David Blanco",
     "teamName": "White Competición",
@@ -521,6 +586,7 @@
   },
   {
     "number": "109",
+    "largaEtapas": true,
     "name": "Miler Otazo",
     "subtitle": "Hugo Elizeche",
     "teamName": "Mercedes-Benz Desarrollo & Competición",
@@ -529,6 +595,7 @@
   },
   {
     "number": "143",
+    "largaEtapas": true,
     "name": "Armando Benítez",
     "subtitle": "Marcelo Caballero",
     "teamName": "Macro Motorsports",
@@ -537,6 +604,7 @@
   },
   {
     "number": "125",
+    "largaEtapas": true,
     "name": "Carlos Rojas",
     "subtitle": "Sebastián Cáceres",
     "teamName": "Team Evolution",
@@ -545,6 +613,7 @@
   },
   {
     "number": "221",
+    "largaEtapas": false,
     "name": "Ubaldo Clari",
     "subtitle": "Cristhian Clari",
     "teamName": "M2",
@@ -553,6 +622,7 @@
   },
   {
     "number": "249",
+    "largaEtapas": true,
     "name": "Félix González",
     "subtitle": "Miguel Mircelian",
     "teamName": "Dragui Rally Team",
@@ -561,6 +631,7 @@
   },
   {
     "number": "213",
+    "largaEtapas": false,
     "name": "José David Ojeda",
     "subtitle": "Adrián Centurión",
     "teamName": "Dragui Rally Team",
@@ -569,6 +640,7 @@
   },
   {
     "number": "250",
+    "largaEtapas": true,
     "name": "Fernando Guggiari",
     "subtitle": "Saúl Vera",
     "teamName": "Mundialcom Rally Team",
@@ -577,6 +649,7 @@
   },
   {
     "number": "204",
+    "largaEtapas": true,
     "name": "Alberto Molina",
     "subtitle": "Digno Alderete",
     "teamName": "Históricos del Automovilismo Paraguayo",
@@ -585,6 +658,7 @@
   },
   {
     "number": "225",
+    "largaEtapas": false,
     "name": "Federico Aspillaga",
     "subtitle": "Pedro Colmán",
     "teamName": "Aspillaga Premium Service",
@@ -593,6 +667,7 @@
   },
   {
     "number": "201",
+    "largaEtapas": true,
     "name": "Luis Weiler",
     "subtitle": "Luis Figueredo",
     "teamName": "Petrochaco Racing Team",
@@ -601,6 +676,7 @@
   },
   {
     "number": "200",
+    "largaEtapas": true,
     "name": "Oscar Weiler",
     "subtitle": null,
     "teamName": "Legendarios",
@@ -609,6 +685,7 @@
   },
   {
     "number": "203",
+    "largaEtapas": false,
     "name": "Esteban Guggiari",
     "subtitle": "Marcelo Vera",
     "teamName": "MundialCom Rally Team",
@@ -617,6 +694,7 @@
   },
   {
     "number": "206",
+    "largaEtapas": true,
     "name": "Alberto Fronteras",
     "subtitle": "Gustavo Villamayor",
     "teamName": "Garay Car",
@@ -625,6 +703,7 @@
   },
   {
     "number": "240",
+    "largaEtapas": true,
     "name": "Francisco Marret",
     "subtitle": "Juan Bravo",
     "teamName": "OC Racing",
@@ -633,6 +712,7 @@
   },
   {
     "number": "205",
+    "largaEtapas": true,
     "name": "Oscar Rodríguez",
     "subtitle": "Emilio Bellassai",
     "teamName": "Team LA JEFA",
@@ -641,6 +721,7 @@
   },
   {
     "number": "211",
+    "largaEtapas": true,
     "name": "Osvaldo Ruoti",
     "subtitle": "Mario Laterza",
     "teamName": "Independiente",
@@ -649,6 +730,7 @@
   },
   {
     "number": "277",
+    "largaEtapas": true,
     "name": "Robert Planás",
     "subtitle": "Eduardo Planás",
     "teamName": "Planás Rally Team",
@@ -657,6 +739,7 @@
   },
   {
     "number": "207",
+    "largaEtapas": true,
     "name": "Antonio Faccioli",
     "subtitle": "Leandro Pereira",
     "teamName": "Speed Motor",
@@ -665,6 +748,7 @@
   },
   {
     "number": "222",
+    "largaEtapas": true,
     "name": "Martín Heyn",
     "subtitle": "Roque Vega",
     "teamName": "Independiente",
@@ -673,6 +757,7 @@
   },
   {
     "number": "229",
+    "largaEtapas": true,
     "name": "Manoel Zitkoski",
     "subtitle": "Mario Zitkoski",
     "teamName": "Zitkoski Rally Team",
@@ -681,6 +766,7 @@
   },
   {
     "number": "217",
+    "largaEtapas": true,
     "name": "Andrés Masi",
     "subtitle": "Junior Masi",
     "teamName": "Team Jagua Piru",

@@ -26,6 +26,8 @@ interface MarketFila {
   resultado: string | string[] | null
   revisado: boolean
   predicciones: number
+  /** Quiénes largan esta pregunta. Null = todos los del juego. */
+  contenderIds: string[] | null
 }
 
 export interface EstadisticasEvento {
@@ -70,6 +72,15 @@ export function EventoResultados({
   mostrarRanking,
 }: Props) {
   const router = useRouter()
+
+  // Un mapa por pregunta sale más caro que filtrar al vuelo: son pocas y la
+  // lista se arma recién cuando se despliega el selector.
+  const elegibles = (m: MarketFila) => {
+    if (!m.contenderIds) return contenders
+    const set = new Set(m.contenderIds)
+    return contenders.filter(c => set.has(c.id))
+  }
+
   const [guardando, setGuardando] = useState<string | null>(null)
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
   const [cambiandoRanking, setCambiandoRanking] = useState(false)
@@ -330,7 +341,10 @@ export function EventoResultados({
                           className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-[#005CA8] focus:outline-none"
                         >
                           <option value="">— Elegir tripulación —</option>
-                          {contenders.map(c => (
+                          {/* Solo quienes largan este tramo: ofrecer a alguien
+                              que no largó sería ofrecer algo que el servidor
+                              después rechaza. */}
+                          {elegibles(m).map(c => (
                             <option key={c.id} value={c.id}>{c.etiqueta}</option>
                           ))}
                         </select>

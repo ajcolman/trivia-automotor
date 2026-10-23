@@ -47,6 +47,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
           id: true, type: true, title: true, locksAt: true, config: true,
           segment: { select: { id: true, code: true, name: true } },
           resolution: { select: { value: true, revisedAt: true } },
+          eligible: { select: { contenderId: true } },
           _count: { select: { predictions: true } },
         },
       },
@@ -218,6 +219,7 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
           resultado: (m.resolution?.value as string | string[] | null) ?? null,
           revisado: m.resolution?.revisedAt != null,
           predicciones: m._count.predictions,
+          contenderIds: m.eligible.length > 0 ? m.eligible.map(e => e.contenderId) : null,
         }))}
         ranking={ranking}
         estadisticas={estadisticas}

@@ -13,6 +13,7 @@ import {
   type MarketConfig,
   type MarketType,
 } from './scoring'
+import { validarElegibles } from './elegibilidad'
 
 export type ResolveResult =
   | { ok: true; puntuadas: number; revision: boolean }
@@ -45,16 +46,15 @@ export async function resolveMarket(
     return { ok: false, error: 'El resultado no tiene la forma que espera esta pregunta.' }
   }
 
-  // Los elegidos deben pertenecer al evento: evita cargar un piloto de otro
-  // rally por copiar un id equivocado.
-  const ids = Array.isArray(value) ? value : typeof value === 'string' ? [value] : []
-  if (ids.length > 0) {
-    const validos = await prisma.contender.count({
-      where: { id: { in: ids as string[] }, eventId: market.eventId },
-    })
-    if (validos !== new Set(ids).size) {
-      return { ok: false, error: 'Alguna tripulación elegida no pertenece a este evento.' }
-    }
+  // Los elegidos deben pertenecer al evento y poder correr esta pregunta: evita
+  // cargar un piloto de otro rally por copiar un id equivocado, y cargar como
+  // ganador de un tramo a alguien que no lo largó.
+  //
+  // Sin exigir que esté activo: el resultado es un hecho ya ocurrido y la
+  // tripulación pudo haberse retirado del juego después de ese tramo.
+  const elegibilidad = await validarElegibles(market.id, market.eventId, value, false)
+  if (!elegibilidad.ok) {
+    return { ok: false, error: elegibilidad.error }
   }
 
   const esRevision = market.resolution !== null

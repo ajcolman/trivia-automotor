@@ -570,7 +570,8 @@ model Contender {
   isActive    Boolean @default(true)
   orderIndex  Int     @default(0)
 
-  event PredictionEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event      PredictionEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eligibleIn MarketContender[]
 
   @@unique([eventId, number])
   @@index([eventId, orderIndex])
@@ -589,13 +590,35 @@ model Market {
   /// Momento de cierre. Se hereda del segmento y se puede pisar.
   locksAt    DateTime
 
-  event       PredictionEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  segment     Segment?        @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  event       PredictionEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  segment     Segment?          @relation(fields: [segmentId], references: [id], onDelete: Cascade)
   predictions Prediction[]
   resolution  Resolution?
+  eligible    MarketContender[]
 
   @@index([eventId, locksAt])
   @@index([segmentId])
+}
+
+/// Qué contendientes se pueden elegir en una pregunta.
+///
+/// Sin filas se pueden elegir todos los activos del evento. Esa convención es
+/// a propósito: los juegos que ya existen siguen funcionando sin cargar nada,
+/// y armar uno nuevo no obliga a declarar elegibilidad que casi nunca hace
+/// falta.
+///
+/// Responde "quién larga esto", no "contra quién compite". En rally no todas
+/// las tripulaciones inscriptas largan todos los tramos: las hay anotadas
+/// solo a la clasificación, y a una que no larga no se le puede ganar.
+model MarketContender {
+  marketId    String
+  contenderId String
+
+  market    Market    @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  contender Contender @relation(fields: [contenderId], references: [id], onDelete: Cascade)
+
+  @@id([marketId, contenderId])
+  @@index([contenderId])
 }
 
 model Prediction {

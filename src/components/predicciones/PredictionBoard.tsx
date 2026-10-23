@@ -181,6 +181,15 @@ export function PredictionBoard({
   const completo = jugables.length > 0 && elegidos === jugables.length
 
   const marketAbierto = picker ? markets.find(m => m.id === picker.marketId) : null
+
+  // Solo quien larga esta pregunta. El servidor lo vuelve a comprobar al
+  // guardar: esto es para no ofrecer una elección que va a ser rechazada.
+  const elegibles = useMemo(() => {
+    const permitidos = marketAbierto?.contenderIds
+    if (!permitidos) return contenders
+    const set = new Set(permitidos)
+    return contenders.filter(c => set.has(c.id))
+  }, [marketAbierto, contenders])
   const encuadre = resolveHeroImageSettings(bannerSettings, ALTO_BANNER_PREDICCION)
   // "Ocultar contenido al enfocar", del editor de imagen: al pasar el mouse
   // -- o al enfocar con el teclado -- se aparta todo y queda la foto sola.
@@ -541,7 +550,7 @@ export function PredictionBoard({
       <ContenderPicker
         abierto={picker !== null}
         titulo={marketAbierto?.title ?? ''}
-        contenders={contenders}
+        contenders={elegibles}
         bloqueados={bloqueados}
         seleccionado={
           marketAbierto?.type === 'ordered_pick'

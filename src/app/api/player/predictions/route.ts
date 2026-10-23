@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { createRateLimiter } from '@/lib/rate-limit'
 import { isValidPrediction, type MarketConfig, type MarketType } from '@/lib/predictions/scoring'
+import { validarElegibles } from '@/lib/predictions/elegibilidad'
 
 const limiter = createRateLimiter({ limit: 60, windowMs: 60_000 })
 
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
       type: true,
       config: true,
       locksAt: true,
+      eventId: true,
       segment: { select: { isCancelled: true, code: true } },
       event: { select: { status: true } },
     },
@@ -69,6 +71,14 @@ export async function POST(req: NextRequest) {
   const config = (market.config ?? {}) as MarketConfig
   if (!isValidPrediction(market.type as MarketType, config, value)) {
     return NextResponse.json({ error: 'La elección no es válida.' }, { status: 400 })
+  }
+
+  // `isValidPrediction` solo mira la forma: para un `single_pick` cualquier
+  // texto la cumple. Que lo elegido exista, sea de este juego y largue esta
+  // pregunta se comprueba acá, porque el cliente manda el id que quiera.
+  const elegibilidad = await validarElegibles(market.id, market.eventId, value, true)
+  if (!elegibilidad.ok) {
+    return NextResponse.json({ error: elegibilidad.error }, { status: 400 })
   }
 
   const prediction = await prisma.prediction.upsert({

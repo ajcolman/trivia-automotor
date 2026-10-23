@@ -91,6 +91,9 @@ export default async function PrediccionesPage({ params }: PageProps) {
           segment: {
             select: { code: true, name: true, distanceKm: true, startsAt: true, isCancelled: true },
           },
+          // Sin filas se pueden elegir todos: así son los juegos que no
+          // declaran elegibilidad.
+          eligible: { select: { contenderId: true } },
         },
       },
     },
@@ -153,6 +156,7 @@ export default async function PrediccionesPage({ params }: PageProps) {
             isCancelled: m.segment.isCancelled,
           }
         : null,
+      contenderIds: m.eligible.length > 0 ? m.eligible.map(e => e.contenderId) : null,
       pick: (previa?.value as MarketDTO['pick']) ?? null,
       pointsAwarded: previa?.pointsAwarded ?? null,
     }
