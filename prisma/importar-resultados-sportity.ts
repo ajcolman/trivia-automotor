@@ -119,6 +119,20 @@ async function aTexto(doc: Documento): Promise<string> {
  */
 const EDICION_TRANSCHACO = /transchaco/i
 
+/**
+ * De qué jornada es el documento: 1, 2, 3... o 0 para la clasificación.
+ *
+ * El PDF lo dice en el encabezado ("ETAPA 1"), y hace falta porque numera las
+ * pruebas dentro de la etapa mientras el itinerario las numera corridas.
+ */
+function jornadaDe(texto: string): number {
+  const primeras = texto.split('\n').slice(0, 14).join(' ')
+  if (/CLASIFICACION|CLASIFICACIÓN|QUALIFY/i.test(primeras)) return 0
+  const m = primeras.match(/ETAPA\s*(\d+)/i)
+  if (!m) throw new Error('El documento no dice de qué etapa es.')
+  return Number(m[1])
+}
+
 /** La línea del encabezado que dice de qué fecha del campeonato es. */
 function edicionDe(texto: string): string {
   const primeras = texto.split('\n').slice(0, 12).join(' ')
@@ -243,6 +257,8 @@ async function main() {
   console.log(`edición: ${edicion}\n`)
 
   const tramos = parsearPExPE(texto)
+  const jornada = jornadaDe(texto)
+  console.log(`jornada: ${jornada === 0 ? 'clasificación' : `etapa ${jornada}`}\n`)
 
   const evento = await prisma.predictionEvent.findUnique({
     where: { slug: SLUG },
@@ -253,8 +269,8 @@ async function main() {
         where: { segment: { isNot: null } },
         orderBy: { orderIndex: 'asc' },
         select: {
-          id: true, type: true,
-          segment: { select: { code: true, name: true } },
+          id: true,
+          segment: { select: { code: true, name: true, startsAt: true, isCancelled: true } },
           resolution: { select: { value: true } },
           _count: { select: { predictions: true } },
         },
@@ -263,35 +279,92 @@ async function main() {
   })
   if (!evento) throw new Error(`No existe el juego "${SLUG}"`)
 
+  // Las jornadas salen de los días del itinerario, no de una lista escrita a
+  // mano: el día 0 es la clasificación y los siguientes son las etapas, en
+  // orden. Si la organización reprograma un tramo a otro día, esto lo sigue.
+  const dia = (iso: Date) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Asuncion', dateStyle: 'short' }).format(iso)
+  const dias: string[] = []
+  for (const m of evento.markets) {
+    const d = m.segment?.startsAt ? dia(m.segment.startsAt) : null
+    if (d && !dias.includes(d)) dias.push(d)
+  }
+  const diaBuscado = dias[jornada]
+  if (!diaBuscado) {
+    throw new Error(`El itinerario no tiene una jornada ${jornada}: solo ${dias.length} días.`)
+  }
+  const delDia = evento.markets.filter(m => m.segment?.startsAt && dia(m.segment.startsAt) === diaBuscado)
+
+  // El PDF puede numerar las pruebas dentro de la etapa ("PE 1") o corridas
+  // como el itinerario ("PE 9"). Si las etiquetas coinciden con nuestros
+  // códigos se usan tal cual, que es lo seguro; si no, se mapea por posición
+  // y se exige que la cantidad dé, porque mapear 7 columnas contra 8 tramos
+  // correría todos los resultados un lugar.
+  const porCodigo = new Map(delDia.map(m => [m.segment!.code.replace(/\s+/g, ''), m]))
+  const directo = tramos.every(t => porCodigo.has(t.etiqueta.replace(/\s+/g, '')))
+
+  if (!directo && tramos.length !== delDia.length) {
+    throw new Error(
+      `El documento trae ${tramos.length} pruebas y esa jornada tiene ${delDia.length} tramos ` +
+      `(${delDia.map(m => m.segment!.code).join(', ')}).\n` +
+      'No se mapea por posición con cantidades distintas: correría los resultados de lugar.',
+    )
+  }
+
   const porNumero = new Map(evento.contenders.map(c => [c.number, c]))
 
-  // El PDF numera las pruebas dentro de la etapa; nuestro itinerario las
-  // numera corridas. El mapeo es por posición dentro de la etapa, y por eso
-  // hay que mirarlo antes de cargar.
-  console.log('  PDF      tramo   ganador')
-  const plan: { marketId: string; code: string; contenderId: string; etiqueta: string }[] = []
+  console.log(`  PDF      tramo    ganador`)
+  const plan: { marketId: string; code: string; contenderId: string; nombre: string; predicciones: number }[] = []
+  let sinMapear = 0
 
-  for (const t of tramos) {
+  for (let i = 0; i < tramos.length; i++) {
+    const t = tramos[i]
+    const m = directo ? porCodigo.get(t.etiqueta.replace(/\s+/g, ''))! : delDia[i]
+    const code = m.segment!.code
     const c = porNumero.get(t.numero)
-    const quien = c ? `#${t.numero} ${c.name}` : `#${t.numero} (no está en el juego)`
-    console.log(`  ${t.etiqueta.padEnd(8)} ${'?'.padEnd(7)} ${quien.padEnd(34)} ${reloj(t.segundos)}`)
-    if (c) plan.push({ marketId: '', code: '', contenderId: c.id, etiqueta: t.etiqueta })
+
+    const quien = c ? `#${t.numero} ${c.name}` : `#${t.numero} — no está entre los autos del juego`
+    const marca = m.segment!.isCancelled ? ' (tramo cancelado)' : m.resolution ? ' (ya tiene resultado)' : ''
+    console.log(`  ${t.etiqueta.padEnd(8)} ${code.padEnd(8)} ${quien.padEnd(44)} ${reloj(t.segundos)}${marca}`)
+
+    if (!c) { sinMapear++; continue }
+    if (m.segment!.isCancelled) continue
+    plan.push({ marketId: m.id, code, contenderId: c.id, nombre: c.name, predicciones: m._count.predictions })
   }
 
   console.log(
-    `\nLeídos ${tramos.length} tramos. ` +
-    `${plan.length} ganadores están en el juego, ${tramos.length - plan.length} no.`,
+    `\n${tramos.length} pruebas leídas · ${plan.length} listas para cargar` +
+    (sinMapear ? ` · ${sinMapear} con un ganador que no está en el juego` : '') +
+    `\nmapeo: ${directo ? 'por código, las etiquetas del PDF son las del itinerario' : 'por posición dentro de la jornada'}`,
   )
-  console.log(
-    '\nEl mapeo de "PE n" del PDF a los códigos del itinerario se completa cuando\n' +
-    'salga el primer documento real del Transchaco: ahí se ve si numera las\n' +
-    'pruebas por etapa o corridas, y se declara acá en una línea.',
-  )
-  if (CARGAR) {
-    if (OTRA_EDICION) throw new Error('Con --edicion no se carga nada: es solo para probar el formato.')
-    throw new Error('Falta el mapeo de tramos: no se carga nada a ciegas.')
+
+  if (sinMapear > 0) {
+    throw new Error(
+      'Hay ganadores que no son autos del juego. Puede ser que el documento sea de\n' +
+      'otra división (camionetas o históricos) o de otra fecha. No se carga nada.',
+    )
   }
-  void resolveMarket
+
+  if (!CARGAR) {
+    console.log('\nSimulacro. Volvé a correrlo con --cargar para escribir y repuntuar.')
+    return
+  }
+  if (OTRA_EDICION) throw new Error('Con --edicion no se carga nada: es solo para probar el formato.')
+
+  const admin = await prisma.user.findFirst({
+    where: { role: 'super_admin', isActive: true },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
+  })
+  if (!admin) throw new Error('No hay un super_admin activo para firmar la carga.')
+
+  console.log()
+  for (const p of plan) {
+    const r = await resolveMarket(p.marketId, p.contenderId, admin.id, 'sportity')
+    if (!r.ok) throw new Error(`${p.code}: ${r.error}`)
+    console.log(`  ${p.code.padEnd(8)} ${p.nombre.padEnd(26)} ${r.puntuadas} predicciones puntuadas${r.revision ? ' (corrección)' : ''}`)
+  }
+  console.log(`\nCargados ${plan.length} tramos.`)
 }
 
 main()
