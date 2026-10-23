@@ -27,10 +27,9 @@
  */
 import { PrismaClient } from '@prisma/client'
 import inscriptos from './seed-data/transchaco-2026-inscriptos.json'
+import { SLUG, DIVISIONES } from './transchaco-2026'
 
 const prisma = new PrismaClient()
-
-const SLUG = 'transchaco-rally-2026'
 
 /** El aviso que ya no corresponde: las predicciones están abiertas. */
 const AVISO = /\n?PRÓXIMAMENTE DISPONIBLE PARA REALIZAR PREDICCIONES\.?/i
@@ -42,6 +41,8 @@ async function main() {
   })
   if (!evento) throw new Error(`No existe el juego "${SLUG}"`)
 
+  const delJuego = (seccion: string) => (DIVISIONES as readonly string[]).includes(seccion)
+
   let nuevas = 0
   for (const c of inscriptos) {
     const datos = {
@@ -50,7 +51,9 @@ async function main() {
       teamName: c.teamName,
       category: c.category,
       orderIndex: c.orderIndex,
-      isActive: true,
+      // Se cargan las 86 de la lista oficial, pero solo quedan activas las
+      // divisiones sobre las que pregunta el juego. Ver `./transchaco-2026`.
+      isActive: delJuego(c.seccion),
     }
     const existente = await prisma.contender.findUnique({
       where: { eventId_number: { eventId: evento.id, number: c.number } },
@@ -84,8 +87,10 @@ async function main() {
   console.log(evento.title)
   console.log(`  tripulaciones: ${inscriptos.length} (${nuevas} nuevas)`)
   if (retiradas) console.log(`  desactivadas por no estar en la lista final: ${retiradas}`)
-  const largan = inscriptos.filter(c => c.largaEtapas).length
-  console.log(`  largan las etapas: ${largan} · solo la clasificación: ${inscriptos.length - largan}`)
+  const activos = inscriptos.filter(c => delJuego(c.seccion))
+  const largan = activos.filter(c => c.largaEtapas).length
+  console.log(`  del juego (${DIVISIONES.join(', ')}): ${activos.length} · fuera del juego: ${inscriptos.length - activos.length}`)
+  console.log(`  largan las etapas: ${largan} · solo la clasificación: ${activos.length - largan}`)
   console.log(`  descripción: ${descripcion !== evento.description ? 'aviso de próximamente retirado' : 'sin cambios'}`)
 }
 

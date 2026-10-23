@@ -2,25 +2,21 @@
 /**
  * Declara quién larga cada tramo del Transchaco Rally 2026.
  *
- * De las 86 tripulaciones inscriptas, solo 57 largan los 21 tramos que tiene
- * cargado el juego. Dos motivos distintos:
+ * El juego pregunta por los autos -- el porqué está en `./transchaco-2026` --,
+ * y dentro de los autos no todos largan todo:
  *
- * 1. Quince están anotadas solamente a las dos pruebas de clasificación.
- *
- * 2. Los dieciocho históricos corren un itinerario propio. El itinerario que
- *    cargamos -- 21 PE, 504 km cronometrados -- es el de autos y camionetas;
- *    el TACPy le dio a los históricos un recorrido diferenciado que no está
- *    en el juego. Así que en estas preguntas no largan, aunque catorce de
- *    ellos sí corran las etapas de su propia carrera.
+ *   · las dos pruebas de clasificación las largan los 61 autos inscriptos;
+ *   · los 21 tramos del Chaco los largan 50, porque once se anotaron
+ *     solamente a la clasificación.
  *
  * A una tripulación que no larga el tramo no se le puede ganar, así que
  * elegirla era perder seguro sin que nada lo avisara.
  *
- * Las dos pruebas de clasificación quedan a propósito SIN declarar. Un mercado
- * sin filas en `MarketContender` admite a todos los del juego, y ahí la regla
- * es justamente "todos los inscriptos": las largan las 86 según la columna de
- * participación de la lista oficial, y si mañana se suma una tripulación entra
- * sola. En los 21 tramos restantes la regla es otra y esa sí hay que escribirla.
+ * Las 23 preguntas quedan declaradas explícitamente, ninguna abierta. La
+ * convención de "sin filas en `MarketContender` = todos los del juego" sirve
+ * cuando pueden sumarse participantes, y acá no: la lista de inscriptos es la
+ * final. Declarado, una camioneta que alguien reactivara por error no se
+ * vuelve elegible sola.
  *
  * Idempotente: reescribe la elegibilidad de cada tramo desde cero.
  *
@@ -28,13 +24,9 @@
  */
 import { PrismaClient } from '@prisma/client'
 import inscriptos from './seed-data/transchaco-2026-inscriptos.json'
+import { SLUG, DIVISIONES, CLASIFICACION } from './transchaco-2026'
 
 const prisma = new PrismaClient()
-
-const SLUG = 'transchaco-rally-2026'
-
-/** Las pruebas de clasificación: las largan todos los inscriptos. */
-const CLASIFICACION = ['PSE1A', 'PSE1B']
 
 async function main() {
   const evento = await prisma.predictionEvent.findUnique({
@@ -50,44 +42,50 @@ async function main() {
   })
   if (!evento) throw new Error(`No existe el juego "${SLUG}"`)
 
-  const numeros = inscriptos
-    .filter(c => c.largaEtapas && (c.seccion === 'autos' || c.seccion === 'camionetas'))
-    .map(c => c.number)
-  const largan = await prisma.contender.findMany({
-    where: { eventId: evento.id, number: { in: numeros } },
-    select: { id: true, number: true },
-  })
-  if (largan.length !== numeros.length) {
-    const faltan = numeros.filter(n => !largan.some(c => c.number === n))
-    throw new Error(`Faltan tripulaciones en la base: ${faltan.join(', ')}`)
+  const eventId = evento.id
+  const delJuego = inscriptos.filter(c => (DIVISIONES as readonly string[]).includes(c.seccion))
+
+  /** Los ids de la base para una lista de números, o corta si falta alguno. */
+  async function idsDe(numeros: string[]) {
+    const filas = await prisma.contender.findMany({
+      where: { eventId, number: { in: numeros } },
+      select: { id: true, number: true },
+    })
+    if (filas.length !== numeros.length) {
+      const faltan = numeros.filter(n => !filas.some(c => c.number === n))
+      throw new Error(`Faltan tripulaciones en la base: ${faltan.join(', ')}`)
+    }
+    return filas.map(c => c.id)
   }
 
-  let declarados = 0
-  let abiertos = 0
+  const enClasificacion = await idsDe(delJuego.map(c => c.number))
+  const enEtapas = await idsDe(delJuego.filter(c => c.largaEtapas).map(c => c.number))
+
+  let clasificacion = 0
+  let etapas = 0
 
   for (const m of evento.markets) {
     const code = m.segment?.code
+    // Sin tramo no hay a quién preguntarle quién larga: hoy no hay ninguna.
+    if (!code) continue
 
-    // Sin tramo no hay a quién preguntarle quién larga: se deja abierto.
-    if (!code || CLASIFICACION.includes(code)) {
-      await prisma.marketContender.deleteMany({ where: { marketId: m.id } })
-      abiertos++
-      continue
-    }
+    const esClasificacion = CLASIFICACION.includes(code)
+    const ids = esClasificacion ? enClasificacion : enEtapas
 
     await prisma.$transaction([
       prisma.marketContender.deleteMany({ where: { marketId: m.id } }),
       prisma.marketContender.createMany({
-        data: largan.map(c => ({ marketId: m.id, contenderId: c.id })),
+        data: ids.map(contenderId => ({ marketId: m.id, contenderId })),
       }),
     ])
-    declarados++
+    if (esClasificacion) clasificacion++
+    else etapas++
   }
 
   console.log(evento.title)
-  console.log(`  tramos con elegibilidad declarada: ${declarados} · ${largan.length} tripulaciones cada uno`)
-  console.log(`  tramos abiertos a todos los inscriptos: ${abiertos} (${CLASIFICACION.join(', ')})`)
-  console.log(`  filas de elegibilidad: ${declarados * largan.length}`)
+  console.log(`  clasificación: ${clasificacion} pruebas · ${enClasificacion.length} tripulaciones cada una`)
+  console.log(`  etapas: ${etapas} tramos · ${enEtapas.length} tripulaciones cada uno`)
+  console.log(`  filas de elegibilidad: ${clasificacion * enClasificacion.length + etapas * enEtapas.length}`)
 }
 
 main()

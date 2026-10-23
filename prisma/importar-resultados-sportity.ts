@@ -40,10 +40,10 @@ import { mkdtempSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { resolveMarket } from '../src/lib/predictions/resolver'
+import { SLUG } from './transchaco-2026'
 
 const prisma = new PrismaClient()
 
-const SLUG = 'transchaco-rally-2026'
 /** Canal público del Campeonato Nacional de Rally, publicado en rally.com.py. */
 const CANAL = 'CNRPY2026'
 const VISOR = `https://webapp.sportity.com/channel/${CANAL}`
