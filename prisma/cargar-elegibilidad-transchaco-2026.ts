@@ -2,16 +2,25 @@
 /**
  * Declara quién larga cada tramo del Transchaco Rally 2026.
  *
- * De las 86 tripulaciones inscriptas, 15 están anotadas solamente a las dos
- * pruebas de clasificación (PSE1A y PSE1B). A una que no larga el tramo no se
- * le puede ganar, así que elegirla para cualquier otra pregunta era perder
- * seguro sin que nada lo avisara.
+ * De las 86 tripulaciones inscriptas, solo 57 largan los 21 tramos que tiene
+ * cargado el juego. Dos motivos distintos:
+ *
+ * 1. Quince están anotadas solamente a las dos pruebas de clasificación.
+ *
+ * 2. Los dieciocho históricos corren un itinerario propio. El itinerario que
+ *    cargamos -- 21 PE, 504 km cronometrados -- es el de autos y camionetas;
+ *    el TACPy le dio a los históricos un recorrido diferenciado que no está
+ *    en el juego. Así que en estas preguntas no largan, aunque catorce de
+ *    ellos sí corran las etapas de su propia carrera.
+ *
+ * A una tripulación que no larga el tramo no se le puede ganar, así que
+ * elegirla era perder seguro sin que nada lo avisara.
  *
  * Las dos pruebas de clasificación quedan a propósito SIN declarar. Un mercado
  * sin filas en `MarketContender` admite a todos los del juego, y ahí la regla
- * es justamente "todos los inscriptos": si mañana se suma una tripulación,
- * entra sola. En los 21 tramos restantes la regla es otra -- "los que largan
- * las etapas" -- y esa sí hay que escribirla.
+ * es justamente "todos los inscriptos": las largan las 86 según la columna de
+ * participación de la lista oficial, y si mañana se suma una tripulación entra
+ * sola. En los 21 tramos restantes la regla es otra y esa sí hay que escribirla.
  *
  * Idempotente: reescribe la elegibilidad de cada tramo desde cero.
  *
@@ -41,7 +50,9 @@ async function main() {
   })
   if (!evento) throw new Error(`No existe el juego "${SLUG}"`)
 
-  const numeros = inscriptos.filter(c => c.largaEtapas).map(c => c.number)
+  const numeros = inscriptos
+    .filter(c => c.largaEtapas && (c.seccion === 'autos' || c.seccion === 'camionetas'))
+    .map(c => c.number)
   const largan = await prisma.contender.findMany({
     where: { eventId: evento.id, number: { in: numeros } },
     select: { id: true, number: true },

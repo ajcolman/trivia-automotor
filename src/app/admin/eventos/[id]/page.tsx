@@ -196,6 +196,15 @@ export default async function EventoDetallePage({ params }: { params: { id: stri
           predicciones: m._count.predictions,
           tieneResultado: m.resolution != null,
           tramo: m.segment ? { id: m.segment.id, code: m.segment.code, name: m.segment.name } : null,
+          contenderIds: m.eligible.length > 0 ? m.eligible.map(e => e.contenderId) : null,
+        }))}
+        contenders={evento.contenders.map(c => ({
+          id: c.id,
+          number: c.number,
+          name: c.name,
+          teamName: c.teamName,
+          category: c.category,
+          isActive: c.isActive,
         }))}
       />
 

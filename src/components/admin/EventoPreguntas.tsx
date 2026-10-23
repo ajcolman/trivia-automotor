@@ -4,11 +4,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ListChecks, Plus, Trash2, Loader2, Check } from 'lucide-react'
+import { ListChecks, Plus, Trash2, Loader2, Check, Users } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { TIPOS_MERCADO, CONFIG_POR_DEFECTO } from '@/lib/predictions/market-config'
 import type { MarketConfig, MarketType } from '@/lib/predictions/scoring'
 import { desdeInputLocal, formatoCorto } from '@/lib/fecha-asuncion'
+import { ElegibilidadPregunta, type ContenderElegible } from './ElegibilidadPregunta'
 
 export interface PreguntaFila {
   id: string
@@ -20,6 +21,8 @@ export interface PreguntaFila {
   predicciones: number
   tieneResultado: boolean
   tramo: { id: string; code: string; name: string } | null
+  /** Quiénes largan esta pregunta. Null = todos los del juego. */
+  contenderIds: string[] | null
 }
 
 export interface TramoOpcion { id: string; code: string; name: string }
@@ -45,13 +48,19 @@ function resumenPuntaje(type: MarketType, config: MarketConfig): string {
 }
 
 export function EventoPreguntas({
-  eventoId, preguntas, tramos,
-}: { eventoId: string; preguntas: PreguntaFila[]; tramos: TramoOpcion[] }) {
+  eventoId, preguntas, tramos, contenders,
+}: {
+  eventoId: string
+  preguntas: PreguntaFila[]
+  tramos: TramoOpcion[]
+  contenders: ContenderElegible[]
+}) {
   const router = useRouter()
   const [agregando, setAgregando] = useState(false)
   const [tocando, setTocando] = useState<string | null>(null)
   const [aBorrar, setABorrar] = useState<PreguntaFila | null>(null)
   const [editando, setEditando] = useState<string | null>(null)
+  const [elegibilidad, setElegibilidad] = useState<string | null>(null)
   const [edicion, setEdicion] = useState<MarketConfig>({})
   const [nuevo, setNuevo] = useState<{
     title: string
@@ -148,6 +157,7 @@ export function EventoPreguntas({
           {preguntas.map(p => {
             const tipo = TIPOS_MERCADO.find(t => t.valor === p.type)
             const abierta = editando === p.id
+            const abiertaElegibilidad = elegibilidad === p.id
             return (
               <li key={p.id} className="py-2.5">
                 <div className="flex flex-wrap items-center gap-3">
@@ -162,6 +172,10 @@ export function EventoPreguntas({
                       <span className="tabular-nums">{formatoCorto.format(new Date(p.locksAt))}</span>
                       {' · '}{p.predicciones} predicci{p.predicciones === 1 ? 'ón' : 'ones'}
                       {p.tieneResultado && <span className="font-semibold text-green-700"> · con resultado</span>}
+                      {' · '}
+                      {p.contenderIds === null
+                        ? 'largan todos'
+                        : `largan ${p.contenderIds.length}`}
                     </span>
                   </span>
 
@@ -174,6 +188,15 @@ export function EventoPreguntas({
                     className="inline-flex h-10 items-center rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-600 transition-colors hover:border-[#005CA8] hover:text-[#005CA8]"
                   >
                     {abierta ? 'Cerrar' : 'Puntaje'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setElegibilidad(abiertaElegibilidad ? null : p.id)}
+                    className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-slate-600 transition-colors hover:border-[#005CA8] hover:text-[#005CA8]"
+                  >
+                    <Users className="h-4 w-4" aria-hidden="true" />
+                    {abiertaElegibilidad ? 'Cerrar' : 'Quién larga'}
                   </button>
 
                   <button
@@ -230,6 +253,28 @@ export function EventoPreguntas({
                   </div>
                 ) : (
                   <p className="mt-1 text-xs text-slate-400">{resumenPuntaje(p.type, p.config)}</p>
+                )}
+
+                {abiertaElegibilidad && (
+                  contenders.length === 0 ? (
+                    <p className="mt-2.5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                      Este juego no tiene tripulaciones cargadas, así que no hay a quién habilitar.
+                    </p>
+                  ) : (
+                    <ElegibilidadPregunta
+                      marketId={p.id}
+                      contenders={contenders}
+                      declarados={p.contenderIds}
+                      otras={preguntas
+                        .filter(o => o.id !== p.id)
+                        .map(o => ({
+                          id: o.id,
+                          etiqueta: o.tramo ? o.tramo.code : o.title,
+                          contenderIds: o.contenderIds,
+                        }))}
+                      onListo={() => setElegibilidad(null)}
+                    />
+                  )
                 )}
               </li>
             )

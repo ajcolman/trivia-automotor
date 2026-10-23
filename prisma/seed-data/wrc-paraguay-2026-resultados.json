@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "author": "Angel Colman",
+    "descripcion": "Resultados oficiales del Ueno Rally del Paraguay 2026: ganador de cada tramo y podio final.",
+    "fuentes": {
+      "clasificacion": "eWRC-results.com, evento 96265 - final results",
+      "tramos": "Wikipedia EN 2026 Rally del Paraguay (tabla de tramos, citando eWRC-results 96265)",
+      "verificacion": "Power Stage y Super Sunday cotejados con Wikipedia ES; recuento de 9 victorias de Fourmaux cotejado con DirtFish; clasificacion final cotejada con motorsport.com"
+    },
+    "tramoCancelado": "SS21 Artigas 2 (19,63 km). eWRC informa 19,63 km cancelados sobre los 375,50 previstos.",
+    "generado": "2026-08-31"
+  },
+
+  "ganadoresPorTramo": {
+    "SS1":   { "numero": "99", "piloto": "Oliver SOLBERG",     "tiempo": "14:06.4" },
+    "SS2":   { "numero": "99", "piloto": "Oliver SOLBERG",     "tiempo": "8:52.1" },
+    "SS3":   { "numero": "20", "piloto": "Hayden PADDON",      "tiempo": "19:22.0" },
+    "SSS4":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "1:53.0" },
+    "SS5":   { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "13:53.1" },
+    "SS6":   { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "8:39.3" },
+    "SS7":   { "numero": "5",  "piloto": "Sami PAJARI",        "tiempo": "19:00.8" },
+    "SSS8":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "1:51.0" },
+    "SS9":   { "numero": "33", "piloto": "Elfyn EVANS",        "tiempo": "11:12.1" },
+    "SS10":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "7:40.6" },
+    "SS11":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "10:27.4" },
+    "SS12":  { "numero": "1",  "piloto": "Sébastien OGIER",    "tiempo": "9:03.2" },
+    "SS13":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "11:08.5" },
+    "SS14":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "7:33.6" },
+    "SS15":  { "numero": "16", "piloto": "Adrien FOURMAUX",    "tiempo": "10:16.6" },
+    "SS16":  { "numero": "1",  "piloto": "Sébastien OGIER",    "tiempo": "8:48.1" },
+    "SSS17": { "numero": "18", "piloto": "Takamoto KATSUTA",   "tiempo": "2:48.7" },
+    "SS18":  { "numero": "1",  "piloto": "Sébastien OGIER",    "tiempo": "5:46.6" },
+    "SS19":  { "numero": "99", "piloto": "Oliver SOLBERG",     "tiempo": "9:25.3" },
+    "SS20":  { "numero": "99", "piloto": "Oliver SOLBERG",     "tiempo": "3:30.9" },
+    "SS21":  null,
+    "SS22":  { "numero": "99", "piloto": "Oliver SOLBERG",     "tiempo": "5:42.2" }
+  },
+
+  "podio": [
+    { "numero": "5",  "piloto": "Sami PAJARI",     "tiempo": "3:13:28.5" },
+    { "numero": "20", "piloto": "Hayden PADDON",   "tiempo": "+25.8" },
+    { "numero": "16", "piloto": "Adrien FOURMAUX", "tiempo": "+40.0" }
+  ]
+}
