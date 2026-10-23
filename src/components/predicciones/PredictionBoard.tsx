@@ -82,6 +82,10 @@ export function PredictionBoard({
   const [estados, setEstados] = useState<Record<string, EstadoGuardado>>({})
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [picker, setPicker] = useState<{ marketId: string; slot: number } | null>(null)
+  // Preguntas que el servidor dio por cerradas al rechazar un guardado. El
+  // reloj de pantalla avanza cada 30 segundos, así que puede verse abierta una
+  // pregunta que ya cerró; cuando el servidor lo dice, se cierra en el acto.
+  const [cerradosPorServidor, setCerradosPorServidor] = useState<Record<string, true>>({})
 
   // Misma salvaguarda que en las trivias: si quien configuró el evento eligió
   // una combinación ilegible, se corrige al pintar sin tocar lo guardado.
@@ -110,7 +114,11 @@ export function PredictionBoard({
     () => new Map(contenders.map(c => [c.id, c])), [contenders],
   )
 
-  const guardar = useCallback(async (marketId: string, value: MarketDTO['pick']) => {
+  const guardar = useCallback(async (
+    marketId: string,
+    value: MarketDTO['pick'],
+    anterior: MarketDTO['pick'],
+  ) => {
     setEstados(e => ({ ...e, [marketId]: 'guardando' }))
     setErrores(e => { const { [marketId]: _, ...resto } = e; return resto })
 
@@ -122,6 +130,11 @@ export function PredictionBoard({
 
     if (!res || !res.ok) {
       const cuerpo = await res?.json().catch(() => ({}))
+      // La elección se pinta antes de que el servidor conteste, para que la
+      // pantalla responda al toque. Si no entró hay que deshacerla: dejarla
+      // puesta con un error al lado hace creer que quedó guardada.
+      setPicks(p => ({ ...p, [marketId]: anterior }))
+      if (cuerpo?.cerrado) setCerradosPorServidor(c => ({ ...c, [marketId]: true }))
       setEstados(e => ({ ...e, [marketId]: 'error' }))
       setErrores(e => ({
         ...e,
@@ -137,6 +150,8 @@ export function PredictionBoard({
     const market = markets.find(m => m.id === picker.marketId)
     if (!market) return
 
+    const anterior = picks[market.id] ?? null
+
     if (market.type === 'ordered_pick') {
       const posiciones = market.config.positions ?? 3
       const actual = Array.isArray(picks[market.id]) ? [...(picks[market.id] as string[])] : []
@@ -147,13 +162,13 @@ export function PredictionBoard({
       setPicker(null)
       // Solo se envía cuando el podio está completo: el servidor rechaza
       // una lista incompleta, y con razón.
-      if (actual.every(Boolean)) void guardar(market.id, actual)
+      if (actual.every(Boolean)) void guardar(market.id, actual, anterior)
       return
     }
 
     setPicks(p => ({ ...p, [market.id]: contenderId }))
     setPicker(null)
-    void guardar(market.id, contenderId)
+    void guardar(market.id, contenderId, anterior)
   }, [picker, markets, picks, guardar])
 
   const podio = markets.find(m => m.type === 'ordered_pick')
@@ -398,11 +413,20 @@ export function PredictionBoard({
             <ul className="space-y-2.5">
               {lista.map((m: MarketDTO) => {
                 const cancelado = m.segment?.isCancelled ?? false
-                const cerrado = cancelado || new Date(m.locksAt).getTime() <= ahora
+                const cerrado = cancelado
+                  || cerradosPorServidor[m.id] === true
+                  || new Date(m.locksAt).getTime() <= ahora
                 const elegido = typeof picks[m.id] === 'string' ? porId.get(picks[m.id] as string) : null
                 return (
                   <li key={m.id}>
-                    <Card market={m} ahora={ahora} estado={estados[m.id]} error={errores[m.id]} paleta={paleta}>
+                    <Card
+                      market={m}
+                      ahora={ahora}
+                      cerradoPorServidor={cerradosPorServidor[m.id] === true}
+                      estado={estados[m.id]}
+                      error={errores[m.id]}
+                      paleta={paleta}
+                    >
                       <button
                         type="button"
                         disabled={cerrado}
@@ -453,6 +477,7 @@ export function PredictionBoard({
             <Card
               market={podio}
               ahora={ahora}
+              cerradoPorServidor={cerradosPorServidor[podio.id] === true}
               estado={estados[podio.id]}
               error={errores[podio.id]}
               paleta={paleta}
@@ -461,7 +486,8 @@ export function PredictionBoard({
                 {Array.from({ length: podio.config.positions ?? 3 }).map((_, i) => {
                   const lista = Array.isArray(picks[podio.id]) ? (picks[podio.id] as string[]) : []
                   const elegido = lista[i] ? porId.get(lista[i]) : null
-                  const cerrado = new Date(podio.locksAt).getTime() <= ahora
+                  const cerrado = cerradosPorServidor[podio.id] === true
+                    || new Date(podio.locksAt).getTime() <= ahora
                   return (
                     <li key={i}>
                       <button
@@ -566,10 +592,12 @@ export function PredictionBoard({
 
 /** Envoltura de un mercado: cabecera con estado de cierre y aviso de guardado. */
 function Card({
-  market, ahora, estado, error, paleta, children,
+  market, ahora, cerradoPorServidor = false, estado, error, paleta, children,
 }: {
   market: MarketDTO
   ahora: number
+  /** El servidor rechazó un guardado por cierre: manda sobre el reloj de pantalla. */
+  cerradoPorServidor?: boolean
   estado?: EstadoGuardado
   error?: string
   /** Colores configurados del evento, ya pasados por la salvaguarda. */
@@ -577,7 +605,7 @@ function Card({
   children: React.ReactNode
 }) {
   const cancelado = market.segment?.isCancelled ?? false
-  const cerrado = cancelado || new Date(market.locksAt).getTime() <= ahora
+  const cerrado = cancelado || cerradoPorServidor || new Date(market.locksAt).getTime() <= ahora
   const restante = faltan(market.locksAt, ahora)
   const puntos =
     market.type === 'ordered_pick'
