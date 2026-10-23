@@ -1,0 +1,690 @@
+[
+  {
+    "number": "4",
+    "name": "Gustavo Saba",
+    "subtitle": "Pablo Olmos",
+    "teamName": "Saba Competición",
+    "category": "Toyota GR Yaris Rally2 · RC2A",
+    "orderIndex": 0
+  },
+  {
+    "number": "17",
+    "name": "Gerardo Wasmosy",
+    "subtitle": "Germán Maune",
+    "teamName": "WA Racing",
+    "category": "Volkswagen Polo GTi R5 · RC2B",
+    "orderIndex": 1
+  },
+  {
+    "number": "29",
+    "name": "Alfredo Escauriza",
+    "subtitle": "Félix Angulo",
+    "teamName": "PETROCHACO Racing",
+    "category": "Hyundai i20 N Rally2 · RC2B",
+    "orderIndex": 2
+  },
+  {
+    "number": "79",
+    "name": "Alberto Guanes",
+    "subtitle": "Marcelo Barreto",
+    "teamName": "Team Toro Pytā",
+    "category": "Volkswagen Gol TREND · RC5",
+    "orderIndex": 3
+  },
+  {
+    "number": "9",
+    "name": "Ricardo Escauriza",
+    "subtitle": "Federico García",
+    "teamName": "PETROCHACO Racing",
+    "category": "Škoda Fabia Rally2 Evo · RC2B",
+    "orderIndex": 4
+  },
+  {
+    "number": "88",
+    "name": "Gianluca Laterra",
+    "subtitle": "Ricardo Laterra",
+    "teamName": "GL Rally Team",
+    "category": "Toyota Etios · RC4C",
+    "orderIndex": 5
+  },
+  {
+    "number": "6",
+    "name": "Alejandro Galanti",
+    "subtitle": "Marcelo Toyotoshi",
+    "teamName": "GAZOO Racing Paraguay",
+    "category": "Toyota GR Yaris Rally2 · RC2A",
+    "orderIndex": 6
+  },
+  {
+    "number": "7",
+    "name": "Fabrizio Galanti",
+    "subtitle": "Tadeo Carrasco",
+    "teamName": "GAZOO Racing Paraguay",
+    "category": "Toyota GR Yaris Rally2 · RC2A",
+    "orderIndex": 7
+  },
+  {
+    "number": "67",
+    "name": "Rodrigo Campos",
+    "subtitle": "Mirko Bojanovich",
+    "teamName": "RC Competición",
+    "category": "Toyota Vitz RS · RC4C",
+    "orderIndex": 8
+  },
+  {
+    "number": "50",
+    "name": "Ricardo Fretes",
+    "subtitle": "Jorge Modesto",
+    "teamName": "FR Rally",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 9
+  },
+  {
+    "number": "42",
+    "name": "Tiago Weiler",
+    "subtitle": "Juan José Sánchez",
+    "teamName": "GAZOO Racing Paraguay",
+    "category": "Toyota GR Yaris Rally2 · RC2A",
+    "orderIndex": 10
+  },
+  {
+    "number": "57",
+    "name": "Hugo Cano",
+    "subtitle": "Carlos Martínez",
+    "teamName": "Cano Rally Team",
+    "category": "Toyota Vitz RS · RC4C",
+    "orderIndex": 11
+  },
+  {
+    "number": "55",
+    "name": "Víctor Ruíz Díaz",
+    "subtitle": "Marcelo González",
+    "teamName": "La Criolla Rally Team",
+    "category": "Toyota Vitz RS · RC4C",
+    "orderIndex": 12
+  },
+  {
+    "number": "21",
+    "name": "Fabrizio Chiriani",
+    "subtitle": "Jorge González",
+    "teamName": "FR Rally",
+    "category": "Volkswagen Polo GTi R5 · RC2B",
+    "orderIndex": 13
+  },
+  {
+    "number": "18",
+    "name": "Sebastián Barchini",
+    "subtitle": "Carlos Alfaro",
+    "teamName": "eMotorsport",
+    "category": "Solo clasificación · Škoda Fabia RS Rally2 · RC2B",
+    "orderIndex": 14
+  },
+  {
+    "number": "64",
+    "name": "Armando Medina",
+    "subtitle": "Renato Zotti",
+    "teamName": "eMotorsport",
+    "category": "Solo clasificación · Peugeot 208 Rally4 · RC4A",
+    "orderIndex": 15
+  },
+  {
+    "number": "44",
+    "name": "Luis Panza",
+    "subtitle": "Alfredo Méndez",
+    "teamName": "WA Racing",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 16
+  },
+  {
+    "number": "24",
+    "name": "Bruno Llano",
+    "subtitle": "Thiago Llano",
+    "teamName": "GAZOO Racing Paraguay",
+    "category": "Solo clasificación · Toyota Etios R5 · RC2B",
+    "orderIndex": 17
+  },
+  {
+    "number": "95",
+    "name": "Luis Silguero",
+    "subtitle": "Marcelo Riquelme",
+    "teamName": "GT4 Rally Team",
+    "category": "Toyota RunX Z · RC4A",
+    "orderIndex": 18
+  },
+  {
+    "number": "30",
+    "name": "Eugen Gotze",
+    "subtitle": "Mateo Galeano",
+    "teamName": "eMotorsport",
+    "category": "Solo clasificación · Škoda Fabia Rally2 Evo · RC2B",
+    "orderIndex": 19
+  },
+  {
+    "number": "96",
+    "name": "Nicolás Baeza",
+    "subtitle": "Luis Cabo de Vila",
+    "teamName": "Baeza Competición",
+    "category": "Honda Civic Type-R (EP3) · RC4A",
+    "orderIndex": 20
+  },
+  {
+    "number": "10",
+    "name": "Miguel Ortega",
+    "subtitle": "Lino Vargas",
+    "teamName": "La Renga",
+    "category": "Solo clasificación · Škoda Fabia RS Rally2 · RC2A",
+    "orderIndex": 21
+  },
+  {
+    "number": "16",
+    "name": "Osvaldo Draguicevich",
+    "subtitle": "Marco Méndez",
+    "teamName": "Dragui Rally Team",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 22
+  },
+  {
+    "number": "61",
+    "name": "Sebastián Martínez",
+    "subtitle": "Alejandro Álvarez",
+    "teamName": "ARD Competición",
+    "category": "Suzuki Swift · RC4C",
+    "orderIndex": 23
+  },
+  {
+    "number": "75",
+    "name": "Orlando Benítez",
+    "subtitle": "Omar Benítez",
+    "teamName": "Team Mandu’arā",
+    "category": "Honda Civic SI · RC4B",
+    "orderIndex": 24
+  },
+  {
+    "number": "33",
+    "name": "César Pedotti",
+    "subtitle": "Nicolás Elizaur",
+    "teamName": "Pochi Rally Team",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 25
+  },
+  {
+    "number": "73",
+    "name": "Carlos Bogado",
+    "subtitle": "Enrique Benítez",
+    "teamName": "Ka’i Competición",
+    "category": "Peugeot 208 Rally4 · RC4A",
+    "orderIndex": 26
+  },
+  {
+    "number": "60",
+    "name": "Riyosuke Shima",
+    "subtitle": "Patricio Rivas",
+    "teamName": "GAZOO Racing Paraguay",
+    "category": "Toyota Etios · RC4B",
+    "orderIndex": 27
+  },
+  {
+    "number": "54",
+    "name": "César Cruz",
+    "subtitle": "Jorge Arrúa",
+    "teamName": "DIMO CABAL",
+    "category": "Citroën DS3 R3 Turbo Max · RC4A",
+    "orderIndex": 28
+  },
+  {
+    "number": "53",
+    "name": "Diego Cruz",
+    "subtitle": "Ramiro Ayala",
+    "teamName": "DIMO CABAL",
+    "category": "Peugeot 208 Rally4 · RC4A",
+    "orderIndex": 29
+  },
+  {
+    "number": "80",
+    "name": "Sergio Galeano",
+    "subtitle": "Carlos López",
+    "teamName": "SG Rally Team",
+    "category": "Volkswagen Gol · RC4C",
+    "orderIndex": 30
+  },
+  {
+    "number": "51",
+    "name": "Iván Wasmosy",
+    "subtitle": "Gonzalo Díaz",
+    "teamName": "WA Racing",
+    "category": "Peugeot 208 Rally4 · RC4A",
+    "orderIndex": 31
+  },
+  {
+    "number": "26",
+    "name": "Thomas Klassen",
+    "subtitle": "Abel Díaz",
+    "teamName": "Abel Preparaciones",
+    "category": "Ford Fiesta R5 · RC2B",
+    "orderIndex": 32
+  },
+  {
+    "number": "19",
+    "name": "Fau Zaldívar",
+    "subtitle": "Marcelo Der Ohannesian",
+    "teamName": "MZR Paraguay",
+    "category": "Škoda Fabia RS Rally2 · RC2A",
+    "orderIndex": 33
+  },
+  {
+    "number": "1",
+    "name": "Miguel Zaldívar (Jr.)",
+    "subtitle": "Adolfo González",
+    "teamName": "MZR Paraguay",
+    "category": "Škoda Fabia RS Rally2 · RC2A",
+    "orderIndex": 34
+  },
+  {
+    "number": "84",
+    "name": "Luis María Gómez",
+    "subtitle": "Fernando Ruíz Díaz",
+    "teamName": "ARD Competición",
+    "category": "Honda Civic SI · RC4B",
+    "orderIndex": 35
+  },
+  {
+    "number": "82",
+    "name": "Raúl Franco",
+    "subtitle": "Jorge Cárdenas",
+    "teamName": "Franco Rally Team",
+    "category": "Honda Civic Type-R EP3 · RC4A",
+    "orderIndex": 36
+  },
+  {
+    "number": "71",
+    "name": "Hernán Arguello",
+    "subtitle": "Martín Rodríguez",
+    "teamName": "TM-Sport",
+    "category": "Toyota Vitz · RC4C",
+    "orderIndex": 37
+  },
+  {
+    "number": "52",
+    "name": "Víctor Escobar",
+    "subtitle": "Hugo Villalba",
+    "teamName": "ERT Competición",
+    "category": "Volkswagen Gol G4 · RC4A",
+    "orderIndex": 38
+  },
+  {
+    "number": "46",
+    "name": "Luis Saccomani",
+    "subtitle": "Andrés Saccomani",
+    "teamName": "Sacco Rally Team",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 39
+  },
+  {
+    "number": "3",
+    "name": "Augusto Bestard",
+    "subtitle": "José Díaz",
+    "teamName": "ABR South America",
+    "category": "Toyota GR Yaris Rally2 · RC2A",
+    "orderIndex": 40
+  },
+  {
+    "number": "23",
+    "name": "Frank Escher",
+    "subtitle": "Estéban Gómez",
+    "teamName": "ERT",
+    "category": "Solo clasificación · Volkswagen Gol Maxi Rally · RC2C",
+    "orderIndex": 41
+  },
+  {
+    "number": "35",
+    "name": "Herib Chamas",
+    "subtitle": "Cristhian Burifaldi",
+    "teamName": "CHB Competición Rally Team",
+    "category": "Volkswagen Gol 8V · RC5",
+    "orderIndex": 42
+  },
+  {
+    "number": "48",
+    "name": "Agustín Medina",
+    "subtitle": "Rodrigo Villalba",
+    "teamName": "Móvil Motor Competición",
+    "category": "Honda Civic Type-R EP3 · RC4B",
+    "orderIndex": 43
+  },
+  {
+    "number": "90",
+    "name": "Beto Ramírez",
+    "subtitle": "José Marín",
+    "teamName": "Team PETROBRAS",
+    "category": "Toyota Etios · RC5",
+    "orderIndex": 44
+  },
+  {
+    "number": "58",
+    "name": "Johnny Zeballos",
+    "subtitle": "Luis Ríos",
+    "teamName": "AR Racing – Zebas Competición",
+    "category": "Volkswagen Gol G4 · RC5",
+    "orderIndex": 45
+  },
+  {
+    "number": "86",
+    "name": "Augusto Rossi",
+    "subtitle": "Jorge Ríos",
+    "teamName": "Ríos Competición",
+    "category": "Volkswagen Gol G6 · RC5",
+    "orderIndex": 46
+  },
+  {
+    "number": "63",
+    "name": "Manuel Giménez",
+    "subtitle": "Diego González",
+    "teamName": "RG Competición",
+    "category": "Kia Cerato Koup · RC4B",
+    "orderIndex": 47
+  },
+  {
+    "number": "13",
+    "name": "Manuel Irala",
+    "subtitle": "Rafael Sosa",
+    "teamName": "MIG – TRI21 Rally Team",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 48
+  },
+  {
+    "number": "28",
+    "name": "Mauricio González",
+    "subtitle": "Carlos Zarca",
+    "teamName": "HG Rally Team",
+    "category": "Solo clasificación · Škoda Fabia RS Rally2 · RC2B",
+    "orderIndex": 49
+  },
+  {
+    "number": "15",
+    "name": "Sebastián González",
+    "subtitle": "Diego Fabiani",
+    "teamName": "HG Rally Team",
+    "category": "Solo clasificación · Škoda Fabia RS Rally2 · RC2B",
+    "orderIndex": 50
+  },
+  {
+    "number": "37",
+    "name": "Antonio Ramos",
+    "subtitle": "Ricardo Villalba",
+    "teamName": "Mec Car",
+    "category": "Solo clasificación · Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 51
+  },
+  {
+    "number": "22",
+    "name": "Joel Benítez",
+    "subtitle": "Ramiro Rodríguez",
+    "teamName": "GB Competición",
+    "category": "Mitsubishi Lancer Evolution X · RC2N",
+    "orderIndex": 52
+  },
+  {
+    "number": "78",
+    "name": "Arnaldo Duarte",
+    "subtitle": "Luis Duarte",
+    "teamName": "Lokillo Motor Sport",
+    "category": "Toyota Vitz RS · RC4B",
+    "orderIndex": 53
+  },
+  {
+    "number": "91",
+    "name": "Marcio Villar",
+    "subtitle": "Claudio Cazal",
+    "teamName": "Abel Preparaciones",
+    "category": "Solo clasificación · Honda Civic SI · RC4B",
+    "orderIndex": 54
+  },
+  {
+    "number": "70",
+    "name": "Ceferino Ledesma",
+    "subtitle": "Oscar Yani",
+    "teamName": "Team Ña Morocha",
+    "category": "Volkswagen Gol Trend · RC5",
+    "orderIndex": 55
+  },
+  {
+    "number": "83",
+    "name": "Nelson Rolón",
+    "subtitle": "Héctor Gómez",
+    "teamName": "Iker Rally Team",
+    "category": "Volkswagen Gol 16V · RC5",
+    "orderIndex": 56
+  },
+  {
+    "number": "27",
+    "name": "Diego Domínguez Jr.",
+    "subtitle": "Fernando Mussano",
+    "teamName": "DTA",
+    "category": "Toyota GR Yaris Rally2 · RC2A",
+    "orderIndex": 57
+  },
+  {
+    "number": "5",
+    "name": "Juan Martín Masi",
+    "subtitle": "Franco Pappalardo",
+    "teamName": "Masi Motorsport",
+    "category": "Solo clasificación · Citroën C3 Rally2 · RC2A",
+    "orderIndex": 58
+  },
+  {
+    "number": "77",
+    "name": "Nicolás Camacho",
+    "subtitle": "Israel Quesnel",
+    "teamName": "Karaguata Rally Team",
+    "category": "Toyota Vitz RS · RC5",
+    "orderIndex": 59
+  },
+  {
+    "number": "25",
+    "name": "Matías Domínguez",
+    "subtitle": "Nicolás Domínguez",
+    "teamName": "DTA",
+    "category": "Volkswagen Polo GTi R5 · RC2B",
+    "orderIndex": 60
+  },
+  {
+    "number": "111",
+    "name": "Mark Hicks",
+    "subtitle": "Kelvin Hicks",
+    "teamName": "Team MEK Motorsport",
+    "category": "Camioneta · Mitsubishi Super Montero · T1 4X4",
+    "orderIndex": 61
+  },
+  {
+    "number": "123",
+    "name": "Blas Zapag",
+    "subtitle": "Enrique Fratta",
+    "teamName": "COPETROL Rally",
+    "category": "Camioneta · Toyota Hilux T1 · T1 4X4",
+    "orderIndex": 62
+  },
+  {
+    "number": "101",
+    "name": "Arturo Núñez",
+    "subtitle": "Giovanni Gil",
+    "teamName": "Tata Proto Rally Team",
+    "category": "Camioneta · Toyota Hilux Proto N3S · T1 4X4",
+    "orderIndex": 63
+  },
+  {
+    "number": "107",
+    "name": "Mike White",
+    "subtitle": "David Blanco",
+    "teamName": "White Competición",
+    "category": "Camioneta · Volkswagen Saveiro DC Cross · T1 4X2",
+    "orderIndex": 64
+  },
+  {
+    "number": "109",
+    "name": "Miler Otazo",
+    "subtitle": "Hugo Elizeche",
+    "teamName": "Mercedes-Benz Desarrollo & Competición",
+    "category": "Camioneta · Mercedes-Benz ML-Klasse V8 · T1 4X4",
+    "orderIndex": 65
+  },
+  {
+    "number": "143",
+    "name": "Armando Benítez",
+    "subtitle": "Marcelo Caballero",
+    "teamName": "Macro Motorsports",
+    "category": "Camioneta · Mitsubishi Montero Evolution · T1 4X4",
+    "orderIndex": 66
+  },
+  {
+    "number": "125",
+    "name": "Carlos Rojas",
+    "subtitle": "Sebastián Cáceres",
+    "teamName": "Team Evolution",
+    "category": "Camioneta · Mitsubishi Montero Evolution · T1 4X4",
+    "orderIndex": 67
+  },
+  {
+    "number": "221",
+    "name": "Ubaldo Clari",
+    "subtitle": "Cristhian Clari",
+    "teamName": "M2",
+    "category": "Solo clasificación · Histórico · Volkswagen Gol · H2 8V",
+    "orderIndex": 68
+  },
+  {
+    "number": "249",
+    "name": "Félix González",
+    "subtitle": "Miguel Mircelian",
+    "teamName": "Dragui Rally Team",
+    "category": "Histórico · Mitsubishi Lancer Evolution VI · Hist. 4WD",
+    "orderIndex": 69
+  },
+  {
+    "number": "213",
+    "name": "José David Ojeda",
+    "subtitle": "Adrián Centurión",
+    "teamName": "Dragui Rally Team",
+    "category": "Solo clasificación · Histórico · Mitsubishi Lancer Evolution VIII · Hist. 4WD",
+    "orderIndex": 70
+  },
+  {
+    "number": "250",
+    "name": "Fernando Guggiari",
+    "subtitle": "Saúl Vera",
+    "teamName": "Mundialcom Rally Team",
+    "category": "Histórico · Nissan Sentra · H2 16V",
+    "orderIndex": 71
+  },
+  {
+    "number": "204",
+    "name": "Alberto Molina",
+    "subtitle": "Digno Alderete",
+    "teamName": "Históricos del Automovilismo Paraguayo",
+    "category": "Histórico · Toyota Corolla FX GT · H2 16V",
+    "orderIndex": 72
+  },
+  {
+    "number": "225",
+    "name": "Federico Aspillaga",
+    "subtitle": "Pedro Colmán",
+    "teamName": "Aspillaga Premium Service",
+    "category": "Solo clasificación · Histórico · Renault Clio · H2 16V",
+    "orderIndex": 73
+  },
+  {
+    "number": "201",
+    "name": "Luis Weiler",
+    "subtitle": "Luis Figueredo",
+    "teamName": "Petrochaco Racing Team",
+    "category": "Histórico · Mitsubishi Lancer Evolution VIII · Hist. 4WD",
+    "orderIndex": 74
+  },
+  {
+    "number": "200",
+    "name": "Oscar Weiler",
+    "subtitle": null,
+    "teamName": "Legendarios",
+    "category": "Histórico · Peugeot 505 · H2 8V",
+    "orderIndex": 75
+  },
+  {
+    "number": "203",
+    "name": "Esteban Guggiari",
+    "subtitle": "Marcelo Vera",
+    "teamName": "MundialCom Rally Team",
+    "category": "Solo clasificación · Histórico · Volkswagen Gol GTi · H2 16V",
+    "orderIndex": 76
+  },
+  {
+    "number": "206",
+    "name": "Alberto Fronteras",
+    "subtitle": "Gustavo Villamayor",
+    "teamName": "Garay Car",
+    "category": "Histórico · Nissan Pulsar 16V · H2 16V",
+    "orderIndex": 77
+  },
+  {
+    "number": "240",
+    "name": "Francisco Marret",
+    "subtitle": "Juan Bravo",
+    "teamName": "OC Racing",
+    "category": "Histórico · Mitsubishi Lancer Evolution VIII · Hist. 4WD",
+    "orderIndex": 78
+  },
+  {
+    "number": "205",
+    "name": "Oscar Rodríguez",
+    "subtitle": "Emilio Bellassai",
+    "teamName": "Team LA JEFA",
+    "category": "Histórico · Renault 18 GTX · H2 8V",
+    "orderIndex": 79
+  },
+  {
+    "number": "211",
+    "name": "Osvaldo Ruoti",
+    "subtitle": "Mario Laterza",
+    "teamName": "Independiente",
+    "category": "Histórico · Toyota Célica ST185 Gr.A · Hist. 4WD",
+    "orderIndex": 80
+  },
+  {
+    "number": "277",
+    "name": "Robert Planás",
+    "subtitle": "Eduardo Planás",
+    "teamName": "Planás Rally Team",
+    "category": "Histórico · Chevrolet Corsa · H2 16V",
+    "orderIndex": 81
+  },
+  {
+    "number": "207",
+    "name": "Antonio Faccioli",
+    "subtitle": "Leandro Pereira",
+    "teamName": "Speed Motor",
+    "category": "Histórico · Volkswagen Gol · H2 8V",
+    "orderIndex": 82
+  },
+  {
+    "number": "222",
+    "name": "Martín Heyn",
+    "subtitle": "Roque Vega",
+    "teamName": "Independiente",
+    "category": "Histórico · Volkswagen Gol · H2 8V",
+    "orderIndex": 83
+  },
+  {
+    "number": "229",
+    "name": "Manoel Zitkoski",
+    "subtitle": "Mario Zitkoski",
+    "teamName": "Zitkoski Rally Team",
+    "category": "Histórico · Mitsubishi Lancer Evolution VIII · Hist. 4WD",
+    "orderIndex": 84
+  },
+  {
+    "number": "217",
+    "name": "Andrés Masi",
+    "subtitle": "Junior Masi",
+    "teamName": "Team Jagua Piru",
+    "category": "Histórico · Volkswagen Fusca · H2 8V",
+    "orderIndex": 85
+  }
+]
