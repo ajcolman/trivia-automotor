@@ -15,6 +15,9 @@
  *   # qué documentos de resultados hay en el canal
  *   npx tsx prisma/importar-resultados-sportity.ts
  *
+ * Cuáles de esos documentos son del Transchaco (abre cada uno):
+ *   npx tsx prisma/importar-resultados-sportity.ts --escanear
+ *
  *   # simulacro: parsea y muestra a quién daría por ganador de cada tramo
  *   npx tsx prisma/importar-resultados-sportity.ts "Etapa 1 - PE x PE"
  *
@@ -49,6 +52,7 @@ const CANAL = 'CNRPY2026'
 const VISOR = `https://webapp.sportity.com/channel/${CANAL}`
 
 const CARGAR = process.argv.includes('--cargar')
+const ESCANEAR = process.argv.includes('--escanear')
 /**
  * Parsear a propósito otra fecha del campeonato, para probar el formato antes
  * de que publiquen la del Transchaco. Nunca carga: `--cargar` exige el mapeo
@@ -58,6 +62,16 @@ const OTRA_EDICION = process.argv.find(a => a.startsWith('--edicion='))?.slice('
 const BUSCADO = process.argv.slice(2).find(a => !a.startsWith('--'))
 
 interface Documento { nombre: string; url: string }
+
+/** Nombre de archivo legible, venga escapado o crudo. */
+function decodificar(archivo: string): string {
+  try {
+    return decodeURIComponent(archivo)
+  } catch {
+    // Un `%` suelto en el nombre no es una secuencia de escape válida.
+    return archivo
+  }
+}
 
 /**
  * Los documentos del canal, con su nombre y su URL en el CDN.
@@ -76,8 +90,14 @@ async function documentos(): Promise<Documento[]> {
 
   const vistos: Documento[] = []
   for (const m of Array.from(html.matchAll(/"(https:\/\/app-cdn\.sportity\.com\/[^"]+)"/g))) {
-    const url = m[1].replace(/&amp;/g, '&')
-    const archivo = decodeURIComponent(url.slice(url.lastIndexOf('/') + 1))
+    const crudo = m[1].replace(/&amp;/g, '&')
+    const corte = crudo.lastIndexOf('/') + 1
+    // El canal publica unas URLs con el nombre ya escapado y otras con los
+    // espacios y los acentos tal cual. Se normaliza acá, una sola vez:
+    // escapar de nuevo lo que ya venía escapado convierte el `%` en `%25` y
+    // el CDN contesta 404.
+    const archivo = decodificar(crudo.slice(corte))
+    const url = crudo.slice(0, corte) + encodeURIComponent(archivo)
     // El CDN nombra los archivos `<uuid>_<nombre real>`.
     const nombre = archivo.includes('_') ? archivo.slice(archivo.indexOf('_') + 1) : archivo
     // Los nombres se repiten entre fechas del campeonato: hay tres archivos
@@ -90,7 +110,7 @@ async function documentos(): Promise<Documento[]> {
 
 /** El PDF como texto, respetando las columnas. */
 async function aTexto(doc: Documento): Promise<string> {
-  const res = await fetch(encodeURI(doc.url), {
+  const res = await fetch(doc.url, {
     headers: { 'User-Agent': 'Mozilla/5.0' },
     signal: AbortSignal.timeout(60_000),
   })
@@ -204,13 +224,47 @@ export function parsearPExPE(texto: string): TramoParseado[] {
 async function main() {
   const docs = await documentos()
 
+  const resultados = docs.filter(d => /PE x PE|General|Clases|Final|Tandas|Vuelta/i.test(d.nombre))
+
+  if (ESCANEAR) {
+    // Los nombres se repiten entre las siete fechas del campeonato y no dicen
+    // de cuál son, así que para saber qué hay del Transchaco no queda otra que
+    // abrir cada documento y leer la edición que declara su encabezado.
+    console.log(`Canal ${CANAL} · abriendo ${resultados.length} documentos para ver de qué fecha son\n`)
+    const mios: { nombre: string; pexpe: boolean }[] = []
+    for (const doc of resultados) {
+      let edicion: string
+      let texto = ''
+      try {
+        texto = await aTexto(doc)
+        edicion = edicionDe(texto)
+      } catch (e) {
+        console.log(`  ?  ${doc.nombre} — ${e instanceof Error ? e.message : e}`)
+        continue
+      }
+      if (!EDICION_TRANSCHACO.test(edicion)) continue
+      const pexpe = /ORD\s+AUTO/i.test(texto)
+      mios.push({ nombre: doc.nombre, pexpe })
+      console.log(`  ${pexpe ? 'PE x PE' : '       '}  ${doc.nombre}  →  ${edicion}`)
+    }
+    const cargables = mios.filter(m => m.pexpe)
+    console.log(`\n${mios.length} documentos del Transchaco · ${cargables.length} con tiempos prueba por prueba`)
+    if (!cargables.length) {
+      console.log('Todavía no hay nada cargable: falta el documento con los tiempos PE por PE.')
+    } else {
+      console.log('Cargables:')
+      for (const c of cargables) console.log(`  npx tsx prisma/importar-resultados-sportity.ts "${c.nombre.replace(/\.pdf$/i, '')}"`)
+    }
+    return
+  }
+
   if (!BUSCADO) {
-    const resultados = docs.filter(d => /PE x PE|General|Clases|Final|Tandas/i.test(d.nombre))
     console.log(`Canal ${CANAL} · ${docs.length} documentos, ${resultados.length} con pinta de resultados\n`)
     for (const d of resultados.sort((a, b) => a.nombre.localeCompare(b.nombre))) {
       console.log(`  ${d.nombre}`)
     }
-    console.log('\nPasá un nombre (o parte) como argumento para parsearlo.')
+    console.log('\nPasá un nombre (o parte) como argumento para parsearlo,')
+    console.log('o --escanear para ver cuáles son del Transchaco.')
     return
   }
 
